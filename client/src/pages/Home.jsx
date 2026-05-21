@@ -1,0 +1,271 @@
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import API from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import FeedbackPopup from '../components/FeedbackPopup';
+
+const categories = ['Silk','Cotton','Chiffon','Georgette','Organza','Linen'];
+const colors = ['Red','Blue','Green','Maroon','Purple','Pink','White','Beige','Orange'];
+const occasions = ['Wedding','Festival','Party','Casual'];
+const patterns = ['Zari','Floral','Geometric','Plain','Ikat','Embroidered','Sequin','Striped','Painted'];
+
+const stars = (r) => '★'.repeat(Math.round(r)) + '☆'.repeat(5 - Math.round(r));
+
+const WishIcon = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>;
+const ShareIcon = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"/></svg>;
+const CartIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg>;
+
+const HERO_SLIDES = [
+  {
+    url: 'https://images.unsplash.com/photo-1610189013210-97914441584c?w=1400&h=520&fit=crop',
+    title: 'Timeless Silk Elegance',
+    sub: 'Pure Kanjivaram & Banarasi collections'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1583391733956-6c78276477e1?w=1400&h=520&fit=crop',
+    title: 'Wedding Specials',
+    sub: 'Curated bridal sarees for your big day'
+  },
+  {
+    url: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=1400&h=520&fit=crop',
+    title: 'Festival Collection',
+    sub: 'Celebrate every occasion in style'
+  },
+];
+
+export default function Home() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({});
+  const [sortBy, setSortBy] = useState('');
+  const [search, setSearch] = useState('');
+  const [slide, setSlide] = useState(0);
+  const [bannerSlides, setBannerSlides] = useState(HERO_SLIDES);
+  const timerRef = useRef(null);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { search: urlSearch } = useLocation();
+
+  const nextSlide = useCallback(() => setSlide(s => (s + 1) % bannerSlides.length), [bannerSlides.length]);
+  const prevSlide = () => setSlide(s => (s - 1 + bannerSlides.length) % bannerSlides.length);
+
+  useEffect(() => {
+    timerRef.current = setInterval(nextSlide, 4500);
+    return () => clearInterval(timerRef.current);
+  }, [nextSlide]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(urlSearch);
+    const newFilters = {};
+    if (params.get('category')) newFilters.category = params.get('category');
+    if (params.get('occasion')) newFilters.occasion = params.get('occasion');
+    if (Object.keys(newFilters).length > 0) setFilters(newFilters);
+  }, [urlSearch]);
+
+  useEffect(() => { fetchProducts(); }, [filters, sortBy, search]);
+
+  useEffect(() => {
+    API.get('/settings/hero_banner').then(({ data }) => {
+      if (data.success && data.value) {
+        try {
+          const parsed = JSON.parse(data.value);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setBannerSlides(parsed.map(url => ({ url, title: 'Prerna Silks', sub: 'Premium Saree Collection' })));
+          } else {
+            setBannerSlides([{ url: data.value, title: 'Prerna Silks', sub: 'Premium Saree Collection' }]);
+          }
+        } catch {
+          setBannerSlides([{ url: data.value, title: 'Prerna Silks', sub: 'Premium Saree Collection' }, ...HERO_SLIDES.slice(1)]);
+        }
+      }
+    }).catch(() => {});
+  }, []);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, v); });
+      if (sortBy) params.set('sort', sortBy);
+      if (search) params.set('search', search);
+      const { data } = await API.get(`/products?${params.toString()}`);
+      setProducts(data.products || []);
+    } catch { setProducts([]); }
+    setLoading(false);
+  };
+
+  const setFilter = (key, val) => setFilters(prev => ({ ...prev, [key]: prev[key] === val ? '' : val }));
+  const clearFilters = () => { setFilters({}); setSortBy(''); setSearch(''); };
+
+  const addToCart = async (e, productId) => {
+    e.stopPropagation();
+    if (!user) return navigate('/login');
+    try { await API.post('/cart/add', { productId, quantity: 1 }); alert('Added to cart!'); } catch { alert('Failed'); }
+  };
+
+  const toggleWishlist = async (e, productId) => {
+    e.stopPropagation();
+    if (!user) return navigate('/login');
+    try { const { data } = await API.post('/wishlist/add', { productId }); alert(data.message); } catch { alert('Failed'); }
+  };
+
+  const showHero = !search && Object.keys(filters).length === 0;
+
+  return (
+    <>
+      <Header onSearch={setSearch} />
+
+      {/* Hero Slider - Amazon style with bottom blur */}
+      {showHero && (
+        <section className="hero-slider">
+          {bannerSlides.map((s, i) => (
+            <div key={i} style={{ display: i === slide ? 'block' : 'none' }}>
+              <div className="hero-slide-inner">
+                <img src={s.url} alt={s.title} />
+                <div className="hero-blur-bottom" />
+                <div style={{ position:'absolute', bottom:'60px', left:'60px', zIndex:5, color:'#fff', textShadow:'0 2px 8px rgba(0,0,0,0.5)' }}>
+                  <div style={{ fontSize:'0.8rem', letterSpacing:'3px', textTransform:'uppercase', marginBottom:'6px', opacity:0.85 }}>Prerna Silks</div>
+                  <div style={{ fontFamily:'var(--font-heading)', fontSize:'2.2rem', fontWeight:400, lineHeight:1.2 }}>{s.title}</div>
+                  <div style={{ fontSize:'0.95rem', opacity:0.8, marginTop:'6px' }}>{s.sub}</div>
+                  <button onClick={() => navigate('/?scrollTo=shop')} style={{ marginTop:'16px', padding:'10px 28px', background:'var(--gold)', color:'#1a0a0e', border:'none', borderRadius:'4px', cursor:'pointer', fontWeight:600, fontSize:'0.85rem', letterSpacing:'1.5px', textTransform:'uppercase', fontFamily:'var(--font-body)' }}>
+                    Shop Now
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+          <div className="hero-arrows">
+            <button className="hero-prev" onClick={prevSlide}>‹</button>
+            <button className="hero-next" onClick={nextSlide}>›</button>
+          </div>
+          <div className="hero-dots">
+            {bannerSlides.map((_, i) => (
+              <button key={i} className={`hero-dot${slide === i ? ' active' : ''}`} onClick={() => setSlide(i)} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Category Quick Links */}
+      {showHero && (
+        <div style={{ maxWidth:1400, margin:'0 auto', padding:'22px 30px 0', display:'flex', gap:'12px', overflowX:'auto' }}>
+          {categories.map(cat => (
+            <button key={cat} onClick={() => setFilter('category', cat)}
+              style={{ flexShrink:0, padding:'7px 18px', borderRadius:'20px', border:`1.5px solid ${filters.category===cat?'var(--primary)':'var(--border)'}`, background:filters.category===cat?'var(--primary)':'#fff', color:filters.category===cat?'#fff':'var(--text)', cursor:'pointer', fontSize:'0.85rem', fontFamily:'var(--font-body)', transition:'all 0.25s' }}>
+              {cat}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Main Shop Layout */}
+      <div id="shop" className="shop-layout">
+        {/* Sidebar Filters */}
+        <aside className="sidebar">
+          {[{title:'Categories',items:categories,key:'category'},{title:'Color',items:colors,key:'color'},
+            {title:'Occasion',items:occasions,key:'occasion'},{title:'Pattern',items:patterns,key:'pattern'}].map(s => (
+            <div className="filter-section" key={s.key}>
+              <h4>{s.title}</h4>
+              {s.items.map(item => (
+                <label className="filter-option" key={item}>
+                  <input type="checkbox" checked={filters[s.key]===item} onChange={() => setFilter(s.key, item)} /> {item}
+                </label>
+              ))}
+            </div>
+          ))}
+          <div className="filter-section">
+            <h4>Rating</h4>
+            {[4,3,2].map(r => (
+              <label className="filter-option" key={r}>
+                <input type="radio" name="rating" checked={filters.rating===String(r)} onChange={() => setFilter('rating', String(r))} /> {r}★ & above
+              </label>
+            ))}
+          </div>
+          <div className="filter-section">
+            <h4>Price Range</h4>
+            <div style={{ display:'flex', gap:8, marginBottom:12 }}>
+              <input type="number" placeholder="Min" className="form-control" style={{ padding:'7px 10px' }} onChange={e => setFilter('minPrice', e.target.value)} />
+              <input type="number" placeholder="Max" className="form-control" style={{ padding:'7px 10px' }} onChange={e => setFilter('maxPrice', e.target.value)} />
+            </div>
+            <button onClick={fetchProducts} className="btn-buy" style={{ width:'100%', padding:'9px' }}>Apply</button>
+          </div>
+          <button onClick={clearFilters} className="btn-cart" style={{ width:'100%', padding:'9px', marginTop:'8px' }}>Clear All</button>
+        </aside>
+
+        {/* Products */}
+        <main style={{ flex:1, minWidth:0 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, flexWrap:'wrap', gap:10 }}>
+            <h2 style={{ fontFamily:'var(--font-heading)', color:'var(--primary)', fontSize:'1.5rem', fontWeight:400 }}>
+              Our Collection <span style={{ fontSize:'0.85rem', color:'var(--text-muted)', fontFamily:'var(--font-body)' }}>({products.length} sarees)</span>
+            </h2>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+              style={{ padding:'8px 14px', border:'1.5px solid var(--border)', borderRadius:30, fontFamily:'var(--font-body)', outline:'none', background:'transparent', color:'var(--text)', fontSize:'0.88rem' }}>
+              <option value="">Sort By</option>
+              <option value="price_asc">Price: Low→High</option>
+              <option value="price_desc">Price: High→Low</option>
+              <option value="rating">Top Rated</option>
+              <option value="name">Name A-Z</option>
+            </select>
+          </div>
+
+          {loading ? (
+            <div style={{ textAlign:'center', padding:'80px 0', color:'var(--text-muted)' }}>
+              <div style={{ fontSize:'2rem', marginBottom:'12px' }}>👗</div>
+              <p>Loading collection...</p>
+            </div>
+          ) : products.length === 0 ? (
+            <div style={{ textAlign:'center', padding:'80px 0', color:'var(--text-muted)' }}>
+              <div style={{ fontSize:'3rem', marginBottom:'12px' }}>🔍</div>
+              <h3>No products found</h3>
+              <button className="btn-buy" style={{ marginTop:'16px', padding:'10px 24px' }} onClick={clearFilters}>Clear Filters</button>
+            </div>
+          ) : (
+            <div className="product-grid">
+              {products.map(p => {
+                const disc = p.original_price > p.price ? Math.round((1 - p.price / p.original_price) * 100) : 0;
+                const imgs = p.images || [];
+                const img1 = imgs[0]?.image_url || p.image || '';
+                const img2 = imgs[1]?.image_url || '';
+                return (
+                  <div className="product-card" key={p.id} onClick={() => navigate(`/product/${p.id}`)}>
+                    <div className="product-img">
+                      {img1 ? (
+                        <>
+                          <img className="img-main" src={img1} alt={p.name} />
+                          {img2 && <img className="img-hover" src={img2} alt={p.name} />}
+                        </>
+                      ) : (
+                        <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%', fontSize:'4rem', opacity:0.2 }}>👗</div>
+                      )}
+                      <button className="wish-btn" onClick={e => toggleWishlist(e, p.id)}><WishIcon /></button>
+                      <button className="share-btn" onClick={e => { e.stopPropagation(); navigator.clipboard.writeText(window.location.origin+'/product/'+p.id); alert('Link copied!'); }}><ShareIcon /></button>
+                      <button className="quick-view-btn" onClick={e => { e.stopPropagation(); navigate(`/product/${p.id}`); }}>View Details</button>
+                    </div>
+                    <div className="product-info">
+                      <div className="product-name">{p.name}</div>
+                      <div className="product-rating">{stars(p.rating)} <span style={{ color:'var(--text-muted)', fontSize:'0.78rem' }}>({p.rating})</span></div>
+                      <div className="product-price">
+                        <span className="current">₹{Number(p.price).toLocaleString('en-IN')}</span>
+                        {p.original_price > p.price && <span className="original">₹{Number(p.original_price).toLocaleString('en-IN')}</span>}
+                        {disc > 0 && <span className="discount">{disc}% OFF</span>}
+                      </div>
+                      <div className="product-actions">
+                        <button className="btn-cart" onClick={e => addToCart(e, p.id)} style={{ display:'flex', alignItems:'center', gap:'5px' }}><CartIcon />Cart</button>
+                        <button className="btn-buy" onClick={e => { addToCart(e, p.id); navigate('/cart'); }}>Buy Now</button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </main>
+      </div>
+
+      <Footer />
+      <FeedbackPopup />
+    </>
+  );
+}
