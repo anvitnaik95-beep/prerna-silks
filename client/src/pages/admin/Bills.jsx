@@ -177,11 +177,11 @@ export default function Bills() {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label" style={{ fontWeight: 500, fontSize: '0.88rem' }}>Bill Receipt File (PNG/JPG)</label>
+                  <label className="form-label" style={{ fontWeight: 500, fontSize: '0.88rem' }}>Bill Receipt File (PNG, JPG or PDF)</label>
                   <input 
                     type="file" 
                     className="form-control" 
-                    accept="image/png, image/jpeg, image/jpg" 
+                    accept="image/png, image/jpeg, image/jpg, application/pdf" 
                     onChange={e => setFile(e.target.files[0])} 
                     required 
                   />
@@ -242,7 +242,7 @@ export default function Bills() {
                                 </td>
                                 <td style={{ textAlign: 'center' }}>
                                   <a href={b.file_path} target="_blank" rel="noreferrer" className="btn btn-sm btn-info text-white" style={{ padding: '4px 10px', fontSize: '0.78rem', borderRadius: 6 }}>
-                                    View PDF
+                                    View File
                                   </a>
                                 </td>
                                 <td style={{ textAlign: 'center' }}>

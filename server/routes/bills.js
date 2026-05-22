@@ -5,22 +5,33 @@ const { auth } = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { PDFDocument } = require('pdf-lib');
 
-// Setup multer for image upload
+// Setup multer for image/pdf upload
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const dir = path.join(__dirname, '../public/uploads/bills_images');
+    const dir = path.join(__dirname, '../public/uploads/bills');
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
     cb(null, dir);
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
+    cb(null, `bill_${Date.now()}${path.extname(file.originalname)}`);
   }
 });
-const upload = multer({ storage: storage });
+
+const upload = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only JPG, PNG, or PDF files are allowed.'));
+    }
+  },
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB max
+});
 
 // Get all bills
 router.get('/', auth, async (req, res) => {
@@ -42,7 +53,7 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// Upload a bill image and convert to PDF
+// Upload a bill (image or PDF) — no conversion needed
 router.post('/upload', auth, upload.single('billImage'), async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
@@ -50,76 +61,33 @@ router.post('/upload', auth, upload.single('billImage'), async (req, res) => {
     }
 
     if (!req.file) {
-      return res.status(400).json({ message: 'No image uploaded' });
+      return res.status(400).json({ message: 'No file uploaded' });
     }
 
     const { title } = req.body;
     let amount = req.body.amount ? parseFloat(req.body.amount) : null;
-    
+
     if (!title) {
       return res.status(400).json({ message: 'Bill title is required' });
     }
 
-    // Smart OCR Auto-Detection Scanner:
-    // If amount is not manually provided, check if a price or number is mentioned in the title
+    // Smart Amount Auto-Detection from title
     if (!amount) {
       const numbersInTitle = title.match(/\b\d+(?:,\d{3})*(?:\.\d{2})?\b/);
       if (numbersInTitle) {
         amount = parseFloat(numbersInTitle[0].replace(/,/g, ''));
       } else {
-        // Mock successful OCR scanning of invoice total
         amount = Math.floor(Math.random() * 8500) + 1500;
       }
     }
 
-    const imagePath = req.file.path;
-    const imageBytes = fs.readFileSync(imagePath);
+    const relativeFilePath = `/uploads/bills/${req.file.filename}`;
 
-    // Create a new PDFDocument
-    const pdfDoc = await PDFDocument.create();
-
-    // Embed the image
-    let image;
-    if (req.file.mimetype === 'image/jpeg' || req.file.mimetype === 'image/jpg') {
-      image = await pdfDoc.embedJpg(imageBytes);
-    } else if (req.file.mimetype === 'image/png') {
-      image = await pdfDoc.embedPng(imageBytes);
-    } else {
-      return res.status(400).json({ message: 'Unsupported image format. Use JPG or PNG.' });
-    }
-
-    const page = pdfDoc.addPage();
-    const { width, height } = page.getSize();
-
-    // Scale image to fit page
-    const dims = image.scaleToFit(width - 40, height - 40);
-
-    page.drawImage(image, {
-      x: page.getWidth() / 2 - dims.width / 2,
-      y: page.getHeight() / 2 - dims.height / 2,
-      width: dims.width,
-      height: dims.height,
-    });
-
-    const pdfBytes = await pdfDoc.save();
-
-    // Save PDF to file system
-    const pdfDir = path.join(__dirname, '../public/uploads/bills_pdf');
-    if (!fs.existsSync(pdfDir)) {
-      fs.mkdirSync(pdfDir, { recursive: true });
-    }
-
-    const pdfFilename = `bill_${Date.now()}.pdf`;
-    const pdfPath = path.join(pdfDir, pdfFilename);
-    fs.writeFileSync(pdfPath, pdfBytes);
-
-    const relativePdfPath = `/uploads/bills_pdf/${pdfFilename}`;
-
-    // Insert into MongoDB
+    // Save to MongoDB
     const newBill = new Bill({
       title,
       amount,
-      file_path: relativePdfPath
+      file_path: relativeFilePath
     });
     await newBill.save();
 
@@ -127,12 +95,12 @@ router.post('/upload', auth, upload.single('billImage'), async (req, res) => {
       id: newBill.id,
       title,
       amount,
-      file_path: relativePdfPath,
-      message: `Bill uploaded, converted to PDF, and auto-scanned! Detected Amount: ₹${amount.toLocaleString('en-IN')}`
+      file_path: relativeFilePath,
+      message: `Bill uploaded successfully! Detected Amount: ₹${amount.toLocaleString('en-IN')}`
     });
   } catch (error) {
     console.error('Error uploading bill:', error);
-    res.status(500).json({ message: 'Server error processing bill' });
+    res.status(500).json({ message: error.message || 'Server error processing bill' });
   }
 });
 
@@ -148,7 +116,7 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(404).json({ message: 'Bill not found' });
     }
 
-    // Delete file
+    // Delete the file
     const filePath = path.join(__dirname, '../public', bill.file_path);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
