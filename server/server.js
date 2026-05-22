@@ -51,9 +51,12 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
+const { startBackgroundJobs } = require('./backgroundJobs');
+
 testConnection().then(() => {
   app.listen(PORT, () => {
     console.log(`\n🚀 Server running on http://localhost:${PORT}`);
     console.log(`📡 API at http://localhost:${PORT}/api\n`);
+    startBackgroundJobs();
   });
 });

@@ -19,8 +19,21 @@ export default function ProductDetail() {
   const [rating, setRating] = useState(5);
   const [added, setAdded] = useState(false);
   const [buying, setBuying] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(false);
 
-  useEffect(() => { loadProduct(); loadComments(); }, [id]);
+  const [inCart, setInCart] = useState(false);
+
+  useEffect(() => { loadProduct(); loadComments(); checkUserReview(); checkCart(); }, [id, user]);
+
+  const checkCart = async () => {
+    if (!user) return;
+    try {
+      const { data } = await API.get('/cart');
+      if (data.items && data.items.some(item => item.id === id || item.productId === id || item._id === id)) {
+        setInCart(true);
+      }
+    } catch {}
+  };
 
   const loadProduct = async () => {
     try {
@@ -36,11 +49,23 @@ export default function ProductDetail() {
     try { const { data } = await API.get(`/comments/${id}`); setComments(data.comments || []); } catch {}
   };
 
+  const checkUserReview = async () => {
+    if (!user || user.role === 'admin') return;
+    try {
+      const { data } = await API.get(`/comments/check/${id}`);
+      if (data.success) {
+        setHasReviewed(data.hasReviewed);
+      }
+    } catch {}
+  };
+
   const addToCart = async () => {
     if (!user) return navigate('/login');
+    if (inCart) return navigate('/cart');
     try {
       await API.post('/cart/add', { productId: id, quantity: 1 });
       setAdded(true);
+      setInCart(true);
       setTimeout(() => setAdded(false), 2000);
     } catch { alert('Failed to add to cart'); }
   };
@@ -60,8 +85,12 @@ export default function ProductDetail() {
     if (!comment.trim()) return;
     try {
       await API.post('/comments', { productId: id, comment, rating });
-      setComment(''); loadComments();
-    } catch { alert('Failed to post review'); }
+      setComment('');
+      setHasReviewed(true);
+      loadComments();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to post review');
+    }
   };
 
   const allImages = product
@@ -215,7 +244,7 @@ export default function ProductDetail() {
             {/* CTA Buttons */}
             <div className="pd-cta">
               <button className="cta-cart" onClick={addToCart} disabled={product.stock === 0}>
-                {added ? '✓ Added!' : '🛒 Add to Cart'}
+                {added ? '✓ Added!' : inCart ? '➔ Go to Cart' : '🛒 Add to Cart'}
               </button>
               <button className="cta-buy" onClick={buyNow} disabled={product.stock === 0 || buying}>
                 {buying ? 'Processing...' : '⚡ Buy Now'}
@@ -291,17 +320,37 @@ export default function ProductDetail() {
         {/* Reviews */}
         <div style={{ marginTop:50 }}>
           <h2 style={{ fontFamily:'var(--font-heading)', color:'var(--primary)', marginBottom:20, fontSize:'1.5rem', fontWeight:400 }}>Customer Reviews</h2>
+          
           {user && user.role !== 'admin' && (
-            <form onSubmit={submitComment} style={{ background:'#fff', padding:22, borderRadius:10, marginBottom:22, boxShadow:'var(--shadow)', border:'1px solid var(--border)' }}>
-              <h4 style={{ fontFamily:'var(--font-heading)', color:'var(--primary)', marginBottom:14, fontSize:'1rem', fontWeight:400 }}>Write a Review</h4>
-              <textarea className="form-control" placeholder="Share your experience with this product..." value={comment} onChange={e => setComment(e.target.value)} rows={3} style={{ marginBottom:12 }} />
-              <div style={{ display:'flex', gap:10, alignItems:'center', flexWrap:'wrap' }}>
-                <select className="form-select" style={{ width:160 }} value={rating} onChange={e => setRating(Number(e.target.value))}>
-                  {[5,4,3,2,1].map(r => <option key={r} value={r}>{r} Star{r>1?'s':''}</option>)}
-                </select>
-                <button type="submit" className="btn-buy" style={{ padding:'9px 22px' }}>Post Review</button>
+            hasReviewed ? (
+              <div style={{
+                background: 'var(--bg)', border: '1.5px dashed var(--border)', borderRadius: 10,
+                padding: '20px 24px', marginBottom: 22, textAlign: 'center', color: 'var(--text-light)'
+              }}>
+                <span style={{ fontSize: '1.2rem', marginRight: 8 }}>✓</span>
+                You have already submitted a review for this product. Thank you for your feedback!
               </div>
-            </form>
+            ) : (
+              <form onSubmit={submitComment} style={{ background:'#fff', padding:22, borderRadius:10, marginBottom:22, boxShadow:'var(--shadow)', border:'1px solid var(--border)' }}>
+                <h4 style={{ fontFamily:'var(--font-heading)', color:'var(--primary)', marginBottom:14, fontSize:'1rem', fontWeight:400 }}>Write a Review</h4>
+                <textarea className="form-control" placeholder="Share your experience with this product..." value={comment} onChange={e => setComment(e.target.value)} rows={3} style={{ marginBottom:12 }} />
+                <div style={{ display:'flex', gap:10, alignItems:'center', flexWrap:'wrap' }}>
+                  <select className="form-select" style={{ width:160 }} value={rating} onChange={e => setRating(Number(e.target.value))}>
+                    {[5,4,3,2,1].map(r => <option key={r} value={r}>{r} Star{r>1?'s':''}</option>)}
+                  </select>
+                  <button type="submit" className="btn-buy" style={{ padding:'9px 22px' }}>Post Review</button>
+                </div>
+              </form>
+            )
+          )}
+
+          {!user && (
+            <div style={{
+              background: '#fff', border: '1px solid var(--border)', borderRadius: 10,
+              padding: '20px 24px', marginBottom: 22, textAlign: 'center', color: 'var(--text-muted)'
+            }}>
+              Please <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>Login</Link> to write a review.
+            </div>
           )}
           {comments.length === 0 ? (
             <p style={{ color:'var(--text-muted)', fontStyle:'italic' }}>No reviews yet. Be the first to review!</p>

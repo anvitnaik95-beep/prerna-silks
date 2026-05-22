@@ -71,13 +71,13 @@ router.post('/upload', auth, upload.single('billImage'), async (req, res) => {
       return res.status(400).json({ message: 'Bill title is required' });
     }
 
-    // Smart Amount Auto-Detection from title
+    // Amount Detection from title (if not manually provided)
     if (!amount) {
       const numbersInTitle = title.match(/\b\d+(?:,\d{3})*(?:\.\d{2})?\b/);
       if (numbersInTitle) {
         amount = parseFloat(numbersInTitle[0].replace(/,/g, ''));
       } else {
-        amount = Math.floor(Math.random() * 8500) + 1500;
+        amount = 0; // No amount found - admin should enter manually
       }
     }
 

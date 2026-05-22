@@ -154,41 +154,69 @@ export default function Checkout() {
             textAlign: 'center', border: `2px solid ${isPaid ? '#28a745' : 'var(--gold)'}`
           }}>
             {/* Status Icon */}
-            <div style={{ fontSize: '4rem', marginBottom: 10 }}>
-              {isPaid ? '✅' : '📦'}
+            <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'center' }}>
+              {isPaid ? (
+                <div style={{
+                  background: '#d4edda', color: '#155724', width: 72, height: 72,
+                  borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+              ) : (
+                <div style={{
+                  background: '#fff3cd', color: '#856404', width: 72, height: 72,
+                  borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                    <line x1="12" y1="22.08" x2="12" y2="12" />
+                  </svg>
+                </div>
+              )}
             </div>
-            <h2 style={{ fontFamily: 'var(--font-heading)', color: isPaid ? '#28a745' : 'var(--primary)', marginBottom: 8 }}>
-              {isPaid ? 'Payment Received!' : 'Order Placed!'}
+            <h2 style={{ fontFamily: 'var(--font-heading)', color: isPaid ? '#28a745' : 'var(--primary)', marginBottom: 8, fontSize: '1.8rem', fontWeight: 400 }}>
+              {isPaid ? 'Payment Verified Successfully!' : 'Order Placed Successfully!'}
             </h2>
-            <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>
+            <p style={{ color: 'var(--text-light)', marginBottom: 28, fontSize: '0.95rem' }}>
               {isPaid 
-                ? 'Your payment has been verified successfully. Your order is confirmed!'
-                : 'Your order has been placed. Please pay on delivery.'}
+                ? 'Your order is confirmed and will be dispatched shortly via India Post.'
+                : 'Your order has been placed. Please pay on delivery via India Post.'}
             </p>
 
             {/* Order Details Card */}
-            <div style={{ background: '#f8f9fa', borderRadius: 12, padding: 24, textAlign: 'left', marginBottom: 24 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 24px' }}>
-                <div><small style={{ color: 'var(--text-muted)' }}>Order ID</small><br/><strong>{summary.id?.slice(-8).toUpperCase() || 'N/A'}</strong></div>
-                <div><small style={{ color: 'var(--text-muted)' }}>Payment</small><br/>
-                  <strong style={{ color: isPaid ? '#28a745' : '#dc3545' }}>
-                    {isPaid ? '✅ Paid' : '⏳ Unpaid (COD)'}
+            <div style={{ background: '#fafafa', borderRadius: 12, padding: 24, textAlign: 'left', marginBottom: 28, border: '1px solid var(--border)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px 24px' }}>
+                <div><small style={{ color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.5px' }}>Order ID</small><br/><strong>#{summary.id?.slice(-8).toUpperCase() || 'N/A'}</strong></div>
+                <div><small style={{ color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.5px' }}>Payment Status</small><br/>
+                  <strong style={{ color: isPaid ? '#28a745' : '#856404' }}>
+                    {isPaid ? 'Paid' : 'Unpaid (COD)'}
                   </strong>
                 </div>
-                <div><small style={{ color: 'var(--text-muted)' }}>Method</small><br/><strong>{summary.method || 'N/A'}</strong></div>
-                <div><small style={{ color: 'var(--text-muted)' }}>Total Amount</small><br/><strong style={{ color: 'var(--primary)' }}>{fmt(summary.total || 0)}</strong></div>
-                <div><small style={{ color: 'var(--text-muted)' }}>Estimated Delivery</small><br/><strong style={{ color: '#28a745' }}>🚚 {orderResult.estimatedDelivery || 'N/A'}</strong></div>
-                <div><small style={{ color: 'var(--text-muted)' }}>Shipping To</small><br/><strong>{(summary.address || '').substring(0, 50)}</strong></div>
+                <div><small style={{ color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.5px' }}>Method</small><br/><strong>{summary.method || 'N/A'}</strong></div>
+                <div><small style={{ color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.5px' }}>Total Amount</small><br/><strong style={{ color: 'var(--primary)' }}>{fmt(summary.total || 0)}</strong></div>
+                <div><small style={{ color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.5px' }}>Estimated Delivery</small><br/>
+                  <strong style={{ color: '#28a745', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <rect x="1" y="3" width="15" height="13" />
+                      <polygon points="16 8 20 8 23 11 23 16 16 16" />
+                    </svg>
+                    {orderResult.estimatedDelivery || 'N/A'}
+                  </strong>
+                </div>
+                <div><small style={{ color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.5px' }}>Shipping To</small><br/><strong style={{ fontSize: '0.85rem' }}>{(summary.address || '').substring(0, 50)}</strong></div>
               </div>
 
               {/* Items */}
               {summary.items && summary.items.length > 0 && (
-                <div style={{ marginTop: 16, borderTop: '1px solid #dee2e6', paddingTop: 12 }}>
-                  <small style={{ color: 'var(--text-muted)' }}>Items Ordered:</small>
+                <div style={{ marginTop: 20, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                  <small style={{ color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.5px', display: 'block', marginBottom: 8 }}>Items Ordered:</small>
                   {summary.items.map((it, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', marginTop: 6 }}>
-                      <span>{it.product_name} × {it.quantity}</span>
-                      <span>{fmt(it.price * it.quantity)}</span>
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginTop: 6 }}>
+                      <span style={{ color: 'var(--text)' }}>{it.product_name} <span style={{ color: 'var(--text-muted)' }}>× {it.quantity}</span></span>
+                      <span style={{ fontWeight: 600 }}>{fmt(it.price * it.quantity)}</span>
                     </div>
                   ))}
                 </div>

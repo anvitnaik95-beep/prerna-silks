@@ -103,15 +103,15 @@ export default function Bills() {
     <div className="admin-layout">
       <AdminSidebar />
       <main className="admin-main">
-        <div className="admin-header">
+        <div className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
           <div>
-            <h1 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', fontWeight: 400 }}>Expense Bills</h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginTop: 4 }}>Upload image receipts to automatically parse, scan, and catalog bills by date</p>
+            <h1 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', fontWeight: 400, margin: 0 }}>Bills Ledger</h1>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginTop: 4 }}>Manage and catalog business expense receipts.</p>
           </div>
           <input 
             type="text" 
             className="form-control" 
-            style={{ width: 250, border: '1.5px solid var(--border)', borderRadius: 8 }} 
+            style={{ width: 250, border: '1.5px solid var(--border)', borderRadius: 8, padding: '8px 14px' }} 
             placeholder="Search Bills..." 
             value={search} 
             onChange={e => setSearch(e.target.value)} 
@@ -121,18 +121,18 @@ export default function Bills() {
         {/* Stats Summary Cards */}
         <div className="row g-3 mb-4">
           <div className="col-md-6">
-            <div className="admin-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 24, borderLeft: '4px solid var(--primary)' }}>
+            <div className="admin-card" style={{ background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 24, borderLeft: '4px solid var(--primary)', borderRadius: 10 }}>
               <div>
-                <span style={{ textTransform: 'uppercase', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Total Cataloged Bills</span>
-                <h3 style={{ fontSize: '2rem', color: 'var(--primary)', margin: '4px 0 0 0', fontWeight: 500 }}>{bills.length} Bills</h3>
+                <span style={{ textTransform: 'uppercase', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Total Bills</span>
+                <h3 style={{ fontSize: '1.8rem', color: 'var(--primary)', margin: '4px 0 0 0', fontWeight: 500 }}>{bills.length}</h3>
               </div>
             </div>
           </div>
           <div className="col-md-6">
-            <div className="admin-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 24, borderLeft: '4px solid var(--gold)' }}>
+            <div className="admin-card" style={{ background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 24, borderLeft: '4px solid var(--gold)', borderRadius: 10 }}>
               <div>
-                <span style={{ textTransform: 'uppercase', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Grand Total Expenses</span>
-                <h3 style={{ fontSize: '2rem', color: 'var(--gold)', margin: '4px 0 0 0', fontWeight: 600 }}>{fmt(grandTotal)}</h3>
+                <span style={{ textTransform: 'uppercase', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Total Expense</span>
+                <h3 style={{ fontSize: '1.8rem', color: 'var(--gold)', margin: '4px 0 0 0', fontWeight: 600 }}>{fmt(grandTotal)}</h3>
               </div>
             </div>
           </div>
@@ -140,26 +140,23 @@ export default function Bills() {
 
         <div className="row">
           <div className="col-md-4">
-            <div className="admin-card mb-4" style={{ padding: 24 }}>
-              <h4 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', marginBottom: 18, fontSize: '1.15rem' }}>Upload & Scan Bill</h4>
+            <div className="admin-card mb-4" style={{ background: '#fff', padding: 24, borderRadius: 10, border: '1px solid var(--border)' }}>
+              <h4 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', marginBottom: 18, fontSize: '1.15rem', fontWeight: 500 }}>Upload Receipt</h4>
               
               {error && <div className="alert alert-danger p-2" style={{ fontSize: '0.85rem' }}>{error}</div>}
               {scanMessage && <div className="alert alert-success p-2" style={{ fontSize: '0.85rem', lineHeight: 1.4 }}>{scanMessage}</div>}
               
               <form onSubmit={handleUpload}>
                 <div className="mb-3">
-                  <label className="form-label" style={{ fontWeight: 500, fontSize: '0.88rem' }}>Bill Title / Description</label>
+                  <label className="form-label" style={{ fontWeight: 500, fontSize: '0.88rem' }}>Bill Title</label>
                   <input 
                     type="text" 
                     className="form-control" 
-                    placeholder="e.g. Rent, Electricity 4500" 
+                    placeholder="e.g. Rent, Electricity" 
                     value={title} 
                     onChange={e => setTitle(e.target.value)} 
                     required 
                   />
-                  <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: 4, display: 'block' }}>
-                    Tip: Include the amount in the title (e.g. "Electric 2300") to let our scanner auto-detect it instantly!
-                  </small>
                 </div>
                 
                 <div className="mb-3">
@@ -167,17 +164,14 @@ export default function Bills() {
                   <input 
                     type="number" 
                     className="form-control" 
-                    placeholder="Leave empty for auto-scan" 
+                    placeholder="Leave blank to detect from title" 
                     value={amount} 
                     onChange={e => setAmount(e.target.value)} 
                   />
-                  <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: 4, display: 'block' }}>
-                    If left blank, our AI invoice parser scans the document image to extract the total amount automatically.
-                  </small>
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label" style={{ fontWeight: 500, fontSize: '0.88rem' }}>Bill Receipt File (PNG, JPG or PDF)</label>
+                  <label className="form-label" style={{ fontWeight: 500, fontSize: '0.88rem' }}>Bill Receipt File (PNG, JPG, PDF)</label>
                   <input 
                     type="file" 
                     className="form-control" 
@@ -187,21 +181,24 @@ export default function Bills() {
                   />
                 </div>
                 
-                <button type="submit" className="btn-buy" style={{ width: '100%', padding: '12px', fontSize: '0.95rem' }} disabled={loading}>
-                  {loading ? 'Scanning Document...' : 'Upload & Scan Bill'}
+                <button type="submit" className="btn-buy" style={{ width: '100%', padding: '12px', fontSize: '0.95rem', marginTop: 10 }} disabled={loading}>
+                  {loading ? 'Processing...' : 'Upload & Process'}
                 </button>
               </form>
             </div>
           </div>
           
           <div className="col-md-8">
-            <div className="admin-card" style={{ padding: 24 }}>
-              <h4 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', marginBottom: 20, fontSize: '1.15rem' }}>Grouped Expenses Ledger</h4>
+            <div className="admin-card" style={{ background: '#fff', padding: 24, borderRadius: 10, border: '1px solid var(--border)' }}>
+              <h4 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', marginBottom: 20, fontSize: '1.15rem', fontWeight: 500 }}>Expenses Ledger</h4>
               
               {groupedData.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
-                  <div style={{ fontSize: '3rem', marginBottom: 12 }}>Document</div>
-                  <p>No scanned bills found in your ledger.</p>
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ marginBottom: 12 }}>
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  <p>No bills found in your ledger.</p>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -209,10 +206,10 @@ export default function Bills() {
                     <div key={group.groupKey} style={{ background: '#fafafa', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
                       {/* Group Header showing Month, Year, and Subtotal */}
                       <div style={{ background: '#f0f2f5', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
-                        <span style={{ fontWeight: 600, color: 'var(--primary)', fontSize: '0.98rem' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--primary)', fontSize: '0.95rem' }}>
                           {group.month} {group.year}
                         </span>
-                        <span style={{ background: 'var(--primary)', color: '#fff', padding: '4px 12px', borderRadius: 20, fontSize: '0.85rem', fontWeight: 600 }}>
+                        <span style={{ background: 'var(--primary)', color: '#fff', padding: '4px 12px', borderRadius: 20, fontSize: '0.82rem', fontWeight: 600 }}>
                           Subtotal: {fmt(group.subtotal)}
                         </span>
                       </div>
@@ -224,8 +221,8 @@ export default function Bills() {
                             <tr>
                               <th style={{ fontSize: '0.82rem', textTransform: 'uppercase', color: 'var(--text-muted)', borderBottom: 'none' }}>Description</th>
                               <th style={{ fontSize: '0.82rem', textTransform: 'uppercase', color: 'var(--text-muted)', borderBottom: 'none' }}>Date Added</th>
-                              <th style={{ fontSize: '0.82rem', textTransform: 'uppercase', color: 'var(--text-muted)', borderBottom: 'none', textAlign: 'right' }}>Scanned Amount</th>
-                              <th style={{ fontSize: '0.82rem', textTransform: 'uppercase', color: 'var(--text-muted)', borderBottom: 'none', textAlign: 'center' }}>PDF</th>
+                              <th style={{ fontSize: '0.82rem', textTransform: 'uppercase', color: 'var(--text-muted)', borderBottom: 'none', textAlign: 'right' }}>Amount</th>
+                              <th style={{ fontSize: '0.82rem', textTransform: 'uppercase', color: 'var(--text-muted)', borderBottom: 'none', textAlign: 'center' }}>Receipt</th>
                               <th style={{ fontSize: '0.82rem', textTransform: 'uppercase', color: 'var(--text-muted)', borderBottom: 'none', textAlign: 'center' }}>Action</th>
                             </tr>
                           </thead>
@@ -236,13 +233,12 @@ export default function Bills() {
                                 <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                                   {new Date(b.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                                 </td>
-                                <td style={{ textAlign: 'right', fontWeight: 600, color: '#28a745' }}>
+                                <td style={{ textAlign: 'right', fontWeight: 600, color: 'var(--primary)' }}>
                                   {fmt(b.amount || 0)}
-                                  <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>Auto-scanned</span>
                                 </td>
                                 <td style={{ textAlign: 'center' }}>
-                                  <a href={b.file_path} target="_blank" rel="noreferrer" className="btn btn-sm btn-info text-white" style={{ padding: '4px 10px', fontSize: '0.78rem', borderRadius: 6 }}>
-                                    View File
+                                  <a href={b.file_path} target="_blank" rel="noreferrer" className="btn btn-sm btn-info text-white" style={{ padding: '4px 10px', fontSize: '0.78rem', borderRadius: 6, textDecoration: 'none' }}>
+                                    View
                                   </a>
                                 </td>
                                 <td style={{ textAlign: 'center' }}>

@@ -13,11 +13,17 @@ const orderSchema = new mongoose.Schema({
   payment_method: { type: String, default: 'COD' },
   payment_status: { type: String, enum: ['Unpaid', 'Paid', 'Failed', 'Refunded'], default: 'Unpaid' },
   shipping_address: { type: String, default: '' },
-  status: { type: String, enum: ['Pending', 'Confirmed', 'Packed', 'Shipped', 'Delivered', 'Cancelled'], default: 'Pending' },
+  status: { type: String, enum: ['Pending', 'Confirmed', 'Dispatched', 'Shipped', 'Delivered', 'Cancelled'], default: 'Pending' },
   payment_ref: { type: String, default: '' },
   estimated_delivery: { type: Date, default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
+  tracking_id: { type: String, default: '' },
+  delivery_service: { type: String, default: 'India Post' },
+  dispatched_at: { type: Date, default: null },
   items: [orderItemSchema],
-  created_at: { type: Date, default: Date.now }
+  created_at: { type: Date, default: Date.now },
+  notified_confirmed: { type: Boolean, default: false },
+  notified_dispatched: { type: Boolean, default: false },
+  notified_delivered: { type: Boolean, default: false }
 });
 
 orderSchema.virtual('id').get(function() {

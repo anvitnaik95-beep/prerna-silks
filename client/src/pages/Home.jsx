@@ -43,6 +43,7 @@ export default function Home() {
   const [search, setSearch] = useState('');
   const [slide, setSlide] = useState(0);
   const [bannerSlides, setBannerSlides] = useState(HERO_SLIDES);
+  const [cartItemIds, setCartItemIds] = useState([]);
   const timerRef = useRef(null);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -65,6 +66,16 @@ export default function Home() {
   }, [urlSearch]);
 
   useEffect(() => { fetchProducts(); }, [filters, sortBy, search]);
+
+  useEffect(() => {
+    if (user) {
+      API.get('/cart').then(({ data }) => {
+        if (data.items) {
+          setCartItemIds(data.items.map(item => item.productId || item.id || item._id));
+        }
+      }).catch(() => {});
+    }
+  }, [user]);
 
   useEffect(() => {
     API.get('/settings/hero_banner').then(({ data }) => {
@@ -102,7 +113,14 @@ export default function Home() {
   const addToCart = async (e, productId) => {
     e.stopPropagation();
     if (!user) return navigate('/login');
-    try { await API.post('/cart/add', { productId, quantity: 1 }); alert('Added to cart!'); } catch { alert('Failed'); }
+    if (cartItemIds.includes(productId)) {
+      return navigate('/cart');
+    }
+    try { 
+      await API.post('/cart/add', { productId, quantity: 1 }); 
+      setCartItemIds(prev => [...prev, productId]);
+      alert('Added to cart!'); 
+    } catch { alert('Failed'); }
   };
 
   const toggleWishlist = async (e, productId) => {
@@ -211,15 +229,28 @@ export default function Home() {
           </div>
 
           {loading ? (
-            <div style={{ textAlign:'center', padding:'80px 0', color:'var(--text-muted)' }}>
-              <div style={{ fontSize:'2rem', marginBottom:'12px' }}>👗</div>
-              <p>Loading collection...</p>
+            <div style={{ textAlign:'center', padding:'100px 0', color:'var(--text-muted)' }}>
+              <div style={{
+                width: 40, height: 40, border: '3px solid var(--border)', borderTop: '3px solid var(--primary)',
+                borderRadius: '50%', margin: '0 auto 16px', animation: 'spin 1s linear infinite',
+                display: 'inline-block'
+              }} className="loading-spinner" />
+              <p style={{ fontSize: '0.92rem', color: 'var(--text-light)' }}>Loading our collection...</p>
             </div>
           ) : products.length === 0 ? (
-            <div style={{ textAlign:'center', padding:'80px 0', color:'var(--text-muted)' }}>
-              <div style={{ fontSize:'3rem', marginBottom:'12px' }}>🔍</div>
-              <h3>No products found</h3>
-              <button className="btn-buy" style={{ marginTop:'16px', padding:'10px 24px' }} onClick={clearFilters}>Clear Filters</button>
+            <div style={{
+              textAlign:'center', padding:'80px 20px', color:'var(--text-muted)',
+              background: '#fff', borderRadius: 16, border: '1px solid var(--border)', boxShadow: 'var(--shadow)'
+            }}>
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--primary)', marginBottom: 16, opacity: 0.8 }}>
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--text)', fontWeight: 400, marginBottom: 8 }}>No Products Found</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', maxWidth: 400, margin: '0 auto 20px' }}>
+                We couldn't find any sarees matching your active filters. Try clearing your filters or widening your price range.
+              </p>
+              <button className="btn-buy" style={{ padding:'10px 28px', fontSize: '0.9rem' }} onClick={clearFilters}>Clear Filters</button>
             </div>
           ) : (
             <div className="product-grid">
@@ -237,7 +268,14 @@ export default function Home() {
                           {img2 && <img className="img-hover" src={img2} alt={p.name} />}
                         </>
                       ) : (
-                        <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%', fontSize:'4rem', opacity:0.2 }}>👗</div>
+                        <div style={{ display:'flex', flexDirection: 'column', alignItems:'center', justifyContent:'center', height:'100%', background: '#fafafa', color: 'var(--text-light)' }}>
+                          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                            <path d="M20.37 8.91l-8-1.7a2 2 0 0 0-1.71.4l-7 5.61A2 2 0 0 0 3 14.8v4.2A2 2 0 0 0 5 21h14a2 2 0 0 0 2-2v-8.2a2 2 0 0 0-.63-1.89z" />
+                            <path d="M12 2v6" />
+                            <path d="M9 4l6 4" />
+                          </svg>
+                          <span style={{ fontSize: '0.78rem', marginTop: 8 }}>No Image Available</span>
+                        </div>
                       )}
                       <button className="wish-btn" onClick={e => toggleWishlist(e, p.id)}><WishIcon /></button>
                       <button className="share-btn" onClick={e => { e.stopPropagation(); navigator.clipboard.writeText(window.location.origin+'/product/'+p.id); alert('Link copied!'); }}><ShareIcon /></button>
@@ -252,8 +290,10 @@ export default function Home() {
                         {disc > 0 && <span className="discount">{disc}% OFF</span>}
                       </div>
                       <div className="product-actions">
-                        <button className="btn-cart" onClick={e => addToCart(e, p.id)} style={{ display:'flex', alignItems:'center', gap:'5px' }}><CartIcon />Cart</button>
-                        <button className="btn-buy" onClick={e => { addToCart(e, p.id); navigate('/cart'); }}>Buy Now</button>
+                        <button className="btn-cart" onClick={e => addToCart(e, p.id)} style={{ display:'flex', alignItems:'center', gap:'5px', flex:1, justifyContent:'center' }}>
+                          {cartItemIds.includes(p.id) ? '➔ Go to Cart' : <><CartIcon /> Cart</>}
+                        </button>
+                        <button className="btn-buy" onClick={e => { e.stopPropagation(); if(cartItemIds.includes(p.id)){navigate('/cart')}else{addToCart(e, p.id); navigate('/cart');} }} style={{ flex:1 }}>Buy Now</button>
                       </div>
                     </div>
                   </div>

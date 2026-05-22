@@ -6,11 +6,33 @@ const Product = require('../models/Product');
 const User = require('../models/User');
 const { auth, adminOnly } = require('../middleware/auth');
 
+// GET /api/comments/check/:productId - Check if current user already reviewed this product
+router.get('/check/:productId', auth, async (req, res) => {
+  try {
+    const existing = await Comment.findOne({
+      userId: req.user.userId,
+      productId: req.params.productId
+    });
+    res.json({ success: true, hasReviewed: !!existing });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // POST /api/comments - Add a review and update product average rating
 router.post('/', auth, async (req, res) => {
   try {
     const { productId, comment, rating } = req.body;
     if (!productId || !comment) return res.status(400).json({ success: false, message: 'productId and comment are required' });
+
+    // Check if user already reviewed this product
+    const existing = await Comment.findOne({ userId: req.user.userId, productId });
+    if (existing) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'You have already reviewed this product. Only one review per product is allowed.' 
+      });
+    }
 
     const user = await User.findById(req.user.userId);
     const userName = user ? user.name : 'Customer';
