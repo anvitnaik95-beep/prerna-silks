@@ -204,6 +204,35 @@ ${itemsList}`;
   console.log(`\n--- WhatsApp Content ---\n${whatsappMsg}`);
   console.log('------------------------------------------\n');
 
+  // Send emails via SMTP (100% Free & Unlimited)
+  if (transporter) {
+    try {
+      // 1. Send confirmation email to Customer
+      if (user.email) {
+        await transporter.sendMail({
+          from: `"Prerna Silks" <${smtpConfig.auth.user}>`,
+          to: user.email,
+          subject: `Order Confirmed! - Prerna Silks (Order #${orderId})`,
+          text: `Dear ${user.name},\n\nYour order has been placed successfully!\n\nOrder Details:\nOrder ID: #${orderId}\nPayment Method: ${order.payment_method}\nShipping Address: ${order.shipping_address}\nTotal Amount: Rs. ${totalStr}\nEstimated Delivery: ${deliveryDate}\n\nTrack your order here: ${trackUrl}\n\nThank you for shopping with Prerna Silks!\nBest Regards,\nPrerna Silks Team`
+        });
+        console.log(`[Email Success] Confirmation email sent to customer: ${user.email}`);
+      }
+      
+      // 2. Send alert email to Admin
+      await transporter.sendMail({
+        from: `"Prerna Silks Portal" <${smtpConfig.auth.user}>`,
+        to: ADMIN_EMAIL,
+        subject: `[NEW ORDER] Order #${orderId} placed by ${user.name}`,
+        text: `New order received!\n\nCustomer: ${user.name}\nEmail: ${user.email || 'N/A'}\nPhone: ${user.phone || 'N/A'}\n\nOrder Details:\nOrder ID: #${orderId}\nPayment Method: ${order.payment_method}\nShipping Address: ${order.shipping_address}\nTotal Amount: Rs. ${totalStr}\n\nItems:\n${itemsList}\n\nPlease prepare the order for dispatch.`
+      });
+      console.log(`[Email Success] Admin order alert email sent to: ${ADMIN_EMAIL}`);
+    } catch (emailErr) {
+      console.error('Error sending order emails:', emailErr.message);
+    }
+  } else {
+    console.log('SMTP credentials not configured. Skipping automated email notifications.');
+  }
+
   if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN) {
     console.log('Twilio credentials not configured in .env. Notification outputted to console log only.');
     return;
@@ -264,6 +293,21 @@ Your order is on its way! For help, contact us at +91 ${ADMIN_PHONE}.`;
   console.log(`WhatsApp: ${whatsappMsg}`);
   console.log('--------------------------------\n');
 
+  // Send dispatch email to Customer via SMTP (100% Free & Unlimited)
+  if (transporter && user.email) {
+    try {
+      await transporter.sendMail({
+        from: `"Prerna Silks" <${smtpConfig.auth.user}>`,
+        to: user.email,
+        subject: `Your Prerna Silks Order Has Been Dispatched! (Order #${orderId})`,
+        text: `Dear ${user.name},\n\nExciting news! Your order has been dispatched via XpressBees.\n\nOrder Details:\nOrder ID: #${orderId}\nTracking ID: ${order.tracking_id}\nDelivery Service: XpressBees\nEstimated Delivery: ${deliveryDate}\nTotal Amount: Rs. ${totalStr}\n\nTrack your order live here: ${trackUrl}\n\nThank you for shopping with us!\nBest Regards,\nPrerna Silks Team`
+      });
+      console.log(`[Email Success] Dispatch email sent to customer: ${user.email}`);
+    } catch (emailErr) {
+      console.error('Error sending dispatch email:', emailErr.message);
+    }
+  }
+
   if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN) {
     console.log('Twilio credentials not configured. Dispatch notification logged to console only.');
     return;
@@ -297,6 +341,21 @@ Track history:
 ${trackUrl}`;
 
   const smsMsg = `Prerna Silks: Good news! Your order ${orderId} has been successfully delivered. Thank you for shopping with us! Track history: ${trackUrl}`;
+
+  // Send delivered email to Customer via SMTP (100% Free & Unlimited)
+  if (transporter && user.email) {
+    try {
+      await transporter.sendMail({
+        from: `"Prerna Silks" <${smtpConfig.auth.user}>`,
+        to: user.email,
+        subject: `Delivered! - Prerna Silks Order #${orderId}`,
+        text: `Dear ${user.name},\n\nGood news! Your order has been successfully delivered.\n\nOrder Details:\nOrder ID: #${orderId}\nTracking ID: ${order.tracking_id || 'N/A'}\n\nWe hope you love your new saree! Thank you for choosing Prerna Silks.\n\nBest Regards,\nPrerna Silks Team`
+      });
+      console.log(`[Email Success] Delivery email sent to customer: ${user.email}`);
+    } catch (emailErr) {
+      console.error('Error sending delivery email:', emailErr.message);
+    }
+  }
 
   if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN) return;
   const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
