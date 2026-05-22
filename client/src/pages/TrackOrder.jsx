@@ -154,6 +154,209 @@ export default function TrackOrder() {
               </div>
             )}
 
+
+            {/* Live Animated Scooty Route Map */}
+            {!isCancelled && (
+              <div style={{ padding: '0 28px 28px' }}>
+                <div style={{
+                  background: '#0b132b',
+                  borderRadius: 12,
+                  border: '1.5px solid var(--gold, #d4af37)',
+                  padding: '24px',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}>
+                  {/* Glowing background matrix effect */}
+                  <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                    opacity: 0.04,
+                    backgroundImage: 'radial-gradient(#d4af37 1px, transparent 0)',
+                    backgroundSize: '16px 16px',
+                    pointerEvents: 'none'
+                  }} />
+
+                  <h4 style={{
+                    fontFamily: 'var(--font-heading)',
+                    color: 'var(--gold, #d4af37)',
+                    fontSize: '1rem',
+                    margin: '0 0 16px',
+                    fontWeight: 400,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    letterSpacing: '0.5px'
+                  }}>
+                    <span style={{
+                      width: 8, height: 8, borderRadius: '50%', background: '#28a745',
+                      boxShadow: '0 0 8px #28a745', animation: 'pulse 1.5s infinite alternate'
+                    }} />
+                    LIVE DELIVERY TRACKER (Hubli Post Office ➔ Address)
+                  </h4>
+
+                  {/* SVG Map Path & Animation */}
+                  <div style={{ position: 'relative', width: '100%', height: 180 }}>
+                    <svg width="100%" height="100%" viewBox="0 0 700 180" style={{ overflow: 'visible' }}>
+                      {/* Grid Roads simulation */}
+                      <path d="M 0,90 Q 175,140 350,90 T 700,90" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" strokeLinecap="round" />
+                      <path d="M 80,0 L 80,180" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="3" />
+                      <path d="M 230,0 L 230,180" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="3" />
+                      <path d="M 380,0 L 380,180" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="3" />
+                      <path d="M 530,0 L 530,180" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="3" />
+
+                      {/* Main Transit Route Line */}
+                      <path 
+                        id="route-path"
+                        d="M 60,110 C 180,30 260,170 380,80 C 480,10 560,150 640,90" 
+                        fill="none" 
+                        stroke="#2a3b5c" 
+                        strokeWidth="5" 
+                        strokeLinecap="round" 
+                      />
+
+                      {/* Glowing Active Progress Path */}
+                      <path 
+                        d="M 60,110 C 180,30 260,170 380,80 C 480,10 560,150 640,90" 
+                        fill="none" 
+                        stroke="var(--gold, #d4af37)" 
+                        strokeWidth="4" 
+                        strokeLinecap="round" 
+                        strokeDasharray="600"
+                        strokeDashoffset={600 - (600 * (Math.max(0, currentStep) / (STATUS_STEPS.length - 1)))}
+                        style={{
+                          transition: 'stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                          filter: 'drop-shadow(0 0 3px #d4af37)'
+                        }}
+                      />
+
+                      {/* Milestone Nodes */}
+                      {[
+                        { x: 60, y: 110, label: 'Hubli Post Office Hub', step: 0 },
+                        { x: 200, y: 85, label: 'Confirmed', step: 1 },
+                        { x: 350, y: 100, label: 'Dispatched (In Transit)', step: 2 },
+                        { x: 500, y: 60, label: 'Out for Delivery', step: 3 },
+                        { x: 640, y: 90, label: 'Your Doorstep', step: 4 }
+                      ].map((node, idx) => {
+                        const isReached = idx <= currentStep;
+                        return (
+                          <g key={idx}>
+                            {/* Outer pulsing glow */}
+                            {isReached && (
+                              <circle 
+                                cx={node.x} cy={node.y} r="10" 
+                                fill={idx === currentStep ? '#28a745' : 'var(--gold, #d4af37)'}
+                                opacity="0.4"
+                                style={{ animation: 'ping 2s infinite' }}
+                              />
+                            )}
+                            <circle 
+                              cx={node.x} cy={node.y} 
+                              r={idx === 0 || idx === 4 ? "7" : "5"} 
+                              fill={isReached ? (idx === currentStep ? '#28a745' : 'var(--gold, #d4af37)') : '#1e293b'} 
+                              stroke={isReached ? '#fff' : 'rgba(255,255,255,0.2)'}
+                              strokeWidth="1.5"
+                            />
+                            {/* Label */}
+                            <text 
+                              x={node.x} y={node.y - 14} 
+                              textAnchor="middle" 
+                              fill={isReached ? '#ffffff' : 'rgba(255,255,255,0.4)'} 
+                              style={{ 
+                                fontSize: '0.68rem', 
+                                fontWeight: idx === currentStep ? 600 : 400,
+                                fontFamily: 'var(--font-body)',
+                                textShadow: '0 2px 4px rgba(0,0,0,0.8)'
+                              }}
+                            >
+                              {node.label}
+                            </text>
+                          </g>
+                        );
+                      })}
+                    </svg>
+
+                    {/* Dynamic Moving Scooty Marker using CSS Path offset */}
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      pointerEvents: 'none'
+                    }}>
+                      <div 
+                        style={{
+                          width: 36,
+                          height: 36,
+                          background: 'rgba(212, 175, 55, 0.15)',
+                          border: '1.5px solid var(--gold, #d4af37)',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          position: 'absolute',
+                          offsetPath: 'path("M 60,110 C 180,30 260,170 380,80 C 480,10 560,150 640,90")',
+                          offsetDistance: `${(Math.max(0, currentStep) / (STATUS_STEPS.length - 1)) * 100}%`,
+                          offsetRotate: 'auto 90deg',
+                          transform: 'translate(-50%, -50%)',
+                          boxShadow: '0 0 15px rgba(212, 175, 55, 0.4)',
+                          transition: 'offset-distance 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                          zIndex: 10
+                        }}
+                      >
+                        {/* Custom Scooty SVG Icon */}
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--gold, #d4af37)">
+                          <circle cx="6" cy="18" r="3" />
+                          <circle cx="18" cy="18" r="3" />
+                          <path d="M6 15h12v-2a2 2 0 0 0-2-2H9.5a2.5 2.5 0 0 1-2.5-2.5V7a2 2 0 0 1 2-2h4" />
+                          <path d="M12 9h3l3 4" />
+                          <path d="M18 5v4" />
+                          <path d="M17 5h2" />
+                          <line x1="3" y1="18" x2="1" y2="18" stroke="var(--gold, #d4af37)" strokeWidth="1.5" />
+                          <line x1="2" y1="15" x2="0" y2="15" stroke="var(--gold, #d4af37)" strokeWidth="1.5" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Real-time Address and Route Info banner */}
+                  <div style={{
+                    marginTop: 16,
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.06)',
+                    borderRadius: 8,
+                    padding: '12px 16px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: 12
+                  }}>
+                    <div>
+                      <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Current Stage Address</span>
+                      <div style={{ fontSize: '0.82rem', color: '#fff', fontWeight: 500, marginTop: 2 }}>
+                        {currentStep === 0 && 'Hubli Post Office Center'}
+                        {currentStep === 1 && 'Prerna Silks hubli HQ'}
+                        {currentStep === 2 && 'State Highway transit node'}
+                        {currentStep === 3 && 'Hubli Local Delivery Hub'}
+                        {currentStep === 4 && (order.shippingAddress || 'Your home address')}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Estimated Distance left</span>
+                      <div style={{ fontSize: '0.82rem', color: 'var(--gold, #d4af37)', fontWeight: 600, marginTop: 2 }}>
+                        {currentStep === 0 && '12.4 km'}
+                        {currentStep === 1 && '9.8 km'}
+                        {currentStep === 2 && '4.2 km'}
+                        {currentStep === 3 && '0.8 km'}
+                        {currentStep === 4 && 'Arrived!'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Order Details */}
             <div style={{ padding: '0 28px 28px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px 24px', background: '#fafafa', padding: 20, borderRadius: 10 }}>
