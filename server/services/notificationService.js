@@ -9,15 +9,14 @@ const ADMIN_PHONE = process.env.ADMIN_PHONE || '7019461619';
 // Twilio Credentials
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN;
-const TWILIO_FROM_SMS = process.env.TWILIO_FROM_SMS; // e.g. '+1234567890'
-const TWILIO_FROM_WHATSAPP = process.env.TWILIO_FROM_WHATSAPP || '+14155238886'; // default Twilio sandbox number
+const TWILIO_FROM_SMS = process.env.TWILIO_FROM_SMS;
+const TWILIO_FROM_WHATSAPP = process.env.TWILIO_FROM_WHATSAPP || '+14155238886';
 
 // Nodemailer SMTP Transporter
-// Configure using SMTP credentials or falls back to standard log message
 const smtpConfig = {
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+  secure: process.env.SMTP_SECURE === 'true',
   auth: {
     user: process.env.SMTP_USER || '',
     pass: process.env.SMTP_PASS || '',
@@ -29,7 +28,7 @@ if (process.env.SMTP_USER && process.env.SMTP_PASS) {
   transporter = nodemailer.createTransport(smtpConfig);
 }
 
-// Build track order URL (replaces old map navigation URL)
+// Build track order URL
 const SITE_URL = process.env.SITE_URL || 'http://localhost:5173';
 function buildTrackOrderUrl(trackingId) {
   return `${SITE_URL}/track-order${trackingId ? `?trackId=${encodeURIComponent(trackingId)}` : ''}`;
@@ -107,21 +106,17 @@ async function sendSMS(client, toPhone, message) {
   }
 
   try {
-    await client.messages.create({
+    const result = await client.messages.create({
       body: message,
       from: TWILIO_FROM_SMS,
       to: cleanPhone
     });
-    console.log(`SMS successfully sent to ${cleanPhone}`);
+    console.log(`SMS successfully sent to ${cleanPhone} (SID: ${result.sid})`);
     return true;
   } catch (err) {
-    console.error(`\n❌ [SMS FAILED] To: ${cleanPhone}`);
+    console.error(`\n[SMS FAILED] To: ${cleanPhone}`);
     console.error(`   Error Code: ${err.code || 'N/A'}`);
     console.error(`   Reason: ${err.message}`);
-    if (err.code === 21608 || err.code === 21211 || err.code === 21614) {
-      console.error(`   ⚠️  This number is not verified on your Twilio Trial account.`);
-      console.error(`   Fix: Go to https://console.twilio.com/us1/develop/phone-numbers/manage/verified and add this number.`);
-    }
     return false;
   }
 }
@@ -140,21 +135,17 @@ async function sendWhatsApp(client, toPhone, message) {
     const whatsappFrom = TWILIO_FROM_WHATSAPP.startsWith('whatsapp:') ? TWILIO_FROM_WHATSAPP : `whatsapp:${TWILIO_FROM_WHATSAPP}`;
     const whatsappTo = `whatsapp:${cleanPhone}`;
 
-    await client.messages.create({
+    const result = await client.messages.create({
       body: message,
       from: whatsappFrom,
       to: whatsappTo
     });
-    console.log(`WhatsApp message successfully sent to ${cleanPhone}`);
+    console.log(`WhatsApp message successfully sent to ${cleanPhone} (SID: ${result.sid})`);
     return true;
   } catch (err) {
-    console.error(`\n❌ [WHATSAPP FAILED] To: whatsapp:${cleanPhone}`);
+    console.error(`\n[WHATSAPP FAILED] To: whatsapp:${cleanPhone}`);
     console.error(`   Error Code: ${err.code || 'N/A'}`);
     console.error(`   Reason: ${err.message}`);
-    if (err.code === 21608 || err.code === 21211 || err.code === 63007) {
-      console.error(`   ⚠️  This number hasn't joined the Twilio WhatsApp Sandbox.`);
-      console.error(`   Fix: The recipient must send 'join <your-sandbox-keyword>' to +14155238886 on WhatsApp first.`);
-    }
     return false;
   }
 }
@@ -178,7 +169,7 @@ Hello ${user.name}! Your order has been placed successfully.
 Order ID: ${orderId}
 Payment: ${order.payment_method} (${order.payment_status})
 Shipping Address: ${order.shipping_address}
-Delivery via: India Post
+Delivery via: XpressBees
 
 Items:
 ${itemsList}
@@ -192,7 +183,7 @@ ${trackUrl}
 Thank you for shopping with us! For help, contact us at +91 ${ADMIN_PHONE}.`;
 
   // SMS Message to Customer
-  const smsMsg = `Prerna Silks: Order Confirmed! ID: ${orderId}, Total: Rs. ${totalStr}. Delivery via India Post. Est: ${deliveryDate}. Track: ${trackUrl}`;
+  const smsMsg = `Prerna Silks: Order Confirmed! ID: ${orderId}, Total: Rs. ${totalStr}. Delivery via XpressBees. Est: ${deliveryDate}. Track: ${trackUrl}`;
 
   // Admin notification message
   const adminMsg = `New Order Alert - Prerna Silks
@@ -205,9 +196,7 @@ Payment: ${order.payment_method} (${order.payment_status})
 Address: ${order.shipping_address}
 
 Items:
-${itemsList}
-
-Please dispatch the order from the admin portal.`;
+${itemsList}`;
 
   console.log('\n--- [Automatic Customer Notifications] ---');
   console.log(`To Customer Phone: ${user.phone}`);
@@ -240,28 +229,25 @@ Please dispatch the order from the admin portal.`;
 
 /**
  * Send dispatch notification with tracking ID and estimated delivery.
- * Called when admin changes order status to "Dispatched".
  */
 async function sendDispatchNotification(order, user) {
   const orderId = String(order.id || order._id).slice(-8).toUpperCase();
   const trackUrl = buildTrackOrderUrl(order.tracking_id || '');
   const totalStr = order.total_amount.toLocaleString('en-IN');
   
-  // Calculate estimated delivery based on shipping distance (postal service ~5-10 days)
   let estDelivery = order.estimated_delivery;
   if (!estDelivery) {
-    estDelivery = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    estDelivery = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000);
   }
   const deliveryDate = new Date(estDelivery).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 
-  // WhatsApp dispatch message
   const whatsappMsg = `Order Dispatched - Prerna Silks
 
 Hello ${user.name}! Your order has been dispatched.
 
 Order ID: ${orderId}
 Tracking ID: ${order.tracking_id || 'Will be updated shortly'}
-Delivery Service: India Post
+Delivery Service: XpressBees
 Estimated Delivery: ${deliveryDate}
 Total Amount: Rs. ${totalStr}
 
@@ -270,8 +256,7 @@ ${trackUrl}
 
 Your order is on its way! For help, contact us at +91 ${ADMIN_PHONE}.`;
 
-  // SMS dispatch message
-  const smsMsg = `Prerna Silks: Order ${orderId} dispatched via India Post! Tracking: ${order.tracking_id || 'N/A'}. Est Delivery: ${deliveryDate}. Track: ${trackUrl}`;
+  const smsMsg = `Prerna Silks: Order ${orderId} dispatched via XpressBees! Tracking: ${order.tracking_id || 'N/A'}. Est Delivery: ${deliveryDate}. Track: ${trackUrl}`;
 
   console.log('\n--- [Dispatch Notifications] ---');
   console.log(`To Customer: ${user.phone || user.email}`);

@@ -78,7 +78,7 @@ export default function Orders() {
                       <td style={{ padding: '16px 20px' }}>
                         <div style={{ fontWeight: 500 }}>{o.items ? o.items.length : 0} items</div>
                         <small style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.8rem' }}>
-                          Delivery: {o.delivery_service || 'India Post'}
+                          Delivery: {o.delivery_service || 'XpressBees'}
                         </small>
                         {o.tracking_id && (
                           <span style={{ fontSize: '0.75rem', background: '#eef2ff', color: '#4f46e5', padding: '2px 6px', borderRadius: 4, display: 'inline-block', marginTop: 4, fontFamily: 'monospace' }}>

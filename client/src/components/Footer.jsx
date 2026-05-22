@@ -43,7 +43,6 @@ export default function Footer() {
           <ul>
             <li><a onClick={() => navigate('/my-orders')} style={{ cursor:'pointer' }}>Track My Order</a></li>
             <li><a onClick={() => navigate('/faq')} style={{ cursor:'pointer' }}>FAQ</a></li>
-            <li><a href="tel:+917019461619">Fabric Care Guide</a></li>
             <li><a onClick={() => navigate('/register')} style={{ cursor:'pointer' }}>Create Account</a></li>
           </ul>
         </div>

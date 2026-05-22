@@ -10,7 +10,7 @@ export default function FAQ() {
         
         <div style={{ marginBottom: 24 }}>
           <h3 style={{ color: 'var(--text)', marginBottom: 8 }}>1. How long does delivery take?</h3>
-          <p style={{ color: 'var(--text-muted)' }}>Orders are usually dispatched within 1 hour. We use India Post for all our deliveries, which generally takes 3-10 days depending on your location.</p>
+          <p style={{ color: 'var(--text-muted)' }}>Orders are usually dispatched within 1 hour. We use XpressBees for all our deliveries, which generally takes 3-7 days depending on your location.</p>
         </div>
 
         <div style={{ marginBottom: 24 }}>

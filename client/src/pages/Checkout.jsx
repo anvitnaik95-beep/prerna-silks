@@ -182,8 +182,8 @@ export default function Checkout() {
             </h2>
             <p style={{ color: 'var(--text-light)', marginBottom: 28, fontSize: '0.95rem' }}>
               {isPaid 
-                ? 'Your order is confirmed and will be dispatched shortly via India Post.'
-                : 'Your order has been placed. Please pay on delivery via India Post.'}
+                ? 'Your order is confirmed and will be dispatched shortly via XpressBees.'
+                : 'Your order has been placed. Please pay on delivery via XpressBees.'}
             </p>
 
             {/* Order Details Card */}

@@ -17,7 +17,7 @@ const orderSchema = new mongoose.Schema({
   payment_ref: { type: String, default: '' },
   estimated_delivery: { type: Date, default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
   tracking_id: { type: String, default: '' },
-  delivery_service: { type: String, default: 'India Post' },
+  delivery_service: { type: String, default: 'XpressBees' },
   dispatched_at: { type: Date, default: null },
   items: [orderItemSchema],
   created_at: { type: Date, default: Date.now },

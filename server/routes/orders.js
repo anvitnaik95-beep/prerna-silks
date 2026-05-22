@@ -19,7 +19,7 @@ function formatDate(d) {
 
 // Helper: Generate tracking ID for postal service
 function generateTrackingId() {
-  const prefix = 'PS'; // Postal Service
+  const prefix = 'XB'; // XpressBees
   const timestamp = Date.now().toString(36).toUpperCase();
   const random = Math.random().toString(36).substring(2, 6).toUpperCase();
   return `${prefix}${timestamp}${random}`;
@@ -154,7 +154,7 @@ router.post('/', auth, async (req, res) => {
       payment_ref: razorpay_payment_id || '',
       estimated_delivery: estimatedDate,
       tracking_id: trackingId,
-      delivery_service: 'India Post',
+      delivery_service: 'XpressBees',
       items: formattedItems
     });
 
@@ -197,7 +197,7 @@ router.post('/', auth, async (req, res) => {
         delivery: formatDate(estimatedDate),
         address: shippingAddress,
         trackingId: trackingId,
-        deliveryService: 'India Post',
+        deliveryService: 'XpressBees',
         items: formattedItems
       }
     });
@@ -220,7 +220,7 @@ router.get('/track/:trackingId', async (req, res) => {
         orderId: order.id.slice(-8).toUpperCase(),
         status: order.status,
         trackingId: order.tracking_id,
-        deliveryService: order.delivery_service || 'India Post',
+        deliveryService: order.delivery_service || 'XpressBees',
         estimatedDelivery: formatDate(order.estimated_delivery),
         shippingAddress: order.shipping_address,
         dispatchedAt: order.dispatched_at ? formatDate(order.dispatched_at) : null,
