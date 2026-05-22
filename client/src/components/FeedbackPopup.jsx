@@ -1,11 +1,17 @@
-// Floating feedback popup component with rating & WhatsApp admin notification
 import { useState } from 'react';
 import API from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function FeedbackPopup() {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', message: '', rating: 5 });
   const [msg, setMsg] = useState('');
+
+  // Hide feedback popup entirely if logged in user is an admin
+  if (user && user.role === 'admin') {
+    return null;
+  }
 
   const submit = async (e) => {
     e.preventDefault();

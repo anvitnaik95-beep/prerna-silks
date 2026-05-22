@@ -291,7 +291,7 @@ export default function ProductDetail() {
         {/* Reviews */}
         <div style={{ marginTop:50 }}>
           <h2 style={{ fontFamily:'var(--font-heading)', color:'var(--primary)', marginBottom:20, fontSize:'1.5rem', fontWeight:400 }}>Customer Reviews</h2>
-          {user && (
+          {user && user.role !== 'admin' && (
             <form onSubmit={submitComment} style={{ background:'#fff', padding:22, borderRadius:10, marginBottom:22, boxShadow:'var(--shadow)', border:'1px solid var(--border)' }}>
               <h4 style={{ fontFamily:'var(--font-heading)', color:'var(--primary)', marginBottom:14, fontSize:'1rem', fontWeight:400 }}>Write a Review</h4>
               <textarea className="form-control" placeholder="Share your experience with this product..." value={comment} onChange={e => setComment(e.target.value)} rows={3} style={{ marginBottom:12 }} />

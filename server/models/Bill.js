@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const billSchema = new mongoose.Schema({
   title: { type: String, required: true },
   file_path: { type: String, required: true },
+  amount: { type: Number, required: true, default: 0 },
   created_at: { type: Date, default: Date.now }
 });
 
