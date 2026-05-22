@@ -3,8 +3,8 @@ const Order = require('./models/Order');
 const User = require('./models/User');
 const { sendOrderSMSAndWhatsApp, sendDispatchNotification, sendDeliveredNotification } = require('./services/notificationService');
 
-// 1 hour in milliseconds
-const ONE_HOUR = 60 * 60 * 1000;
+// 1 minute in milliseconds for rapid testing/observation
+const ONE_MINUTE = 60 * 1000;
 
 async function processOrderLifecycles() {
   try {
@@ -19,7 +19,7 @@ async function processOrderLifecycles() {
       const orderAge = now - new Date(order.created_at).getTime();
       let updated = false;
 
-      // 1. CONFIRMED (Immediately up to 1 hour)
+      // 1. CONFIRMED (Immediately on creation)
       if (order.status === 'Pending') {
         order.status = 'Confirmed';
         updated = true;
@@ -34,34 +34,32 @@ async function processOrderLifecycles() {
         await sendOrderSMSAndWhatsApp(order, order.items, notifUser).catch(e => console.error(e));
       }
 
-      // 2. DISPATCHED (After 1 hour)
-      if (orderAge >= ONE_HOUR && (order.status === 'Confirmed' || order.status === 'Pending')) {
+      // 2. DISPATCHED (After 1 minute)
+      if (orderAge >= ONE_MINUTE && (order.status === 'Confirmed' || order.status === 'Pending')) {
         order.status = 'Dispatched';
         order.dispatched_at = new Date();
         updated = true;
       }
 
-      if (order.status === 'Dispatched' && !order.notified_dispatched && orderAge >= ONE_HOUR) {
+      if (order.status === 'Dispatched' && !order.notified_dispatched && orderAge >= ONE_MINUTE) {
         order.notified_dispatched = true;
         updated = true;
         const user = order.userId;
         const notifUser = { name: user?.name || 'Customer', email: user?.email || '', phone: user?.phone || '' };
         // Generate tracking ID if empty
         if (!order.tracking_id) {
-          order.tracking_id = 'PS' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2,6).toUpperCase();
+          order.tracking_id = 'XB' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2,6).toUpperCase();
         }
         await sendDispatchNotification(order, notifUser).catch(e => console.error(e));
       }
 
-      // 3. DELIVERED (After 2 hours for this specific request, wait... the user said:
-      // "set the timer for each of that phase of delivery 1 hours duration gap must be there")
-      // So Confirmed (0 hr) -> Dispatched (1 hr) -> Delivered (2 hr)
-      if (orderAge >= 2 * ONE_HOUR && order.status === 'Dispatched') {
+      // 3. DELIVERED (After 2 minutes)
+      if (orderAge >= 2 * ONE_MINUTE && order.status === 'Dispatched') {
         order.status = 'Delivered';
         updated = true;
       }
 
-      if (order.status === 'Delivered' && !order.notified_delivered && orderAge >= 2 * ONE_HOUR) {
+      if (order.status === 'Delivered' && !order.notified_delivered && orderAge >= 2 * ONE_MINUTE) {
         order.notified_delivered = true;
         updated = true;
         const user = order.userId;
