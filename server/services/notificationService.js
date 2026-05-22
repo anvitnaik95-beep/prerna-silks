@@ -115,7 +115,13 @@ async function sendSMS(client, toPhone, message) {
     console.log(`SMS successfully sent to ${cleanPhone}`);
     return true;
   } catch (err) {
-    console.error(`Error sending SMS to ${cleanPhone}:`, err.message);
+    console.error(`\n❌ [SMS FAILED] To: ${cleanPhone}`);
+    console.error(`   Error Code: ${err.code || 'N/A'}`);
+    console.error(`   Reason: ${err.message}`);
+    if (err.code === 21608 || err.code === 21211 || err.code === 21614) {
+      console.error(`   ⚠️  This number is not verified on your Twilio Trial account.`);
+      console.error(`   Fix: Go to https://console.twilio.com/us1/develop/phone-numbers/manage/verified and add this number.`);
+    }
     return false;
   }
 }
@@ -142,7 +148,13 @@ async function sendWhatsApp(client, toPhone, message) {
     console.log(`WhatsApp message successfully sent to ${cleanPhone}`);
     return true;
   } catch (err) {
-    console.error(`Error sending WhatsApp to ${cleanPhone}:`, err.message);
+    console.error(`\n❌ [WHATSAPP FAILED] To: whatsapp:${cleanPhone}`);
+    console.error(`   Error Code: ${err.code || 'N/A'}`);
+    console.error(`   Reason: ${err.message}`);
+    if (err.code === 21608 || err.code === 21211 || err.code === 63007) {
+      console.error(`   ⚠️  This number hasn't joined the Twilio WhatsApp Sandbox.`);
+      console.error(`   Fix: The recipient must send 'join <your-sandbox-keyword>' to +14155238886 on WhatsApp first.`);
+    }
     return false;
   }
 }
@@ -218,9 +230,12 @@ Please dispatch the order from the admin portal.`;
     console.log('Customer phone number not provided. Skipping customer SMS/WhatsApp alerts.');
   }
 
-  // We will stop sending the duplicate admin notification here so it doesn't cause confusion 
-  // that the message is being "transferred" to the admin's number instead of the customer.
-  console.log('Skipping duplicate admin SMS to avoid number confusion.');
+  // Send admin notification via SMS and WhatsApp
+  if (ADMIN_PHONE) {
+    const adminSms = `[ADMIN ALERT] New Order! ID: ${orderId}, Customer: ${user.name}, Amount: Rs. ${totalStr}. Check portal.`;
+    await sendSMS(client, ADMIN_PHONE, adminSms);
+    await sendWhatsApp(client, ADMIN_PHONE, adminMsg);
+  }
 }
 
 /**
