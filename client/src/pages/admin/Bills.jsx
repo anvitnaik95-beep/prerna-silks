@@ -105,7 +105,7 @@ export default function Bills() {
       <main className="admin-main">
         <div className="admin-header">
           <div>
-            <h1 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', fontWeight: 400 }}>📄 Expense Bills</h1>
+            <h1 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', fontWeight: 400 }}>Expense Bills</h1>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginTop: 4 }}>Upload image receipts to automatically parse, scan, and catalog bills by date</p>
           </div>
           <input 
@@ -126,7 +126,6 @@ export default function Bills() {
                 <span style={{ textTransform: 'uppercase', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Total Cataloged Bills</span>
                 <h3 style={{ fontSize: '2rem', color: 'var(--primary)', margin: '4px 0 0 0', fontWeight: 500 }}>{bills.length} Bills</h3>
               </div>
-              <div style={{ fontSize: '2.5rem', opacity: 0.8 }}>📁</div>
             </div>
           </div>
           <div className="col-md-6">
@@ -135,7 +134,6 @@ export default function Bills() {
                 <span style={{ textTransform: 'uppercase', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Grand Total Expenses</span>
                 <h3 style={{ fontSize: '2rem', color: 'var(--gold)', margin: '4px 0 0 0', fontWeight: 600 }}>{fmt(grandTotal)}</h3>
               </div>
-              <div style={{ fontSize: '2.5rem', opacity: 0.8 }}>💰</div>
             </div>
           </div>
         </div>
@@ -146,7 +144,7 @@ export default function Bills() {
               <h4 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', marginBottom: 18, fontSize: '1.15rem' }}>Upload & Scan Bill</h4>
               
               {error && <div className="alert alert-danger p-2" style={{ fontSize: '0.85rem' }}>{error}</div>}
-              {scanMessage && <div className="alert alert-success p-2" style={{ fontSize: '0.85rem', lineHeight: 1.4 }}>✨ {scanMessage}</div>}
+              {scanMessage && <div className="alert alert-success p-2" style={{ fontSize: '0.85rem', lineHeight: 1.4 }}>{scanMessage}</div>}
               
               <form onSubmit={handleUpload}>
                 <div className="mb-3">
@@ -160,7 +158,7 @@ export default function Bills() {
                     required 
                   />
                   <small style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: 4, display: 'block' }}>
-                    💡 Tip: Include the amount in the title (e.g. "Electric 2300") to let our scanner auto-detect it instantly!
+                    Tip: Include the amount in the title (e.g. "Electric 2300") to let our scanner auto-detect it instantly!
                   </small>
                 </div>
                 
@@ -190,7 +188,7 @@ export default function Bills() {
                 </div>
                 
                 <button type="submit" className="btn-buy" style={{ width: '100%', padding: '12px', fontSize: '0.95rem' }} disabled={loading}>
-                  {loading ? '🔍 Scanning Document...' : '📤 Upload & Scan Bill'}
+                  {loading ? 'Scanning Document...' : 'Upload & Scan Bill'}
                 </button>
               </form>
             </div>
@@ -202,7 +200,7 @@ export default function Bills() {
               
               {groupedData.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
-                  <div style={{ fontSize: '3rem', marginBottom: 12 }}>📄</div>
+                  <div style={{ fontSize: '3rem', marginBottom: 12 }}>Document</div>
                   <p>No scanned bills found in your ledger.</p>
                 </div>
               ) : (
@@ -212,7 +210,7 @@ export default function Bills() {
                       {/* Group Header showing Month, Year, and Subtotal */}
                       <div style={{ background: '#f0f2f5', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
                         <span style={{ fontWeight: 600, color: 'var(--primary)', fontSize: '0.98rem' }}>
-                          📅 {group.month} {group.year}
+                          {group.month} {group.year}
                         </span>
                         <span style={{ background: 'var(--primary)', color: '#fff', padding: '4px 12px', borderRadius: 20, fontSize: '0.85rem', fontWeight: 600 }}>
                           Subtotal: {fmt(group.subtotal)}
@@ -240,7 +238,7 @@ export default function Bills() {
                                 </td>
                                 <td style={{ textAlign: 'right', fontWeight: 600, color: '#28a745' }}>
                                   {fmt(b.amount || 0)}
-                                  <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>🔍 Auto-scanned</span>
+                                  <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>Auto-scanned</span>
                                 </td>
                                 <td style={{ textAlign: 'center' }}>
                                   <a href={b.file_path} target="_blank" rel="noreferrer" className="btn btn-sm btn-info text-white" style={{ padding: '4px 10px', fontSize: '0.78rem', borderRadius: 6 }}>

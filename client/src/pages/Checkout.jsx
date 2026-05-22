@@ -110,21 +110,21 @@ export default function Checkout() {
     setPaying(false);
   };
 
-  // Direct UPI Flow with Automated Banking Ledger Verification
+  // Direct UPI Flow with Automated Banking Ledger Verification (10-second security window)
   const handleDirectUPI = () => {
     if (!address.trim()) { alert('Please enter your shipping address'); return; }
     if (!validatePhone(phone)) { alert('Please enter a valid 10-digit phone number'); return; }
     
     setShowUpiQR(true);
     setVerifyingUpi(true);
-    setUpiStep('⚡ Initiating secure transaction channel with NPCI gateway...');
+    setUpiStep('Initiating secure transaction channel with NPCI gateway...');
 
     setTimeout(() => {
-      setUpiStep('🔌 Connecting to secure banking ledger node...');
+      setUpiStep('Connecting to secure banking ledger node...');
       setTimeout(() => {
-        setUpiStep('🔎 Pulse detected! Verifying account transaction registry...');
+        setUpiStep('Transaction detected! Verifying account ledger balance registry...');
         setTimeout(async () => {
-          setUpiStep('✅ Payment Received & Verified! Finalizing your order...');
+          setUpiStep('Payment received and verified successfully! Finalizing order details...');
           try {
             const result = await placeOrder('Direct UPI');
             setOrderResult(result);
@@ -134,9 +134,9 @@ export default function Checkout() {
             setVerifyingUpi(false);
             setShowUpiQR(false);
           }
-        }, 2200);
-      }, 2000);
-    }, 1500);
+        }, 3000); // Phase 3: 3 seconds
+      }, 4000); // Phase 2: 4 seconds
+    }, 3000); // Phase 1: 3 seconds (Total = 10 seconds)
   };
 
   // ============================================================
@@ -407,7 +407,6 @@ export default function Checkout() {
                 background: '#fff', padding: '32px', borderRadius: 16, maxWidth: 440, width: '90%',
                 boxShadow: '0 20px 40px rgba(0,0,0,0.3)', textAlign: 'center', border: '1px solid rgba(212, 175, 55, 0.3)'
               }}>
-                <span style={{ fontSize: '2.5rem', display: 'block', marginBottom: 12 }}>⚡</span>
                 <h4 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', margin: 0, fontSize: '1.25rem' }}>Direct UPI QR Collection</h4>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: '8px 0 20px' }}>
                   Scan the dynamic QR code with any UPI app to complete your secure payment.
