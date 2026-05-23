@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Order = require('./models/Order');
 const User = require('./models/User');
-const { sendOrderSMSAndWhatsApp, sendDispatchNotification, sendDeliveredNotification } = require('./services/notificationService');
+const { sendOrderSMSAndWhatsApp, sendDispatchNotification, sendShippedNotification, sendDeliveredNotification } = require('./services/notificationService');
 
 // 30 seconds per phase transition
 const PHASE_DURATION = 30 * 1000;
@@ -58,6 +58,15 @@ async function processOrderLifecycles() {
       if (orderAge >= 3 * PHASE_DURATION && (order.status === 'Dispatched' || order.status === 'Confirmed' || order.status === 'Pending')) {
         order.status = 'Shipped';
         updated = true;
+      }
+
+      // Send shipped alert
+      if (order.status === 'Shipped' && !order.notified_shipped) {
+        order.notified_shipped = true;
+        updated = true;
+        const user = order.userId;
+        const notifUser = { name: user?.name || 'Customer', email: user?.email || '', phone: user?.phone || '' };
+        await sendShippedNotification(order, notifUser).catch(e => console.error(e));
       }
 
       // Phase 4: Delivered (after 120 seconds)

@@ -6,6 +6,7 @@ import API from '../services/api';
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -17,7 +18,7 @@ export default function Login() {
     setLoading(true);
     try {
       const { data } = await API.post('/auth/login', { email, password });
-      login(data.user, data.token);
+      login(data.user, data.token, rememberMe);
       navigate(data.user.role === 'admin' ? '/admin/dashboard' : '/');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
@@ -47,9 +48,21 @@ export default function Login() {
             <label className="form-label" style={{ fontWeight: 500, color: 'var(--text)' }}>Email Address</label>
             <input type="email" className="form-control" style={{ padding: '10px 14px' }} value={email} onChange={e => setEmail(e.target.value)} required />
           </div>
-          <div style={{ marginBottom: 24 }}>
+          <div style={{ marginBottom: 16 }}>
             <label className="form-label" style={{ fontWeight: 500, color: 'var(--text)' }}>Password</label>
             <input type="password" className="form-control" style={{ padding: '10px 14px' }} value={password} onChange={e => setPassword(e.target.value)} required />
+          </div>
+          <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input 
+              type="checkbox" 
+              id="rememberMe"
+              checked={rememberMe} 
+              onChange={e => setRememberMe(e.target.checked)}
+              style={{ width: 16, height: 16, accentColor: 'var(--primary)', cursor: 'pointer' }}
+            />
+            <label htmlFor="rememberMe" style={{ fontSize: '0.88rem', color: 'var(--text-light)', cursor: 'pointer', userSelect: 'none' }}>
+              Remember me for 7 days
+            </label>
           </div>
           <button type="submit" className="btn-buy" style={{ width: '100%', padding: '12px', fontSize: '0.95rem', letterSpacing: '1px' }} disabled={loading}>
             {loading ? 'Logging in...' : 'Sign In'}

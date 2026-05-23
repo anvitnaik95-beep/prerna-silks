@@ -1,10 +1,26 @@
 // Comment / Reviews Routes (MongoDB Mongoose Version)
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const Comment = require('../models/Comment');
 const Product = require('../models/Product');
 const User = require('../models/User');
 const { auth, adminOnly } = require('../middleware/auth');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, '../public/uploads/reviews');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => cb(null, `review_${Date.now()}${path.extname(file.originalname)}`)
+});
+const upload = multer({ storage, fileFilter: (req, file, cb) => {
+  const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  cb(null, allowed.includes(file.mimetype));
+}, limits: { fileSize: 5 * 1024 * 1024 } });
 
 // GET /api/comments/check/:productId - Check if current user already reviewed this product
 router.get('/check/:productId', auth, async (req, res) => {
@@ -20,7 +36,7 @@ router.get('/check/:productId', auth, async (req, res) => {
 });
 
 // POST /api/comments - Add a review and update product average rating
-router.post('/', auth, async (req, res) => {
+router.post('/', auth, upload.single('reviewImage'), async (req, res) => {
   try {
     const { productId, comment, rating } = req.body;
     if (!productId || !comment) return res.status(400).json({ success: false, message: 'productId and comment are required' });
@@ -45,6 +61,10 @@ router.post('/', auth, async (req, res) => {
       comment,
       rating: rating || 5
     });
+
+    if (req.file) {
+      newComment.image = '/uploads/reviews/' + req.file.filename;
+    }
 
     await newComment.save();
     

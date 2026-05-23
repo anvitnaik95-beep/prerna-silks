@@ -201,7 +201,7 @@ export default function MyOrders() {
                       </div>
 
                       {/* Delivery Address & Receipt download */}
-                      <div style={{ borderLeft: '1px solid #eee', paddingLeft: 20, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                      <div style={{ borderLeft: '1px solid #eee', paddingLeft: 20, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: 12 }}>
                         <div>
                           <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', borderBottom: '1px solid #eee', paddingBottom: 8, marginBottom: 12 }}>Delivery Details</h4>
                           <p style={{ fontSize: '0.85rem', color: 'var(--text)', margin: '0 0 8px 0', lineHeight: 1.4 }}>
@@ -212,17 +212,32 @@ export default function MyOrders() {
                           </p>
                         </div>
 
-                        <button 
-                          onClick={() => downloadReceipt(order)}
-                          className="btn-buy"
-                          style={{ 
-                            marginTop: 20, padding: '10px 16px', fontSize: '0.88rem', width: '100%',
-                            background: 'var(--primary)', color: '#fff', display: 'flex', 
-                            alignItems: 'center', justifyContent: 'center', gap: 6
-                          }}
-                        >
-                          📄 Download Receipt
-                        </button>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {order.status !== 'Cancelled' && (
+                            <button 
+                              onClick={() => navigate(`/track-order?trackId=${order.tracking_id || ''}`)}
+                              className="btn-buy"
+                              style={{ 
+                                padding: '10px 16px', fontSize: '0.88rem', width: '100%',
+                                background: 'var(--gold)', color: '#521220', display: 'flex', 
+                                alignItems: 'center', justifyContent: 'center', gap: 6, fontWeight: '600', border: 'none'
+                              }}
+                            >
+                              🚚 Track Live Delivery
+                            </button>
+                          )}
+                          <button 
+                            onClick={() => downloadReceipt(order)}
+                            className="btn-buy"
+                            style={{ 
+                              padding: '10px 16px', fontSize: '0.88rem', width: '100%',
+                              background: 'var(--primary)', color: '#fff', display: 'flex', 
+                              alignItems: 'center', justifyContent: 'center', gap: 6
+                            }}
+                          >
+                            📄 Download Receipt
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

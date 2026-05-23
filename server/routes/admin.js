@@ -1,11 +1,15 @@
 // Admin Routes - Dashboard stats & customers (MongoDB Mongoose Version)
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
 const Feedback = require('../models/Feedback');
 const Setting = require('../models/Setting');
+const Comment = require('../models/Comment');
+const Expense = require('../models/Expense');
+const Bill = require('../models/Bill');
 const { auth, adminOnly } = require('../middleware/auth');
 
 router.get('/dashboard', auth, adminOnly, async (req, res) => {
@@ -181,6 +185,45 @@ router.get('/test-smtp', async (req, res) => {
     return res.json({ success: true, message: 'SMTP connection verified successfully! Email is ready to send.', diag });
   } catch (err) {
     return res.json({ success: false, message: 'SMTP verify failed!', error: err.message, code: err.code });
+  }
+});
+
+router.post('/delete-all-data', auth, adminOnly, async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password) {
+      return res.status(400).json({ success: false, message: 'Password is required' });
+    }
+
+    const admin = await User.findById(req.user.userId);
+    if (!admin) {
+      return res.status(404).json({ success: false, message: 'Admin user not found' });
+    }
+
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Incorrect password' });
+    }
+
+    const ordersDeleted = await Order.deleteMany({});
+    const commentsDeleted = await Comment.deleteMany({});
+    const expensesDeleted = await Expense.deleteMany({});
+    const feedbackDeleted = await Feedback.deleteMany({});
+    const billsDeleted = await Bill.deleteMany({});
+
+    res.json({
+      success: true,
+      message: 'All data deleted successfully',
+      counts: {
+        orders: ordersDeleted.deletedCount,
+        comments: commentsDeleted.deletedCount,
+        expenses: expensesDeleted.deletedCount,
+        feedback: feedbackDeleted.deletedCount,
+        bills: billsDeleted.deletedCount
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 

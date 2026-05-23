@@ -23,6 +23,7 @@ const orderSchema = new mongoose.Schema({
   created_at: { type: Date, default: Date.now },
   notified_confirmed: { type: Boolean, default: false },
   notified_dispatched: { type: Boolean, default: false },
+  notified_shipped: { type: Boolean, default: false },
   notified_delivered: { type: Boolean, default: false }
 });
 

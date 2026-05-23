@@ -222,31 +222,26 @@ export default function TrackOrder() {
       className: 'custom-scooty-marker',
       html: `
         <div style="
-          width: 38px;
-          height: 38px;
-          background: rgba(212, 175, 55, 0.15);
-          border: 1.5px solid #d4af37;
+          width: 44px;
+          height: 44px;
+          background: #d4af37;
+          border: 2px solid #fff;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
-          transition: all 0.5s ease;
+          box-shadow: 0 4px 15px rgba(212, 175, 55, 0.6);
         ">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="#d4af37">
-            <circle cx="6" cy="18" r="3" />
-            <circle cx="18" cy="18" r="3" />
-            <path d="M6 15h12v-2a2 2 0 0 0-2-2H9.5a2.5 2.5 0 0 1-2.5-2.5V7a2 2 0 0 1 2-2h4" />
-            <path d="M12 9h3l3 4" />
-            <path d="M18 5v4" />
-            <path d="M17 5h2" />
-            <line x1="3" y1="18" x2="1" y2="18" stroke="#d4af37" strokeWidth="1.5" />
-            <line x1="2" y1="15" x2="0" y2="15" stroke="#d4af37" strokeWidth="1.5" />
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="6" cy="18" r="2" />
+            <circle cx="18" cy="18" r="2" />
+            <path d="M3 17h18a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3.5L14 3H8L4.5 7H3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2z" fill="#521220" stroke="#d4af37" stroke-width="1" />
+            <path d="M8 3v4M14 3v4M12 7v4" />
           </svg>
         </div>
       `,
-      iconSize: [38, 38],
-      iconAnchor: [19, 19]
+      iconSize: [44, 44],
+      iconAnchor: [22, 22]
     });
 
     L.marker(start, { icon: startIcon }).addTo(map).bindPopup('<b>Hubli Post Office Hub</b>');
@@ -262,14 +257,11 @@ export default function TrackOrder() {
     map.panTo(scootyPosition);
 
     return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
+      // Do not destroy the map during normal state triggers to stop blinking
     };
-  }, [leafletLoaded, routeCoords]);
+  }, [leafletLoaded, order?.id]); // Only re-initialize map if order changes
 
-  // Animate Scooty on step/status update
+  // Animate Scooty on step/status update or route coordinates load
   useEffect(() => {
     if (!mapInstanceRef.current || !scootyMarkerRef.current || routeCoords.length === 0) return;
 
@@ -277,8 +269,14 @@ export default function TrackOrder() {
     const pointIdx = Math.round(percentage * (routeCoords.length - 1));
     const scootyPosition = routeCoords[pointIdx] || [15.3489, 75.1394];
 
+    // Smoothly update positions instead of re-creating
     scootyMarkerRef.current.setLatLng(scootyPosition);
     mapInstanceRef.current.panTo(scootyPosition);
+
+    // Update polyline if it changed
+    if (routePolylineRef.current) {
+      routePolylineRef.current.setLatLngs(routeCoords);
+    }
   }, [currentStep, routeCoords]);
 
   // Compute remaining distance based on route distance and current phase progress

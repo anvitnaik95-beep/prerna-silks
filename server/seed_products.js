@@ -89,7 +89,11 @@ async function seed() {
     console.log('Clearing old collections...');
     await Product.deleteMany({});
     await User.deleteMany({});
-    await Setting.deleteMany({});
+
+    // Check if custom hero banners exist so we don't overwrite them
+    const existingBanner = await Setting.findOne({ setting_key: 'hero_banner' });
+
+    await Setting.deleteMany({ setting_key: { $ne: 'hero_banner' } });
     await Order.deleteMany({});
     await Comment.deleteMany({});
     await Expense.deleteMany({});
@@ -126,7 +130,7 @@ async function seed() {
       email: 'anvitnaik95@gmail.com',
       password: hashedAdminPass,
       role: 'customer',
-      phone: '9876543212'
+      phone: '7019461619'
     });
     await customer2.save();
     console.log('✅ Users seeded successfully!');
@@ -208,12 +212,21 @@ async function seed() {
 
     // 5. Seed Settings (Hero banner)
     console.log('Seeding settings...');
-    await Setting.findOneAndUpdate(
-      { setting_key: 'hero_banner' },
-      { setting_value: 'https://images.unsplash.com/photo-1610189013210-97914441584c?w=1200&h=400&fit=crop' },
-      { upsert: true, new: true }
-    );
-    console.log('✅ Settings seeded successfully!');
+    if (!existingBanner) {
+      const defaultBanners = [
+        'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1400&h=520&fit=crop',
+        'https://images.unsplash.com/photo-1610030470298-40b8a1c22d15?w=1400&h=520&fit=crop',
+        'https://images.unsplash.com/photo-1583391733956-6c78276477e1?w=1400&h=520&fit=crop'
+      ];
+      await Setting.findOneAndUpdate(
+        { setting_key: 'hero_banner' },
+        { setting_value: JSON.stringify(defaultBanners) },
+        { upsert: true, new: true }
+      );
+      console.log('✅ Settings seeded successfully!');
+    } else {
+      console.log('✅ Existing custom hero banners preserved.');
+    }
 
   } catch (error) {
     console.error('❌ Seeding Error:', error);

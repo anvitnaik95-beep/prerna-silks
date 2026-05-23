@@ -19,17 +19,17 @@ const CartIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="non
 
 const HERO_SLIDES = [
   {
-    url: 'https://images.unsplash.com/photo-1610189013210-97914441584c?w=1400&h=520&fit=crop',
+    url: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1400&h=520&fit=crop',
     title: 'Timeless Silk Elegance',
     sub: 'Pure Kanjivaram & Banarasi collections'
   },
   {
-    url: 'https://images.unsplash.com/photo-1583391733956-6c78276477e1?w=1400&h=520&fit=crop',
+    url: 'https://images.unsplash.com/photo-1610030470298-40b8a1c22d15?w=1400&h=520&fit=crop',
     title: 'Wedding Specials',
     sub: 'Curated bridal sarees for your big day'
   },
   {
-    url: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=1400&h=520&fit=crop',
+    url: 'https://images.unsplash.com/photo-1583391733956-6c78276477e1?w=1400&h=520&fit=crop',
     title: 'Festival Collection',
     sub: 'Celebrate every occasion in style'
   },
@@ -141,7 +141,13 @@ export default function Home() {
           {bannerSlides.map((s, i) => (
             <div key={i} style={{ display: i === slide ? 'block' : 'none' }}>
               <div className="hero-slide-inner">
-                <img src={s.url} alt={s.title} />
+                <img 
+                  src={s.url} 
+                  alt={s.title} 
+                  onError={(e) => {
+                    e.target.src = 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1400&h=520&fit=crop';
+                  }}
+                />
                 <div className="hero-blur-bottom" />
                 <div style={{ position:'absolute', bottom:'60px', left:'60px', zIndex:5, color:'#fff', textShadow:'0 2px 8px rgba(0,0,0,0.5)' }}>
                   <div style={{ fontSize:'0.8rem', letterSpacing:'3px', textTransform:'uppercase', marginBottom:'6px', opacity:0.85 }}>Prerna Silks</div>
@@ -182,6 +188,14 @@ export default function Home() {
       <div id="shop" className="shop-layout">
         {/* Sidebar Filters */}
         <aside className="sidebar">
+          <div className="filter-section">
+            <h4>Price Range</h4>
+            <div style={{ display:'flex', gap:8, marginBottom:12 }}>
+              <input type="number" placeholder="Min" className="form-control" style={{ padding:'7px 10px' }} onChange={e => setFilter('minPrice', e.target.value)} />
+              <input type="number" placeholder="Max" className="form-control" style={{ padding:'7px 10px' }} onChange={e => setFilter('maxPrice', e.target.value)} />
+            </div>
+            <button onClick={fetchProducts} className="btn-buy" style={{ width:'100%', padding:'9px' }}>Apply</button>
+          </div>
           {[{title:'Categories',items:categories,key:'category'},{title:'Color',items:colors,key:'color'},
             {title:'Occasion',items:occasions,key:'occasion'},{title:'Pattern',items:patterns,key:'pattern'}].map(s => (
             <div className="filter-section" key={s.key}>
@@ -200,14 +214,6 @@ export default function Home() {
                 <input type="radio" name="rating" checked={filters.rating===String(r)} onChange={() => setFilter('rating', String(r))} /> {r}★ & above
               </label>
             ))}
-          </div>
-          <div className="filter-section">
-            <h4>Price Range</h4>
-            <div style={{ display:'flex', gap:8, marginBottom:12 }}>
-              <input type="number" placeholder="Min" className="form-control" style={{ padding:'7px 10px' }} onChange={e => setFilter('minPrice', e.target.value)} />
-              <input type="number" placeholder="Max" className="form-control" style={{ padding:'7px 10px' }} onChange={e => setFilter('maxPrice', e.target.value)} />
-            </div>
-            <button onClick={fetchProducts} className="btn-buy" style={{ width:'100%', padding:'9px' }}>Apply</button>
           </div>
           <button onClick={clearFilters} className="btn-cart" style={{ width:'100%', padding:'9px', marginTop:'8px' }}>Clear All</button>
         </aside>

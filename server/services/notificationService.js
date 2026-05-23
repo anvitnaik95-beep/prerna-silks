@@ -6,7 +6,7 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const Setting = require('../models/Setting');
 
 // Build track order URL
-const SITE_URL = process.env.SITE_URL || 'http://localhost:5173';
+const SITE_URL = process.env.SITE_URL || 'https://prerna-silks.onrender.com';
 function buildTrackOrderUrl(trackingId) {
   return `${SITE_URL}/track-order${trackingId ? `?trackId=${encodeURIComponent(trackingId)}` : ''}`;
 }
@@ -365,6 +365,59 @@ Your order is on its way! For help, contact us at +91 ${config.ADMIN_PHONE}.`;
 }
 
 /**
+ * Send shipped notification with tracking ID
+ */
+async function sendShippedNotification(order, user) {
+  const { transporter, config } = await getTransporterAndConfig();
+  const orderId = String(order.id || order._id).slice(-8).toUpperCase();
+  const trackUrl = buildTrackOrderUrl(order.tracking_id || '');
+  const totalStr = order.total_amount.toLocaleString('en-IN');
+  
+  let estDelivery = order.estimated_delivery;
+  if (!estDelivery) {
+    estDelivery = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+  }
+  const deliveryDate = new Date(estDelivery).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+  const whatsappMsg = `Order Shipped & In-Transit - Prerna Silks\n\nHello ${user.name}! Your order has been shipped and is currently in transit.\n\nOrder ID: ${orderId}\nTracking ID: ${order.tracking_id || 'XB' + Date.now().toString(36).toUpperCase()}\nDelivery Partner: XpressBees\nEstimated Delivery: ${deliveryDate}\n\nTrack your order here:\n${trackUrl}\n\nThank you for choosing Prerna Silks!`;
+
+  const smsMsg = `Prerna Silks: Order ${orderId} has been shipped via XpressBees! Tracking ID: ${order.tracking_id || 'N/A'}. Track: ${trackUrl}`;
+
+  console.log('\n--- [Shipped Notifications] ---');
+  console.log(`To Customer: ${user.phone || user.email}`);
+  console.log(`SMS: ${smsMsg}`);
+  console.log(`WhatsApp: ${whatsappMsg}`);
+  console.log('--------------------------------\n');
+
+  // Send shipped email to Customer via SMTP
+  if (transporter && user.email) {
+    try {
+      await transporter.sendMail({
+        from: `"Prerna Silks" <${config.SMTP_USER}>`,
+        to: user.email,
+        subject: `Your Prerna Silks Order Has Been Shipped! (Order #${orderId})`,
+        text: `Dear ${user.name},\n\nGood news! Your order has been shipped via XpressBees and is currently in transit.\n\nOrder Details:\nOrder ID: #${orderId}\nTracking ID: ${order.tracking_id}\nEstimated Delivery: ${deliveryDate}\nTotal Amount: Rs. ${totalStr}\n\nTrack your live shipment here: ${trackUrl}\n\nBest Regards,\nPrerna Silks Team`
+      });
+      console.log(`[Email Success] Shipped email sent to customer: ${user.email}`);
+    } catch (emailErr) {
+      console.error('Error sending shipped email:', emailErr.message);
+    }
+  }
+
+  if (!config.TWILIO_ACCOUNT_SID || !config.TWILIO_AUTH_TOKEN) {
+    console.log('Twilio credentials not configured. Shipped notification logged to console only.');
+    return;
+  }
+
+  const client = twilio(config.TWILIO_ACCOUNT_SID, config.TWILIO_AUTH_TOKEN);
+
+  if (user.phone) {
+    await sendSMS(client, config.TWILIO_FROM_SMS, user.phone, smsMsg);
+    await sendWhatsApp(client, config.TWILIO_FROM_WHATSAPP, user.phone, whatsappMsg);
+  }
+}
+
+/**
  * Send delivered notification
  */
 async function sendDeliveredNotification(order, user) {
@@ -372,17 +425,7 @@ async function sendDeliveredNotification(order, user) {
   const orderId = String(order.id || order._id).slice(-8).toUpperCase();
   const trackUrl = buildTrackOrderUrl(order.tracking_id || '');
   
-  const whatsappMsg = `Order Delivered - Prerna Silks
-
-Hello ${user.name}! Good news, your order has been successfully delivered.
-
-Order ID: ${orderId}
-Tracking ID: ${order.tracking_id || 'N/A'}
-
-Thank you for shopping with Prerna Silks! We hope you love your new saree.
-
-Track history:
-${trackUrl}`;
+  const whatsappMsg = `Order Delivered - Prerna Silks\n\nHello ${user.name}! Good news, your order has been successfully delivered.\n\nOrder ID: ${orderId}\nTracking ID: ${order.tracking_id || 'N/A'}\n\nThank you for shopping with Prerna Silks! We hope you love your new saree.\n\nTrack history:\n${trackUrl}`;
 
   const smsMsg = `Prerna Silks: Good news! Your order ${orderId} has been successfully delivered. Thank you for shopping with us! Track history: ${trackUrl}`;
 
@@ -414,5 +457,6 @@ module.exports = {
   sendAdminFeedbackEmail,
   sendOrderSMSAndWhatsApp,
   sendDispatchNotification,
+  sendShippedNotification,
   sendDeliveredNotification
 };

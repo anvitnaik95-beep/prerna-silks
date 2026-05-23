@@ -4,29 +4,65 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
+  const getInitialAuth = () => {
+    // 1. Check localStorage (Remember Me)
+    const savedTokenLocal = localStorage.getItem('token');
+    const savedUserLocal = localStorage.getItem('user');
+    const loginTimestamp = localStorage.getItem('loginTimestamp');
 
-  // Load saved auth on mount
-  useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-    if (savedToken && savedUser) {
-      try {
-        setToken(savedToken);
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
+    if (savedTokenLocal && savedUserLocal && loginTimestamp) {
+      const ageInMs = Date.now() - parseInt(loginTimestamp);
+      const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+      if (ageInMs > sevenDaysInMs) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('loginTimestamp');
+      } else {
+        try {
+          return { token: savedTokenLocal, user: JSON.parse(savedUserLocal) };
+        } catch (e) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('loginTimestamp');
+        }
       }
     }
-  }, []);
 
-  const login = (userData, jwt) => {
+    // 2. Check sessionStorage
+    const savedTokenSession = sessionStorage.getItem('token');
+    const savedUserSession = sessionStorage.getItem('user');
+    if (savedTokenSession && savedUserSession) {
+      try {
+        return { token: savedTokenSession, user: JSON.parse(savedUserSession) };
+      } catch (e) {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
+      }
+    }
+
+    return { token: null, user: null };
+  };
+
+  const initialAuth = getInitialAuth();
+  const [user, setUser] = useState(initialAuth.user);
+  const [token, setToken] = useState(initialAuth.token);
+
+  const login = (userData, jwt, rememberMe) => {
     setUser(userData);
     setToken(jwt);
-    localStorage.setItem('token', jwt);
-    localStorage.setItem('user', JSON.stringify(userData));
+    if (rememberMe) {
+      localStorage.setItem('token', jwt);
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('loginTimestamp', Date.now().toString());
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
+    } else {
+      sessionStorage.setItem('token', jwt);
+      sessionStorage.setItem('user', JSON.stringify(userData));
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('loginTimestamp');
+    }
   };
 
   const logout = () => {
@@ -34,6 +70,9 @@ export function AuthProvider({ children }) {
     setToken(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('loginTimestamp');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('user');
   };
 
   const isAdmin = () => user?.role === 'admin';

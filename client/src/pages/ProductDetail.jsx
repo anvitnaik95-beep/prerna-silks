@@ -20,8 +20,8 @@ export default function ProductDetail() {
   const [added, setAdded] = useState(false);
   const [buying, setBuying] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
-
   const [inCart, setInCart] = useState(false);
+  const [reviewImage, setReviewImage] = useState(null);
 
   useEffect(() => { loadProduct(); loadComments(); checkUserReview(); checkCart(); }, [id, user]);
 
@@ -84,8 +84,20 @@ export default function ProductDetail() {
     e.preventDefault();
     if (!comment.trim()) return;
     try {
-      await API.post('/comments', { productId: id, comment, rating });
+      const formData = new FormData();
+      formData.append('productId', id);
+      formData.append('comment', comment);
+      formData.append('rating', rating);
+      if (reviewImage) {
+        formData.append('reviewImage', reviewImage);
+      }
+
+      await API.post('/comments', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
       setComment('');
+      setReviewImage(null);
       setHasReviewed(true);
       loadComments();
     } catch (err) {
@@ -247,14 +259,14 @@ export default function ProductDetail() {
                 {added ? '✓ Added!' : inCart ? '➔ Go to Cart' : '🛒 Add to Cart'}
               </button>
               <button className="cta-buy" onClick={buyNow} disabled={product.stock === 0 || buying}>
-                {buying ? 'Processing...' : '⚡ Buy Now'}
+                {buying ? 'Processing...' : 'Buy Now'}
               </button>
             </div>
 
             {/* Delivery info */}
             <div style={{ marginTop:18, padding:'14px 16px', background:'var(--bg)', borderRadius:8, border:'1px solid var(--border)', fontSize:'0.85rem' }}>
               <div style={{ marginBottom:6 }}>🚚 <b>Free Delivery</b> on orders above ₹999</div>
-              <div style={{ marginBottom:6 }}>↩️ <b>Easy Returns</b> within 7 days</div>
+              {/* <div style={{ marginBottom:6 }}>↩️ <b>Easy Returns</b> within 7 days</div> */}
               <div>🔒 <b>Secure Payment</b> via Razorpay UPI/Card</div>
             </div>
           </div>
@@ -334,6 +346,23 @@ export default function ProductDetail() {
               <form onSubmit={submitComment} style={{ background:'#fff', padding:22, borderRadius:10, marginBottom:22, boxShadow:'var(--shadow)', border:'1px solid var(--border)' }}>
                 <h4 style={{ fontFamily:'var(--font-heading)', color:'var(--primary)', marginBottom:14, fontSize:'1rem', fontWeight:400 }}>Write a Review</h4>
                 <textarea className="form-control" placeholder="Share your experience with this product..." value={comment} onChange={e => setComment(e.target.value)} rows={3} style={{ marginBottom:12 }} />
+                
+                {/* Photo Attach Input */}
+                <div style={{ marginBottom: 16 }}>
+                  <label className="form-label" style={{ fontWeight: 500, fontSize: '0.85rem', display: 'block', marginBottom: 6 }}>Attach a Photo (Optional)</label>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={e => setReviewImage(e.target.files[0])} 
+                    style={{ fontSize: '0.85rem' }} 
+                  />
+                  {reviewImage && (
+                    <div style={{ fontSize: '0.8rem', color: 'var(--success)', marginTop: 4 }}>
+                      ✓ Selected: {reviewImage.name}
+                    </div>
+                  )}
+                </div>
+
                 <div style={{ display:'flex', gap:10, alignItems:'center', flexWrap:'wrap' }}>
                   <select className="form-select" style={{ width:160 }} value={rating} onChange={e => setRating(Number(e.target.value))}>
                     {[5,4,3,2,1].map(r => <option key={r} value={r}>{r} Star{r>1?'s':''}</option>)}
@@ -362,6 +391,15 @@ export default function ProductDetail() {
               </div>
               <div style={{ color:'var(--gold)', marginBottom:6, fontSize:'0.9rem' }}>{stars(c.rating)}</div>
               <p style={{ color:'var(--text-light)', fontSize:'0.9rem', margin:0 }}>{c.comment}</p>
+              {c.image && (
+                <div style={{ marginTop: 12 }}>
+                  <img 
+                    src={c.image} 
+                    alt="Customer uploaded review" 
+                    style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, border: '1px solid var(--border)', objectFit: 'cover' }} 
+                  />
+                </div>
+              )}
             </div>
           ))}
         </div>

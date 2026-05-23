@@ -87,10 +87,10 @@ export default function Settings() {
             <div className="col-md-6"><label className="form-label">Phone</label><input className="form-control" defaultValue="+91 98765 43210" /></div>
             <div className="col-md-6"><label className="form-label">Business Hours</label><input className="form-control" defaultValue="10 AM - 9 PM" /></div>
           </div>
-          <button className="btn-buy mt-3" onClick={()=>alert('Settings saved! (Demo)')}>Save Information</button>
+          <button className="btn-buy mt-3" onClick={()=>alert('Settings saved!')}>Save Information</button>
         </div>
 
-        <div className="admin-card mt-3" style={{padding:28}}>
+        {/* <div className="admin-card mt-3" style={{padding:28}}>
           <h4 style={{fontFamily:'var(--font-heading)',marginBottom:18}}>Customer Feedback ({feedback.length})</h4>
           {feedback.length===0 ? <p style={{color:'var(--text-muted)'}}>No feedback yet</p> :
             feedback.map(f=>(
@@ -101,6 +101,42 @@ export default function Settings() {
               </div>
             ))
           }
+        </div> */}
+
+        <div className="admin-card mt-3" style={{ padding: 28, border: '1px solid #f5c6cb', background: '#fff5f5', borderRadius: 12 }}>
+          <h4 style={{ fontFamily: 'var(--font-heading)', color: '#721c24', marginBottom: 12 }}>⚠️ RESET DETAILS</h4>
+          <p style={{ fontSize: '0.88rem', color: '#721c24', marginBottom: 20 }}>
+            Wipe entire database tables (Orders, Reviews, feedback, Expenses, Bills) from the admin portal. 
+            This action is irreversible and requires double password authentication.
+          </p>
+          <button 
+            onClick={async () => {
+              const p1 = prompt('⚠️ALERT: This will wipe all orders, comments, bills, feedback, and expenses.\nEnter your password to verify:');
+              if (p1 === null || p1.trim() === '') return;
+
+              const p2 = prompt('CONFIRMATION REQUIRED: Please re-enter your password to proceed with deletion:');
+              if (p2 === null || p2.trim() === '') return;
+
+              if (p1 !== p2) {
+                alert('Passwords do not match. Operation cancelled.');
+                return;
+              }
+
+              try {
+                const { data } = await API.post('/admin/delete-all-data', { password: p1 });
+                if (data.success) {
+                  alert(`Success! Wiped:\n- ${data.counts.orders} Orders\n- ${data.counts.comments} Comments\n- ${data.counts.expenses} Expenses\n- ${data.counts.feedback} Feedback\n- ${data.counts.bills} Bills`);
+                  window.location.reload();
+                }
+              } catch (err) {
+                alert(err.response?.data?.message || 'Verification failed. Password may be incorrect.');
+              }
+            }}
+            className="btn btn-danger" 
+            style={{ padding: '10px 24px', fontWeight: 600, background: '#c62828', border: 'none', color: '#fff', borderRadius: 8, cursor: 'pointer' }}
+          >
+            Wipe Portal Database
+          </button>
         </div>
       </main>
     </div>

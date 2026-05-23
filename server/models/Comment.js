@@ -6,6 +6,7 @@ const commentSchema = new mongoose.Schema({
   user_name: { type: String, default: 'Customer' },
   comment: { type: String, required: true },
   rating: { type: Number, default: 5 },
+  image: { type: String, default: '' },
   created_at: { type: Date, default: Date.now }
 });
 
