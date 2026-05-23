@@ -221,23 +221,63 @@ export default function TrackOrder() {
     const scootyIcon = L.divIcon({
       className: 'custom-scooty-marker',
       html: `
-        <div style="
-          width: 44px;
-          height: 44px;
-          background: #d4af37;
-          border: 2px solid #fff;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 4px 15px rgba(212, 175, 55, 0.6);
-        ">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="6" cy="18" r="2" />
-            <circle cx="18" cy="18" r="2" />
-            <path d="M3 17h18a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3.5L14 3H8L4.5 7H3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2z" fill="#521220" stroke="#d4af37" stroke-width="1" />
-            <path d="M8 3v4M14 3v4M12 7v4" />
-          </svg>
+        <div style="position: relative; width: 44px; height: 44px;">
+          <!-- Triple concentric radar pulse rings -->
+          <div style="
+            position: absolute;
+            top: 0; left: 0;
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            border: 2px solid var(--gold, #d4af37);
+            animation: radar-pulse 2s infinite ease-out;
+            pointer-events: none;
+            box-sizing: border-box;
+          "></div>
+          <div style="
+            position: absolute;
+            top: 0; left: 0;
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            border: 2px solid var(--gold, #d4af37);
+            animation: radar-pulse 2s infinite ease-out;
+            animation-delay: 0.6s;
+            pointer-events: none;
+            box-sizing: border-box;
+          "></div>
+          <div style="
+            position: absolute;
+            top: 0; left: 0;
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            border: 2px solid var(--gold, #d4af37);
+            animation: radar-pulse 2s infinite ease-out;
+            animation-delay: 1.2s;
+            pointer-events: none;
+            box-sizing: border-box;
+          "></div>
+          <!-- Actual scooter delivery icon -->
+          <div style="
+            position: absolute;
+            top: 0; left: 0;
+            width: 44px;
+            height: 44px;
+            background: var(--gold, #d4af37);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.6);
+            z-index: 2;
+            box-sizing: border-box;
+          ">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="6" cy="18" r="2" />
+              <circle cx="18" cy="18" r="2" />
+              <path d="M3 17h18a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3.5L14 3H8L4.5 7H3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2z" fill="var(--primary, #521220)" stroke="var(--gold, #d4af37)" stroke-width="1" />
+              <path d="M8 3v4M14 3v4M12 7v4" />
+            </svg>
+          </div>
         </div>
       `,
       iconSize: [44, 44],
@@ -259,7 +299,7 @@ export default function TrackOrder() {
     return () => {
       // Do not destroy the map during normal state triggers to stop blinking
     };
-  }, [leafletLoaded, order?.id]); // Only re-initialize map if order changes
+  }, [leafletLoaded, order?._id]); // Only re-initialize map if order changes
 
   // Animate Scooty on step/status update or route coordinates load
   useEffect(() => {
@@ -290,6 +330,29 @@ export default function TrackOrder() {
     if (currentStep === 2) return `${(distNum * 0.50).toFixed(1)} km`;
     if (currentStep === 3) return `${(distNum * 0.25).toFixed(1)} km`;
     return 'Arrived!';
+  };
+
+  const getStageMessage = () => {
+    if (!order) return '';
+    const orderIdShort = order.orderId || order._id?.slice(-8).toUpperCase() || 'N/A';
+    const totalStr = Number(order.totalAmount).toLocaleString('en-IN');
+    const deliveryDate = order.estimatedDelivery || 'N/A';
+    const trackUrl = `${window.location.origin}/track-order?trackId=${order.trackingId}`;
+    
+    switch (currentStep) {
+      case 0:
+        return `Order Confirmed - Prerna Silks\n\nHello! Your order has been placed successfully.\n\nOrder ID: ${orderIdShort}\nPayment: ${order.paymentMethod} (${order.paymentStatus})\nShipping Address: ${order.shippingAddress}\nDelivery via: XpressBees\n\nTotal Amount: Rs. ${totalStr}\nEstimated Delivery: ${deliveryDate}\n\nTrack your order here:\n${trackUrl}\n\nThank you for shopping with us!`;
+      case 1:
+        return `Order Confirmed - Prerna Silks\n\nHello! Your order has been confirmed.\n\nOrder ID: ${orderIdShort}\nPayment: ${order.paymentMethod} (${order.paymentStatus})\n\nTotal Amount: Rs. ${totalStr}\nEstimated Delivery: ${deliveryDate}\n\nTrack your order here:\n${trackUrl}\n\nThank you for shopping with us!`;
+      case 2:
+        return `Order Dispatched - Prerna Silks\n\nHello! Your order has been dispatched.\n\nOrder ID: ${orderIdShort}\nTracking ID: ${order.trackingId || 'XB' + Date.now().toString(36).toUpperCase()}\nDelivery Service: XpressBees\nEstimated Delivery: ${deliveryDate}\nTotal Amount: Rs. ${totalStr}\n\nTrack your order here:\n${trackUrl}\n\nYour order is on its way!`;
+      case 3:
+        return `Order Shipped & In-Transit - Prerna Silks\n\nHello! Your order has been shipped and is currently in transit.\n\nOrder ID: ${orderIdShort}\nTracking ID: ${order.trackingId || 'XB' + Date.now().toString(36).toUpperCase()}\nDelivery Partner: XpressBees\nEstimated Delivery: ${deliveryDate}\n\nTrack your order here:\n${trackUrl}\n\nThank you for choosing Prerna Silks!`;
+      case 4:
+        return `Order Delivered - Prerna Silks\n\nHello! Good news, your order has been successfully delivered.\n\nOrder ID: ${orderIdShort}\nTracking ID: ${order.trackingId || 'N/A'}\n\nThank you for shopping with Prerna Silks! We hope you love your new saree.\n\nTrack history:\n${trackUrl}`;
+      default:
+        return '';
+    }
   };
 
   return (
@@ -461,6 +524,101 @@ export default function TrackOrder() {
                       <div style={{ fontSize: '0.82rem', color: 'var(--gold, #d4af37)', fontWeight: 600, marginTop: 2 }}>
                         {getRemainingDistance()}
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Real-time SMS & WhatsApp notification log fallback */}
+                  <div style={{
+                    marginTop: 16,
+                    background: 'rgba(212, 175, 55, 0.06)',
+                    border: '1.5px dashed rgba(212, 175, 55, 0.3)',
+                    borderRadius: 8,
+                    padding: '16px',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: 10
+                    }}>
+                      <span style={{
+                        fontSize: '0.75rem',
+                        color: 'var(--gold, #d4af37)',
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: '1px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6
+                      }}>
+                        💬 STAGE SMS & WHATSAPP NOTIFICATION
+                      </span>
+                      <button
+                        onClick={() => {
+                          const text = getStageMessage();
+                          navigator.clipboard.writeText(text);
+                          alert('Notification message copied to clipboard!');
+                        }}
+                        style={{
+                          background: 'rgba(255,255,255,0.08)',
+                          border: 'none',
+                          color: '#fff',
+                          padding: '4px 10px',
+                          borderRadius: 4,
+                          fontSize: '0.72rem',
+                          cursor: 'pointer',
+                          fontFamily: 'var(--font-body)',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                      >
+                        📋 Copy Text
+                      </button>
+                    </div>
+                    <pre style={{
+                      margin: 0,
+                      whiteSpace: 'pre-wrap',
+                      fontFamily: 'monospace',
+                      fontSize: '0.82rem',
+                      color: '#e0e0e0',
+                      lineHeight: '1.5',
+                      background: 'rgba(0,0,0,0.25)',
+                      padding: 12,
+                      borderRadius: 6,
+                      border: '1px solid rgba(255,255,255,0.05)'
+                    }}>
+                      {getStageMessage()}
+                    </pre>
+                    <div style={{ marginTop: 10, display: 'flex', justifyContent: 'flex-end' }}>
+                      <a
+                        href={`https://wa.me/${order.customerPhone || '917019461619'}?text=${encodeURIComponent(getStageMessage())}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          background: '#25D366',
+                          color: '#fff',
+                          padding: '6px 12px',
+                          borderRadius: 6,
+                          fontSize: '0.78rem',
+                          fontWeight: 600,
+                          textDecoration: 'none',
+                          boxShadow: '0 2px 8px rgba(37,211,102,0.3)',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
+                        onMouseLeave={e => e.currentTarget.style.transform = 'none'}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: 4, verticalAlign: 'middle' }}>
+                          <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.42 9.864-9.864.002-2.637-1.03-5.115-2.905-6.99C16.559 1.875 14.09 .843 11.458.841 6.022.841 1.6 5.261 1.597 10.697c-.001 1.716.467 3.39 1.354 4.9l-.994 3.626 3.69-.968z" />
+                        </svg>
+                        Share via WhatsApp
+                      </a>
                     </div>
                   </div>
                 </div>

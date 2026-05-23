@@ -90,56 +90,83 @@ async function extractAmountFromImage(filePath) {
  * Looks for total/grand total first, then falls back to largest amount
  */
 function findBestAmount(text) {
-  // Normalize text
-  const normalized = text
-    .replace(/[,\s]+/g, m => m.includes(',') ? ',' : ' ')
-    .replace(/\n/g, ' ');
+  if (!text) return null;
+  
+  // Normalize lines and text
+  const lines = text.split('\n');
+  const candidates = [];
 
-  // Pattern 1: Look for "Total", "Grand Total", "Net Amount", "Amount Due", "Payable" keywords
-  const totalPatterns = [
-    /(?:grand\s*total|net\s*(?:amount|total|payable)|amount\s*(?:due|payable)|total\s*(?:amount|due|payable|bill)|payable|balance\s*due)[:\s]*(?:Rs\.?|₹|INR)?\s*([\d,]+(?:\.\d{1,2})?)/gi,
-    /(?:Rs\.?|₹|INR)\s*([\d,]+(?:\.\d{1,2})?)\s*(?:grand\s*total|net\s*total|total\s*amount|amount\s*due)/gi,
-    /(?:total)[:\s]*(?:Rs\.?|₹|INR)?\s*([\d,]+(?:\.\d{1,2})?)/gi,
-    /(?:Rs\.?|₹|INR)\s*([\d,]+(?:\.\d{1,2})?)\s*(?:total)/gi,
-  ];
+  // Helper to check if a number is a date, phone number, pincode, or outside sane range
+  const isInvalidAmount = (val, originalStr) => {
+    const cleanStr = originalStr.replace(/[^0-9]/g, '');
+    // Exclude phone numbers (10 digits)
+    if (cleanStr.length === 10) return true;
+    // Exclude Indian zipcodes/pincodes (6 digits, e.g. starting with 5, 6, or 1-9)
+    if (cleanStr.length === 6 && (cleanStr.startsWith('5') || cleanStr.startsWith('6') || cleanStr.startsWith('1'))) return true;
+    // Exclude years (2000 to 2030)
+    if (val >= 2000 && val <= 2030) return true;
+    // Exclude quantities or tiny/insanely huge numbers
+    if (val < 50 || val > 1000000) return true;
+    return false;
+  };
 
-  // Try each pattern in priority order
-  for (const pattern of totalPatterns) {
-    const matches = [...normalized.matchAll(pattern)];
-    if (matches.length > 0) {
-      // Get the last match (usually the grand total comes after subtotals)
-      const lastMatch = matches[matches.length - 1];
-      const val = parseFloat(lastMatch[1].replace(/,/g, ''));
-      if (val > 0 && val < 10000000) { // sanity: up to 1 crore
-        return val;
+  // 1. Look line-by-line for lines containing ledger keywords
+  for (const line of lines) {
+    const lowerLine = line.toLowerCase();
+    if (
+      lowerLine.includes('total') || 
+      lowerLine.includes('payable') || 
+      lowerLine.includes('net') || 
+      lowerLine.includes('amount') || 
+      lowerLine.includes('grand') || 
+      lowerLine.includes('sum') ||
+      lowerLine.includes('rs') ||
+      lowerLine.includes('inr') ||
+      lowerLine.includes('₹')
+    ) {
+      // Find all numbers in this line
+      const numbersInLine = line.match(/[\d,]+\.\d{2}\b|[\d,]+\b/g);
+      if (numbersInLine) {
+        for (const numStr of numbersInLine) {
+          const val = parseFloat(numStr.replace(/,/g, ''));
+          if (!isNaN(val) && !isInvalidAmount(val, numStr)) {
+            // Highly prioritize "grand total", "net payable" over generic "amount"
+            let weight = 1;
+            if (lowerLine.includes('grand') || lowerLine.includes('payable') || lowerLine.includes('net')) {
+              weight = 10;
+            } else if (lowerLine.includes('total')) {
+              weight = 5;
+            }
+            candidates.push({ val, weight });
+          }
+        }
       }
     }
   }
 
-  // Pattern 2: Find all currency amounts in text
-  const currencyPattern = /(?:Rs\.?|₹|INR)\s*([\d,]+(?:\.\d{1,2})?)/gi;
-  const amounts = [];
-  let match;
-  while ((match = currencyPattern.exec(normalized)) !== null) {
-    const val = parseFloat(match[1].replace(/,/g, ''));
-    if (val > 0 && val < 10000000) {
-      amounts.push(val);
+  if (candidates.length > 0) {
+    // Sort by weight descending, then by value descending (usually grand total is the largest weighted candidate)
+    candidates.sort((a, b) => b.weight - a.weight || b.val - a.val);
+    return candidates[0].val;
+  }
+
+  // 2. Fallback: Parse all numbers in the entire document, filter out invalid ones, and return the largest sensible number
+  const allNumbers = text.match(/[\d,]+\.\d{2}\b|[\d,]+\b/g);
+  const fallbackAmounts = [];
+  if (allNumbers) {
+    for (const numStr of allNumbers) {
+      const val = parseFloat(numStr.replace(/,/g, ''));
+      if (!isNaN(val) && !isInvalidAmount(val, numStr)) {
+        fallbackAmounts.push(val);
+      }
     }
   }
 
-  // Pattern 3: Look for standalone numbers that could be amounts
-  const standaloneNumbers = /\b(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)\b/g;
-  while ((match = standaloneNumbers.exec(normalized)) !== null) {
-    const val = parseFloat(match[1].replace(/,/g, ''));
-    if (val >= 50 && val < 10000000) { // at least ₹50 to be a valid bill amount
-      amounts.push(val);
-    }
+  if (fallbackAmounts.length > 0) {
+    return Math.max(...fallbackAmounts);
   }
 
-  if (amounts.length === 0) return null;
-
-  // Return the largest amount (most likely the total)
-  return Math.max(...amounts);
+  return null;
 }
 
 // Get all bills

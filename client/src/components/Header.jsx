@@ -231,23 +231,119 @@ export default function Header({ onSearch }) {
       {/* Global CSS Inject for Dark Theme */}
       <style>{`
         body.dark-theme {
+          --primary: #ff8da6 !important; /* Premium high-contrast bright rose gold */
+          --primary-light: #ffa3ba !important;
+          --gold: #e8d090 !important;
+          --gold-light: #fff0c7 !important;
           --bg: #121212 !important;
+          --bg-card: #1e1e1e !important;
           --text: #f5f5f5 !important;
           --text-light: #cccccc !important;
           --text-muted: #888888 !important;
           --border: #2d2d2d !important;
           --shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+          --success-bg: #14321a !important;
+          --danger-bg: #3c181a !important;
           background-color: var(--bg) !important;
           color: var(--text) !important;
         }
+
+        /* Smooth transitions for theme changes */
+        body.dark-theme * {
+          transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        body.dark-theme .admin-layout,
+        body.dark-theme .admin-main,
+        body.dark-theme .pd-container,
+        body.dark-theme .cart-container {
+          background-color: var(--bg) !important;
+          color: var(--text) !important;
+        }
+
         body.dark-theme .admin-card, 
         body.dark-theme .auth-card, 
         body.dark-theme .site-header,
-        body.dark-theme .my-order-card {
+        body.dark-theme .my-order-card,
+        body.dark-theme .cart-items-wrap,
+        body.dark-theme .cart-summary,
+        body.dark-theme .modal-box,
+        body.dark-theme .feedback-form,
+        body.dark-theme .product-card {
           background-color: #1e1e1e !important;
           color: #fff !important;
           border-color: #2d2d2d !important;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
         }
+
+        /* Direct overrides for components with hardcoded inline backgrounds */
+        body.dark-theme div[style*="background: #fff"],
+        body.dark-theme div[style*="background:#fff"],
+        body.dark-theme div[style*="background: #ffffff"],
+        body.dark-theme div[style*="background:#ffffff"],
+        body.dark-theme div[style*="background: rgb(255, 255, 255)"],
+        body.dark-theme div[style*="background:white"],
+        body.dark-theme div[style*="background: white"],
+        body.dark-theme div[style*="background-color: #fff"],
+        body.dark-theme div[style*="background-color:#fff"],
+        body.dark-theme div[style*="background-color: rgb(255, 255, 255)"],
+        body.dark-theme div[style*="background: #fafafa"],
+        body.dark-theme div[style*="background:#fafafa"],
+        body.dark-theme div[style*="background: #f5f5f5"],
+        body.dark-theme div[style*="background: #f9f9f9"],
+        body.dark-theme div[style*="background: #f8f9fa"],
+        body.dark-theme div[style*="background: #fcfcfc"],
+        body.dark-theme div[style*="background: #FAFBFC"],
+        body.dark-theme div[style*="background: #fff5f5"],
+        body.dark-theme div[style*="background: #faf8f5"] {
+          background-color: #1e1e1e !important;
+          color: #f5f5f5 !important;
+          border-color: #2d2d2d !important;
+        }
+
+        body.dark-theme div[style*="background: #f0f2f5"],
+        body.dark-theme div[style*="background:#f0f2f5"] {
+          background-color: #151515 !important;
+          color: #f5f5f5 !important;
+          border-color: #2d2d2d !important;
+        }
+
+        body.dark-theme tr[style*="background: #fafafa"],
+        body.dark-theme tr[style*="background:#fafafa"] {
+          background-color: #1a1a1a !important;
+          color: #f5f5f5 !important;
+        }
+
+        body.dark-theme div[style*="background: #fafafa"] div,
+        body.dark-theme div[style*="background:#fafafa"] div,
+        body.dark-theme div[style*="background: #f0f2f5"] div,
+        body.dark-theme div[style*="background:#f0f2f5"] div {
+          color: #f5f5f5 !important;
+        }
+
+        /* Ensure texts using var(--primary) are bright and highly readable in dark mode */
+        body.dark-theme span[style*="color: var(--primary)"],
+        body.dark-theme strong[style*="color: var(--primary)"],
+        body.dark-theme div[style*="color: var(--primary)"],
+        body.dark-theme h1[style*="color: var(--primary)"],
+        body.dark-theme h2[style*="color: var(--primary)"],
+        body.dark-theme h3[style*="color: var(--primary)"],
+        body.dark-theme h4[style*="color: var(--primary)"] {
+          color: var(--primary) !important;
+        }
+
+        body.dark-theme span[style*="color: var(--text)"],
+        body.dark-theme strong[style*="color: var(--text)"],
+        body.dark-theme div[style*="color: var(--text)"] {
+          color: #f5f5f5 !important;
+        }
+
+        body.dark-theme .product-name,
+        body.dark-theme .product-price .current,
+        body.dark-theme .pd-spec-table td {
+          color: #fff !important;
+        }
+
         body.dark-theme input,
         body.dark-theme select,
         body.dark-theme textarea {

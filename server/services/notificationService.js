@@ -112,6 +112,8 @@ async function sendSMS(client, fromSms, toPhone, message) {
     console.error(`\n[SMS FAILED] To: ${cleanPhone}`);
     console.error(`   Error Code: ${err.code || 'N/A'}`);
     console.error(`   Reason: ${err.message}`);
+    console.warn(`[SMS Fallback Log] For Customer ${cleanPhone}:`);
+    console.warn(`   MESSAGE: "${message}"`);
     return false;
   }
 }
@@ -146,6 +148,8 @@ async function sendWhatsApp(client, fromWa, toPhone, message) {
     console.error(`\n[WHATSAPP FAILED] To: whatsapp:${cleanPhone}`);
     console.error(`   Error Code: ${err.code || 'N/A'}`);
     console.error(`   Reason: ${err.message}`);
+    console.warn(`[WhatsApp Fallback Log] For Customer ${cleanPhone}:`);
+    console.warn(`   MESSAGE: "${message}"`);
     return false;
   }
 }

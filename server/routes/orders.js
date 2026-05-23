@@ -156,7 +156,7 @@ router.post('/', auth, async (req, res) => {
       tracking_id: trackingId,
       delivery_service: 'XpressBees',
       items: formattedItems,
-      notified_confirmed: true
+      notified_confirmed: false
     });
 
     await newOrder.save();
