@@ -39,7 +39,7 @@ const productSchema = new mongoose.Schema({
   original_price: { type: Number, default: 0.00 },
   description: { type: String, default: '' },
   image: { type: String, default: '' },
-  rating: { type: Number, default: 4.0 },
+  rating: { type: Number, default: 2.5 },
   category: { type: String, required: true },
   color: { type: String, default: 'Multi' },
   occasion: { type: String, default: 'Casual' },

@@ -6,6 +6,9 @@ const bcrypt = require('bcryptjs');
 const Product = require('./models/Product');
 const User = require('./models/User');
 const Setting = require('./models/Setting');
+const Order = require('./models/Order');
+const Comment = require('./models/Comment');
+const Expense = require('./models/Expense');
 const path = require('path');
 const fs = require('fs');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
@@ -61,11 +64,35 @@ async function seed() {
     await mongoose.connect(MONGO_URI);
     console.log('✅ Connected to MongoDB.');
 
+    // Scale prices to be between 250 and 5000, and set initial rating to 2.5
+    const originalMin = 900;
+    const originalMax = 25000;
+    const targetMin = 250;
+    const targetMax = 5000;
+
+    const scalePrice = (val) => {
+      let mapped = targetMin + ((val - originalMin) / (originalMax - originalMin)) * (targetMax - targetMin);
+      mapped = Math.round(mapped / 50) * 50 - 1; // e.g. 299, 449, 4999
+      return Math.max(targetMin, Math.min(targetMax, mapped));
+    };
+
+    sarees.forEach(s => {
+      s.price = scalePrice(s.price);
+      s.orig = scalePrice(s.orig);
+      if (s.orig <= s.price) {
+        s.orig = Math.min(5000, Math.round(s.price * 1.25));
+      }
+      s.rating = 2.5; // Always set initial rating to 2.5
+    });
+
     // 1. Clear Database
     console.log('Clearing old collections...');
     await Product.deleteMany({});
     await User.deleteMany({});
     await Setting.deleteMany({});
+    await Order.deleteMany({});
+    await Comment.deleteMany({});
+    await Expense.deleteMany({});
     console.log('Database cleared.');
 
     // 2. Hash passwords

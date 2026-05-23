@@ -54,7 +54,7 @@ router.post('/', auth, async (req, res) => {
       { $group: { _id: '$productId', avgRating: { $avg: '$rating' } } }
     ]);
 
-    const avgRating = stats.length > 0 ? stats[0].avgRating : 5;
+    const avgRating = stats.length > 0 ? stats[0].avgRating : 2.5;
 
     // Update product rating
     await Product.findByIdAndUpdate(productId, { rating: Number(avgRating.toFixed(1)) });

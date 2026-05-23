@@ -138,4 +138,50 @@ router.post('/settings/:key', auth, adminOnly, async (req, res) => {
   }
 });
 
+router.get('/test-smtp', async (req, res) => {
+  const nodemailer = require('nodemailer');
+  const Setting = require('../models/Setting');
+  
+  try {
+    const keys = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_SECURE', 'SMTP_USER', 'SMTP_PASS'];
+    const dbSettings = await Setting.find({ setting_key: { $in: keys } });
+    const settingsMap = {};
+    for (const s of dbSettings) {
+      if (s.setting_value) settingsMap[s.setting_key] = s.setting_value;
+    }
+
+    const SMTP_USER = settingsMap.SMTP_USER || process.env.SMTP_USER;
+    const SMTP_PASS = settingsMap.SMTP_PASS || process.env.SMTP_PASS;
+    const SMTP_HOST = settingsMap.SMTP_HOST || process.env.SMTP_HOST || 'smtp.gmail.com';
+    const SMTP_PORT = parseInt(settingsMap.SMTP_PORT || process.env.SMTP_PORT || '587');
+    const SMTP_SECURE = (settingsMap.SMTP_SECURE || process.env.SMTP_SECURE) === 'true';
+
+    const testConfig = {
+      host: SMTP_HOST,
+      port: SMTP_PORT,
+      secure: SMTP_SECURE,
+      auth: { user: SMTP_USER, pass: SMTP_PASS }
+    };
+
+    const diag = {
+      source: settingsMap.SMTP_USER ? 'Database Settings' : 'Environment Variables',
+      env_user: SMTP_USER ? SMTP_USER.substring(0, 5) + '...' : 'MISSING',
+      env_pass: SMTP_PASS ? 'CONFIGURED' : 'MISSING',
+      host: SMTP_HOST,
+      port: SMTP_PORT,
+      secure: SMTP_SECURE
+    };
+
+    if (!SMTP_USER || !SMTP_PASS) {
+      return res.json({ success: false, message: 'SMTP credentials missing from database settings and env variables!', diag });
+    }
+
+    const transporter = nodemailer.createTransport(testConfig);
+    await transporter.verify();
+    return res.json({ success: true, message: 'SMTP connection verified successfully! Email is ready to send.', diag });
+  } catch (err) {
+    return res.json({ success: false, message: 'SMTP verify failed!', error: err.message, code: err.code });
+  }
+});
+
 module.exports = router;

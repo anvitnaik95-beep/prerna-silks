@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import API from '../services/api';
 import Header from '../components/Header';
@@ -13,6 +13,16 @@ export default function TrackOrder() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const [leafletLoaded, setLeafletLoaded] = useState(false);
+  const [destCoords, setDestCoords] = useState(null);
+  const [routeCoords, setRouteCoords] = useState([]);
+  const [realDistance, setRealDistance] = useState(null);
+
+  const mapContainerRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const routePolylineRef = useRef(null);
+  const scootyMarkerRef = useRef(null);
+
   const fmt = v => `₹${Number(v).toLocaleString('en-IN')}`;
 
   useEffect(() => {
@@ -22,6 +32,26 @@ export default function TrackOrder() {
       handleTrack(id);
     }
   }, [searchParams]);
+
+  // Load Leaflet CDN script & stylesheet
+  useEffect(() => {
+    if (window.L) {
+      setLeafletLoaded(true);
+      return;
+    }
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(link);
+
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.async = true;
+    script.onload = () => {
+      setLeafletLoaded(true);
+    };
+    document.body.appendChild(script);
+  }, []);
 
   const handleTrack = async (id) => {
     const searchId = (id || trackId).trim();
@@ -42,8 +72,227 @@ export default function TrackOrder() {
     setLoading(false);
   };
 
+  // Live Polling order status to auto-animate map
+  useEffect(() => {
+    if (!order || order.status === 'Delivered' || order.status === 'Cancelled') return;
+
+    const interval = setInterval(() => {
+      API.get(`/orders/track/${order.trackingId}`)
+        .then(({ data }) => {
+          if (data.success) {
+            setOrder(data.order);
+          }
+        })
+        .catch(err => console.error("Error polling order status:", err));
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [order?.trackingId, order?.status]);
+
+  // Geocode address when order details are loaded
+  useEffect(() => {
+    if (!order || !order.shippingAddress) return;
+
+    setDestCoords(null);
+    setRouteCoords([]);
+    setRealDistance(null);
+
+    const address = order.shippingAddress;
+    let query = address;
+    if (!query.toLowerCase().includes('karnataka') && !query.toLowerCase().includes('india')) {
+      query += ', Karnataka, India';
+    }
+
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.length > 0) {
+          const lat = parseFloat(data[0].lat);
+          const lon = parseFloat(data[0].lon);
+          setDestCoords([lat, lon]);
+        } else {
+          // Fallback coordinate offset from Hubli Post Office
+          setDestCoords([15.3489 + 0.015, 75.1394 + 0.015]);
+        }
+      })
+      .catch(err => {
+        console.error('Geocoding error:', err);
+        setDestCoords([15.3489 + 0.015, 75.1394 + 0.015]);
+      });
+  }, [order]);
+
+  // Calculate direct distance as backup using Haversine Formula
+  function calculateDirectDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  // Get road-by-road route using OSRM Routing Engine
+  useEffect(() => {
+    if (!destCoords) return;
+
+    const start = [15.3489, 75.1394]; // Hubli Post Office Center
+    const end = destCoords;
+
+    fetch(`https://router.project-osrm.org/route/v1/driving/${start[1]},${start[0]};${end[1]},${end[0]}?overview=full&geometries=geojson`)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.routes && data.routes.length > 0) {
+          const route = data.routes[0];
+          const coords = route.geometry.coordinates.map(pt => [pt[1], pt[0]]);
+          setRouteCoords(coords);
+          setRealDistance((route.distance / 1000).toFixed(1));
+        } else {
+          setRouteCoords([start, end]);
+          const d = calculateDirectDistance(start[0], start[1], end[0], end[1]);
+          setRealDistance(d.toFixed(1));
+        }
+      })
+      .catch(err => {
+        console.error('OSRM route error:', err);
+        setRouteCoords([start, end]);
+        const d = calculateDirectDistance(start[0], start[1], end[0], end[1]);
+        setRealDistance(d.toFixed(1));
+      });
+  }, [destCoords]);
+
   const currentStep = order ? STATUS_STEPS.indexOf(order.status) : -1;
   const isCancelled = order?.status === 'Cancelled';
+
+  // Initialize Map
+  useEffect(() => {
+    if (!leafletLoaded || !order || routeCoords.length === 0 || !mapContainerRef.current) return;
+
+    const L = window.L;
+
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
+    }
+
+    const start = [15.3489, 75.1394];
+    const end = destCoords || start;
+
+    const map = L.map(mapContainerRef.current, {
+      center: start,
+      zoom: 13,
+      zoomControl: true,
+      attributionControl: false
+    });
+    mapInstanceRef.current = map;
+
+    // CartoDB Dark Matter tiles
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19
+    }).addTo(map);
+
+    const polyline = L.polyline(routeCoords, {
+      color: '#d4af37',
+      weight: 4,
+      opacity: 0.8,
+      lineCap: 'round',
+      lineJoin: 'round'
+    }).addTo(map);
+    routePolylineRef.current = polyline;
+
+    map.fitBounds(polyline.getBounds(), { padding: [40, 40] });
+
+    const startIcon = L.divIcon({
+      className: 'custom-start-marker',
+      html: `<div style="width: 14px; height: 14px; background: #28a745; border: 2.5px solid #fff; border-radius: 50%; box-shadow: 0 0 10px #28a745;"></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7]
+    });
+
+    const endIcon = L.divIcon({
+      className: 'custom-end-marker',
+      html: `<div style="width: 16px; height: 16px; background: #dc3545; border: 2.5px solid #fff; border-radius: 50%; box-shadow: 0 0 10px #dc3545;"></div>`,
+      iconSize: [16, 16],
+      iconAnchor: [8, 8]
+    });
+
+    const scootyIcon = L.divIcon({
+      className: 'custom-scooty-marker',
+      html: `
+        <div style="
+          width: 38px;
+          height: 38px;
+          background: rgba(212, 175, 55, 0.15);
+          border: 1.5px solid #d4af37;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+          transition: all 0.5s ease;
+        ">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#d4af37">
+            <circle cx="6" cy="18" r="3" />
+            <circle cx="18" cy="18" r="3" />
+            <path d="M6 15h12v-2a2 2 0 0 0-2-2H9.5a2.5 2.5 0 0 1-2.5-2.5V7a2 2 0 0 1 2-2h4" />
+            <path d="M12 9h3l3 4" />
+            <path d="M18 5v4" />
+            <path d="M17 5h2" />
+            <line x1="3" y1="18" x2="1" y2="18" stroke="#d4af37" strokeWidth="1.5" />
+            <line x1="2" y1="15" x2="0" y2="15" stroke="#d4af37" strokeWidth="1.5" />
+          </svg>
+        </div>
+      `,
+      iconSize: [38, 38],
+      iconAnchor: [19, 19]
+    });
+
+    L.marker(start, { icon: startIcon }).addTo(map).bindPopup('<b>Hubli Post Office Hub</b>');
+    L.marker(end, { icon: endIcon }).addTo(map).bindPopup(`<b>Your Doorstep</b><br/>${order.shippingAddress}`);
+
+    const percentage = Math.max(0, currentStep) / (STATUS_STEPS.length - 1);
+    const pointIdx = Math.round(percentage * (routeCoords.length - 1));
+    const scootyPosition = routeCoords[pointIdx] || start;
+
+    const scooty = L.marker(scootyPosition, { icon: scootyIcon }).addTo(map);
+    scootyMarkerRef.current = scooty;
+
+    map.panTo(scootyPosition);
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [leafletLoaded, routeCoords]);
+
+  // Animate Scooty on step/status update
+  useEffect(() => {
+    if (!mapInstanceRef.current || !scootyMarkerRef.current || routeCoords.length === 0) return;
+
+    const percentage = Math.max(0, currentStep) / (STATUS_STEPS.length - 1);
+    const pointIdx = Math.round(percentage * (routeCoords.length - 1));
+    const scootyPosition = routeCoords[pointIdx] || [15.3489, 75.1394];
+
+    scootyMarkerRef.current.setLatLng(scootyPosition);
+    mapInstanceRef.current.panTo(scootyPosition);
+  }, [currentStep, routeCoords]);
+
+  // Compute remaining distance based on route distance and current phase progress
+  const getRemainingDistance = () => {
+    if (!realDistance) return 'Calculating...';
+    const distNum = parseFloat(realDistance);
+    if (isNaN(distNum)) return 'Calculating...';
+
+    if (currentStep <= 0) return `${distNum.toFixed(1)} km`;
+    if (currentStep === 1) return `${(distNum * 0.75).toFixed(1)} km`;
+    if (currentStep === 2) return `${(distNum * 0.50).toFixed(1)} km`;
+    if (currentStep === 3) return `${(distNum * 0.25).toFixed(1)} km`;
+    return 'Arrived!';
+  };
 
   return (
     <>
@@ -154,32 +403,21 @@ export default function TrackOrder() {
               </div>
             )}
 
-
-            {/* Live Animated Scooty Route Map */}
+            {/* Live Interactive Leaflet Route Map */}
             {!isCancelled && (
               <div style={{ padding: '0 28px 28px' }}>
                 <div style={{
                   background: '#0b132b',
                   borderRadius: 12,
                   border: '1.5px solid var(--gold, #d4af37)',
-                  padding: '24px',
+                  padding: '20px',
                   boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
-                  position: 'relative',
-                  overflow: 'hidden'
+                  position: 'relative'
                 }}>
-                  {/* Glowing background matrix effect */}
-                  <div style={{
-                    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                    opacity: 0.04,
-                    backgroundImage: 'radial-gradient(#d4af37 1px, transparent 0)',
-                    backgroundSize: '16px 16px',
-                    pointerEvents: 'none'
-                  }} />
-
                   <h4 style={{
                     fontFamily: 'var(--font-heading)',
                     color: 'var(--gold, #d4af37)',
-                    fontSize: '1rem',
+                    fontSize: '0.98rem',
                     margin: '0 0 16px',
                     fontWeight: 400,
                     display: 'flex',
@@ -189,135 +427,13 @@ export default function TrackOrder() {
                   }}>
                     <span style={{
                       width: 8, height: 8, borderRadius: '50%', background: '#28a745',
-                      boxShadow: '0 0 8px #28a745', animation: 'pulse 1.5s infinite alternate'
+                      boxShadow: '0 0 8px #28a745', animation: 'ping 1.5s infinite alternate'
                     }} />
-                    LIVE DELIVERY TRACKER (Hubli Post Office ➔ Address)
+                    REAL-TIME DELIVERIES MAP
                   </h4>
 
-                  {/* SVG Map Path & Animation */}
-                  <div style={{ position: 'relative', width: '100%', height: 180 }}>
-                    <svg width="100%" height="100%" viewBox="0 0 700 180" style={{ overflow: 'visible' }}>
-                      {/* Grid Roads simulation */}
-                      <path d="M 0,90 Q 175,140 350,90 T 700,90" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="8" strokeLinecap="round" />
-                      <path d="M 80,0 L 80,180" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="3" />
-                      <path d="M 230,0 L 230,180" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="3" />
-                      <path d="M 380,0 L 380,180" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="3" />
-                      <path d="M 530,0 L 530,180" fill="none" stroke="rgba(255,255,255,0.03)" strokeWidth="3" />
-
-                      {/* Main Transit Route Line */}
-                      <path 
-                        id="route-path"
-                        d="M 60,110 C 180,30 260,170 380,80 C 480,10 560,150 640,90" 
-                        fill="none" 
-                        stroke="#2a3b5c" 
-                        strokeWidth="5" 
-                        strokeLinecap="round" 
-                      />
-
-                      {/* Glowing Active Progress Path */}
-                      <path 
-                        d="M 60,110 C 180,30 260,170 380,80 C 480,10 560,150 640,90" 
-                        fill="none" 
-                        stroke="var(--gold, #d4af37)" 
-                        strokeWidth="4" 
-                        strokeLinecap="round" 
-                        strokeDasharray="600"
-                        strokeDashoffset={600 - (600 * (Math.max(0, currentStep) / (STATUS_STEPS.length - 1)))}
-                        style={{
-                          transition: 'stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                          filter: 'drop-shadow(0 0 3px #d4af37)'
-                        }}
-                      />
-
-                      {/* Milestone Nodes */}
-                      {[
-                        { x: 60, y: 110, label: 'Hubli Post Office Hub', step: 0 },
-                        { x: 200, y: 85, label: 'Confirmed', step: 1 },
-                        { x: 350, y: 100, label: 'Dispatched (In Transit)', step: 2 },
-                        { x: 500, y: 60, label: 'Out for Delivery', step: 3 },
-                        { x: 640, y: 90, label: 'Your Doorstep', step: 4 }
-                      ].map((node, idx) => {
-                        const isReached = idx <= currentStep;
-                        return (
-                          <g key={idx}>
-                            {/* Outer pulsing glow */}
-                            {isReached && (
-                              <circle 
-                                cx={node.x} cy={node.y} r="10" 
-                                fill={idx === currentStep ? '#28a745' : 'var(--gold, #d4af37)'}
-                                opacity="0.4"
-                                style={{ animation: 'ping 2s infinite' }}
-                              />
-                            )}
-                            <circle 
-                              cx={node.x} cy={node.y} 
-                              r={idx === 0 || idx === 4 ? "7" : "5"} 
-                              fill={isReached ? (idx === currentStep ? '#28a745' : 'var(--gold, #d4af37)') : '#1e293b'} 
-                              stroke={isReached ? '#fff' : 'rgba(255,255,255,0.2)'}
-                              strokeWidth="1.5"
-                            />
-                            {/* Label */}
-                            <text 
-                              x={node.x} y={node.y - 14} 
-                              textAnchor="middle" 
-                              fill={isReached ? '#ffffff' : 'rgba(255,255,255,0.4)'} 
-                              style={{ 
-                                fontSize: '0.68rem', 
-                                fontWeight: idx === currentStep ? 600 : 400,
-                                fontFamily: 'var(--font-body)',
-                                textShadow: '0 2px 4px rgba(0,0,0,0.8)'
-                              }}
-                            >
-                              {node.label}
-                            </text>
-                          </g>
-                        );
-                      })}
-                    </svg>
-
-                    {/* Dynamic Moving Scooty Marker using CSS Path offset */}
-                    <div style={{
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      width: '100%',
-                      height: '100%',
-                      pointerEvents: 'none'
-                    }}>
-                      <div 
-                        style={{
-                          width: 36,
-                          height: 36,
-                          background: 'rgba(212, 175, 55, 0.15)',
-                          border: '1.5px solid var(--gold, #d4af37)',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          position: 'absolute',
-                          offsetPath: 'path("M 60,110 C 180,30 260,170 380,80 C 480,10 560,150 640,90")',
-                          offsetDistance: `${(Math.max(0, currentStep) / (STATUS_STEPS.length - 1)) * 100}%`,
-                          offsetRotate: 'auto 90deg',
-                          transform: 'translate(-50%, -50%)',
-                          boxShadow: '0 0 15px rgba(212, 175, 55, 0.4)',
-                          transition: 'offset-distance 1.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                          zIndex: 10
-                        }}
-                      >
-                        {/* Custom Scooty SVG Icon */}
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--gold, #d4af37)">
-                          <circle cx="6" cy="18" r="3" />
-                          <circle cx="18" cy="18" r="3" />
-                          <path d="M6 15h12v-2a2 2 0 0 0-2-2H9.5a2.5 2.5 0 0 1-2.5-2.5V7a2 2 0 0 1 2-2h4" />
-                          <path d="M12 9h3l3 4" />
-                          <path d="M18 5v4" />
-                          <path d="M17 5h2" />
-                          <line x1="3" y1="18" x2="1" y2="18" stroke="var(--gold, #d4af37)" strokeWidth="1.5" />
-                          <line x1="2" y1="15" x2="0" y2="15" stroke="var(--gold, #d4af37)" strokeWidth="1.5" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
+                  {/* Leaflet Container */}
+                  <div ref={mapContainerRef} style={{ height: 350, width: '100%', borderRadius: 8, zIndex: 1 }} />
 
                   {/* Real-time Address and Route Info banner */}
                   <div style={{
@@ -333,7 +449,7 @@ export default function TrackOrder() {
                     gap: 12
                   }}>
                     <div>
-                      <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Current Stage Address</span>
+                      <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Current Stage Location</span>
                       <div style={{ fontSize: '0.82rem', color: '#fff', fontWeight: 500, marginTop: 2 }}>
                         {currentStep === 0 && 'Hubli Post Office Center'}
                         {currentStep === 1 && 'Prerna Silks hubli HQ'}
@@ -343,13 +459,9 @@ export default function TrackOrder() {
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Estimated Distance left</span>
+                      <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Estimated Distance Left</span>
                       <div style={{ fontSize: '0.82rem', color: 'var(--gold, #d4af37)', fontWeight: 600, marginTop: 2 }}>
-                        {currentStep === 0 && '12.4 km'}
-                        {currentStep === 1 && '9.8 km'}
-                        {currentStep === 2 && '4.2 km'}
-                        {currentStep === 3 && '0.8 km'}
-                        {currentStep === 4 && 'Arrived!'}
+                        {getRemainingDistance()}
                       </div>
                     </div>
                   </div>

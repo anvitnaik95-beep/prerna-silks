@@ -3,8 +3,8 @@ const Order = require('./models/Order');
 const User = require('./models/User');
 const { sendOrderSMSAndWhatsApp, sendDispatchNotification, sendDeliveredNotification } = require('./services/notificationService');
 
-// 1 minute in milliseconds for rapid testing/observation
-const ONE_MINUTE = 60 * 1000;
+// 30 seconds per phase transition
+const PHASE_DURATION = 30 * 1000;
 
 async function processOrderLifecycles() {
   try {
@@ -19,29 +19,30 @@ async function processOrderLifecycles() {
       const orderAge = now - new Date(order.created_at).getTime();
       let updated = false;
 
-      // 1. CONFIRMED (Immediately on creation)
-      if (order.status === 'Pending') {
+      // Phase 1: Confirmed (after 30 seconds)
+      if (orderAge >= PHASE_DURATION && order.status === 'Pending') {
         order.status = 'Confirmed';
         updated = true;
       }
-      
-      if (!order.notified_confirmed) {
+
+      // Send confirmation backup alert if transitioned or not yet notified
+      if (order.status === 'Confirmed' && !order.notified_confirmed) {
         order.notified_confirmed = true;
         updated = true;
         const user = order.userId;
         const notifUser = { name: user?.name || 'Customer', email: user?.email || '', phone: user?.phone || '' };
-        // Send confirmed notification
         await sendOrderSMSAndWhatsApp(order, order.items, notifUser).catch(e => console.error(e));
       }
 
-      // 2. DISPATCHED (After 1 minute)
-      if (orderAge >= ONE_MINUTE && (order.status === 'Confirmed' || order.status === 'Pending')) {
+      // Phase 2: Dispatched (after 60 seconds)
+      if (orderAge >= 2 * PHASE_DURATION && (order.status === 'Confirmed' || order.status === 'Pending')) {
         order.status = 'Dispatched';
         order.dispatched_at = new Date();
         updated = true;
       }
 
-      if (order.status === 'Dispatched' && !order.notified_dispatched && orderAge >= ONE_MINUTE) {
+      // Send dispatch alert
+      if (order.status === 'Dispatched' && !order.notified_dispatched) {
         order.notified_dispatched = true;
         updated = true;
         const user = order.userId;
@@ -53,13 +54,20 @@ async function processOrderLifecycles() {
         await sendDispatchNotification(order, notifUser).catch(e => console.error(e));
       }
 
-      // 3. DELIVERED (After 2 minutes)
-      if (orderAge >= 2 * ONE_MINUTE && order.status === 'Dispatched') {
+      // Phase 3: Shipped (after 90 seconds)
+      if (orderAge >= 3 * PHASE_DURATION && (order.status === 'Dispatched' || order.status === 'Confirmed' || order.status === 'Pending')) {
+        order.status = 'Shipped';
+        updated = true;
+      }
+
+      // Phase 4: Delivered (after 120 seconds)
+      if (orderAge >= 4 * PHASE_DURATION && (order.status === 'Shipped' || order.status === 'Dispatched')) {
         order.status = 'Delivered';
         updated = true;
       }
 
-      if (order.status === 'Delivered' && !order.notified_delivered && orderAge >= 2 * ONE_MINUTE) {
+      // Send delivery alert
+      if (order.status === 'Delivered' && !order.notified_delivered) {
         order.notified_delivered = true;
         updated = true;
         const user = order.userId;
@@ -77,10 +85,10 @@ async function processOrderLifecycles() {
   }
 }
 
-// Start the periodic checking
+// Start the periodic checking (every 10 seconds)
 function startBackgroundJobs() {
-  console.log('Started background job for order automated lifecycles (every 1 minute)');
-  setInterval(processOrderLifecycles, 60 * 1000);
+  console.log('Started background job for order automated lifecycles (every 10 seconds)');
+  setInterval(processOrderLifecycles, 10 * 1000);
   // Run once immediately on startup
   processOrderLifecycles();
 }
