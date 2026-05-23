@@ -33,6 +33,115 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB max
 });
 
+/**
+ * OCR-based amount extraction from bill images using Tesseract.js
+ * Preprocesses image with sharp for better OCR accuracy
+ */
+async function extractAmountFromImage(filePath) {
+  try {
+    const Tesseract = require('tesseract.js');
+    let imagePath = filePath;
+
+    // Preprocess image with sharp for better OCR results
+    if (!filePath.toLowerCase().endsWith('.pdf')) {
+      try {
+        const sharp = require('sharp');
+        const processedPath = filePath.replace(/(\.\w+)$/, '_processed.png');
+        await sharp(filePath)
+          .greyscale()
+          .normalize()
+          .sharpen()
+          .resize({ width: 2000, withoutEnlargement: true })
+          .toFile(processedPath);
+        imagePath = processedPath;
+      } catch (sharpErr) {
+        console.log('Sharp preprocessing skipped:', sharpErr.message);
+        // Fall back to original image
+      }
+    }
+
+    // Run Tesseract OCR
+    const { data: { text } } = await Tesseract.recognize(imagePath, 'eng', {
+      logger: () => {} // silence logs
+    });
+
+    // Cleanup processed image
+    if (imagePath !== filePath && fs.existsSync(imagePath)) {
+      fs.unlinkSync(imagePath);
+    }
+
+    console.log('OCR extracted text:', text.substring(0, 500));
+
+    if (!text || text.trim().length === 0) {
+      return { amount: null, ocrText: '', confidence: 'no_text' };
+    }
+
+    // Extract amounts using multiple patterns (Indian currency formats)
+    const amount = findBestAmount(text);
+    return { amount, ocrText: text.substring(0, 1000), confidence: amount ? 'ocr_detected' : 'no_amount_found' };
+  } catch (err) {
+    console.error('OCR extraction error:', err.message);
+    return { amount: null, ocrText: '', confidence: 'ocr_failed' };
+  }
+}
+
+/**
+ * Intelligent amount extraction from OCR text
+ * Looks for total/grand total first, then falls back to largest amount
+ */
+function findBestAmount(text) {
+  // Normalize text
+  const normalized = text
+    .replace(/[,\s]+/g, m => m.includes(',') ? ',' : ' ')
+    .replace(/\n/g, ' ');
+
+  // Pattern 1: Look for "Total", "Grand Total", "Net Amount", "Amount Due", "Payable" keywords
+  const totalPatterns = [
+    /(?:grand\s*total|net\s*(?:amount|total|payable)|amount\s*(?:due|payable)|total\s*(?:amount|due|payable|bill)|payable|balance\s*due)[:\s]*(?:Rs\.?|₹|INR)?\s*([\d,]+(?:\.\d{1,2})?)/gi,
+    /(?:Rs\.?|₹|INR)\s*([\d,]+(?:\.\d{1,2})?)\s*(?:grand\s*total|net\s*total|total\s*amount|amount\s*due)/gi,
+    /(?:total)[:\s]*(?:Rs\.?|₹|INR)?\s*([\d,]+(?:\.\d{1,2})?)/gi,
+    /(?:Rs\.?|₹|INR)\s*([\d,]+(?:\.\d{1,2})?)\s*(?:total)/gi,
+  ];
+
+  // Try each pattern in priority order
+  for (const pattern of totalPatterns) {
+    const matches = [...normalized.matchAll(pattern)];
+    if (matches.length > 0) {
+      // Get the last match (usually the grand total comes after subtotals)
+      const lastMatch = matches[matches.length - 1];
+      const val = parseFloat(lastMatch[1].replace(/,/g, ''));
+      if (val > 0 && val < 10000000) { // sanity: up to 1 crore
+        return val;
+      }
+    }
+  }
+
+  // Pattern 2: Find all currency amounts in text
+  const currencyPattern = /(?:Rs\.?|₹|INR)\s*([\d,]+(?:\.\d{1,2})?)/gi;
+  const amounts = [];
+  let match;
+  while ((match = currencyPattern.exec(normalized)) !== null) {
+    const val = parseFloat(match[1].replace(/,/g, ''));
+    if (val > 0 && val < 10000000) {
+      amounts.push(val);
+    }
+  }
+
+  // Pattern 3: Look for standalone numbers that could be amounts
+  const standaloneNumbers = /\b(\d{1,3}(?:,\d{3})*(?:\.\d{1,2})?)\b/g;
+  while ((match = standaloneNumbers.exec(normalized)) !== null) {
+    const val = parseFloat(match[1].replace(/,/g, ''));
+    if (val >= 50 && val < 10000000) { // at least ₹50 to be a valid bill amount
+      amounts.push(val);
+    }
+  }
+
+  if (amounts.length === 0) return null;
+
+  // Return the largest amount (most likely the total)
+  return Math.max(...amounts);
+}
+
 // Get all bills
 router.get('/', auth, async (req, res) => {
   try {
@@ -53,7 +162,7 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// Upload a bill (image or PDF) — no conversion needed
+// Upload a bill (image or PDF) with OCR amount detection
 router.post('/upload', auth, upload.single('billImage'), async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
@@ -71,19 +180,23 @@ router.post('/upload', auth, upload.single('billImage'), async (req, res) => {
       return res.status(400).json({ message: 'Bill title is required' });
     }
 
-    // Amount Detection from uploaded picture (if not manually provided)
-    if (!amount) {
-      const originalName = req.file.originalname;
-      // 1. Try scanning original filename for amount patterns (e.g. invoice_1250.jpg)
-      const numbersInFilename = originalName.match(/\b\d+(?:,\d{3})*(?:\.\d{2})?\b/);
-      if (numbersInFilename) {
-        amount = parseFloat(numbersInFilename[0].replace(/,/g, ''));
+    let ocrInfo = '';
+
+    // OCR-based Amount Detection from uploaded image (if amount not manually provided)
+    if (!amount && req.file.mimetype.startsWith('image/')) {
+      const absoluteFilePath = path.join(__dirname, '../public/uploads/bills', req.file.filename);
+      const ocrResult = await extractAmountFromImage(absoluteFilePath);
+      
+      if (ocrResult.amount) {
+        amount = ocrResult.amount;
+        ocrInfo = `OCR scanned and detected amount: ₹${amount.toLocaleString('en-IN')}`;
       } else {
-        // 2. Simulate advanced OCR analysis of the uploaded picture file (size, format, and structure analysis)
-        const fileSeed = req.file.size || 1024;
-        // Deterministically generate a highly realistic bill amount (between 250 and 4800)
-        amount = 250 + (fileSeed % 4550);
-        amount = Math.round(amount / 50) * 50; // round to nearest 50 for authentic bills
+        ocrInfo = `OCR scan completed but could not detect a clear amount. Please enter manually.`;
+      }
+      
+      // Log OCR text for debugging
+      if (ocrResult.ocrText) {
+        console.log(`Bill OCR [${title}]: confidence=${ocrResult.confidence}, amount=${amount}, text_preview="${ocrResult.ocrText.substring(0, 200)}"`);
       }
     }
 
@@ -92,17 +205,22 @@ router.post('/upload', auth, upload.single('billImage'), async (req, res) => {
     // Save to MongoDB
     const newBill = new Bill({
       title,
-      amount,
+      amount: amount || 0,
       file_path: relativeFilePath
     });
     await newBill.save();
 
+    const message = amount 
+      ? `Bill uploaded successfully! ${ocrInfo || `Amount: ₹${amount.toLocaleString('en-IN')}`}`
+      : `Bill uploaded. ${ocrInfo || 'No amount detected — please update manually.'}`;
+
     res.status(201).json({
       id: newBill.id,
       title,
-      amount,
+      amount: amount || 0,
       file_path: relativeFilePath,
-      message: `Bill uploaded successfully! Detected Amount: ₹${amount.toLocaleString('en-IN')}`
+      message,
+      ocr_info: ocrInfo
     });
   } catch (error) {
     console.error('Error uploading bill:', error);

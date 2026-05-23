@@ -11,6 +11,7 @@ export default function Bills() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [scanMessage, setScanMessage] = useState('');
+  const [imagePreview, setImagePreview] = useState(null);
 
   const fmt = v => `₹${Number(v).toLocaleString('en-IN')}`;
 
@@ -22,6 +23,18 @@ export default function Bills() {
       setBills(data || []);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+    if (selectedFile && selectedFile.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (ev) => setImagePreview(ev.target.result);
+      reader.readAsDataURL(selectedFile);
+    } else {
+      setImagePreview(null);
     }
   };
 
@@ -48,9 +61,14 @@ export default function Bills() {
       setTitle('');
       setAmount('');
       setFile(null);
+      setImagePreview(null);
+      // Reset file input
+      const fileInput = document.querySelector('#billFileInput');
+      if (fileInput) fileInput.value = '';
+      
       setScanMessage(data.message || 'Bill uploaded successfully!');
       loadBills();
-      setTimeout(() => setScanMessage(''), 6000);
+      setTimeout(() => setScanMessage(''), 8000);
     } catch (err) {
       setError(err.response?.data?.message || 'Error uploading bill.');
     } finally {
@@ -106,7 +124,7 @@ export default function Bills() {
         <div className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
           <div>
             <h1 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', fontWeight: 400, margin: 0 }}>Bills Ledger</h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginTop: 4 }}>Manage and catalog business expense receipts.</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginTop: 4 }}>Upload receipts — amounts are auto-detected via OCR scanning.</p>
           </div>
           <input 
             type="text" 
@@ -144,7 +162,14 @@ export default function Bills() {
               <h4 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', marginBottom: 18, fontSize: '1.15rem', fontWeight: 500 }}>Upload Receipt</h4>
               
               {error && <div className="alert alert-danger p-2" style={{ fontSize: '0.85rem' }}>{error}</div>}
-              {scanMessage && <div className="alert alert-success p-2" style={{ fontSize: '0.85rem', lineHeight: 1.4 }}>{scanMessage}</div>}
+              {scanMessage && (
+                <div className="alert alert-success p-2" style={{ fontSize: '0.85rem', lineHeight: 1.4 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 6, verticalAlign: 'middle' }}>
+                    <path d="M9 12l2 2 4-4" /><circle cx="12" cy="12" r="10" />
+                  </svg>
+                  {scanMessage}
+                </div>
+              )}
               
               <form onSubmit={handleUpload}>
                 <div className="mb-3">
@@ -152,7 +177,7 @@ export default function Bills() {
                   <input 
                     type="text" 
                     className="form-control" 
-                    placeholder="e.g. Rent, Electricity" 
+                    placeholder="e.g. Rent, Electricity, Fabric Purchase" 
                     value={title} 
                     onChange={e => setTitle(e.target.value)} 
                     required 
@@ -160,29 +185,49 @@ export default function Bills() {
                 </div>
                 
                 <div className="mb-3">
-                  <label className="form-label" style={{ fontWeight: 500, fontSize: '0.88rem' }}>Amount (Optional)</label>
+                  <label className="form-label" style={{ fontWeight: 500, fontSize: '0.88rem' }}>
+                    Amount <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: '0.82rem' }}>(leave blank to auto-detect from image)</span>
+                  </label>
                   <input 
                     type="number" 
                     className="form-control" 
-                    placeholder="Leave blank to detect from title" 
+                    placeholder="Auto-detected via OCR scan" 
                     value={amount} 
                     onChange={e => setAmount(e.target.value)} 
                   />
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label" style={{ fontWeight: 500, fontSize: '0.88rem' }}>Bill Receipt File (PNG, JPG, PDF)</label>
+                  <label className="form-label" style={{ fontWeight: 500, fontSize: '0.88rem' }}>Bill Receipt Image (PNG, JPG)</label>
                   <input 
+                    id="billFileInput"
                     type="file" 
                     className="form-control" 
-                    accept="image/png, image/jpeg, image/jpg, application/pdf" 
-                    onChange={e => setFile(e.target.files[0])} 
+                    accept="image/png, image/jpeg, image/jpg" 
+                    onChange={handleFileChange} 
                     required 
                   />
+                  <small style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginTop: 4, display: 'block' }}>
+                    Upload a clear photo of the bill for best OCR scanning results.
+                  </small>
                 </div>
+
+                {/* Image Preview */}
+                {imagePreview && (
+                  <div style={{ marginBottom: 16, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)' }}>
+                    <img src={imagePreview} alt="Bill preview" style={{ width: '100%', maxHeight: 200, objectFit: 'contain', background: '#f9f9f9' }} />
+                  </div>
+                )}
                 
                 <button type="submit" className="btn-buy" style={{ width: '100%', padding: '12px', fontSize: '0.95rem', marginTop: 10 }} disabled={loading}>
-                  {loading ? 'Processing...' : 'Upload & Process'}
+                  {loading ? (
+                    <span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 8, verticalAlign: 'middle', animation: 'spin 1s linear infinite' }}>
+                        <path d="M21 12a9 9 0 11-6.219-8.56" />
+                      </svg>
+                      Scanning & Processing...
+                    </span>
+                  ) : 'Upload & Scan Amount'}
                 </button>
               </form>
             </div>
@@ -203,7 +248,7 @@ export default function Bills() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                   {groupedData.map(group => (
-                    <div key={group.groupKey} style={{ background: '#fafafa', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+                    <div key={`${group.month}-${group.year}`} style={{ background: '#fafafa', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
                       {/* Group Header showing Month, Year, and Subtotal */}
                       <div style={{ background: '#f0f2f5', padding: '14px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
                         <span style={{ fontWeight: 600, color: 'var(--primary)', fontSize: '0.95rem' }}>
@@ -256,6 +301,13 @@ export default function Bills() {
             </div>
           </div>
         </div>
+
+        <style>{`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
       </main>
     </div>
   );
