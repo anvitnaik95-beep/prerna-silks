@@ -7,6 +7,23 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+// GET /api/products/clear-base64 - Remove base64 image data from all products (fixes sort memory limit)
+router.get('/clear-base64', auth, adminOnly, async (req, res) => {
+  try {
+    const result = await Product.updateMany(
+      { image: /^data:/ },
+      { $set: { image: '' } }
+    );
+    const result2 = await Product.updateMany(
+      { 'images.image_url': /^data:/ },
+      { $pull: { images: { image_url: /^data:/ } } }
+    );
+    res.json({ success: true, message: `Cleared ${result.modifiedCount} main images, ${result2.modifiedCount} products with gallery images` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // GET /api/products - Get all products with optional filters
 router.get('/', async (req, res) => {
   try {
