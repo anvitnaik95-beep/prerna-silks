@@ -61,7 +61,7 @@ app.get('/api/test-email', async (req, res) => {
       const res2 = await fetch(`https://graph.facebook.com/v22.0/${waPhoneNumberId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${waAccessToken}` },
-        body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: testNumber, type: 'template', template: { name: 'hello_world', language: { code: 'en_US' } } })
+        body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: testNumber, type: 'text', text: { preview_url: false, body: 'Test from Prerna Silks server!' } })
       });
       const data = await res2.json();
       waResult = { success: !!data.messages, response: data };
