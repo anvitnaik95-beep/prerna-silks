@@ -23,7 +23,7 @@ services:
       - key: ADMIN_PHONE
         value: "7019461619"
       - key: ADMIN_EMAIL
-        value: "admin@prernasilks.com"
+        value: "anvitnaik95@gmail.com"
       - key: ADMIN_UPI
         value: "7019461619@ptyes"
       - key: SMTP_HOST

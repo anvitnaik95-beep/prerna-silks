@@ -17,15 +17,9 @@ export default function FeedbackPopup() {
     e.preventDefault();
     if (!form.message) return;
     try {
-      const { data } = await API.post('/feedback', form);
+      await API.post('/feedback', form);
       setMsg('Thank you for your feedback!');
       setForm({ name: '', email: '', message: '', rating: 5 });
-      
-      // Auto-open WhatsApp to send feedback to admin
-      if (data.adminWhatsAppUrl) {
-        window.open(data.adminWhatsAppUrl, '_blank');
-      }
-      
       setTimeout(() => { setMsg(''); setOpen(false); }, 3000);
     } catch { setMsg('Failed to submit'); }
   };

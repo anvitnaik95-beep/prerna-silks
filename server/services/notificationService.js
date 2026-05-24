@@ -207,6 +207,12 @@ async function sendOrderSMSAndWhatsApp(order, items, user) {
   const deliveryDate = new Date(order.estimated_delivery).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   const orderId = String(order.id || order._id).slice(-8).toUpperCase();
 
+  console.log('\n--- [Notification Config Check] ---');
+  console.log(`SMTP configured: ${!!transporter}, User email: ${user.email || 'MISSING'}`);
+  console.log(`Twilio SID set: ${!!config.TWILIO_ACCOUNT_SID}, Phone: ${user.phone || 'MISSING'}`);
+  console.log(`Admin email: ${config.ADMIN_EMAIL}`);
+  console.log('-----------------------------------\n');
+
   // WhatsApp Message to Customer
   const whatsappMsg = `Order Confirmed - Prerna Silks
 
