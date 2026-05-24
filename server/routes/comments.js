@@ -38,6 +38,10 @@ router.get('/check/:productId', auth, async (req, res) => {
 // POST /api/comments - Add a review and update product average rating
 router.post('/', auth, upload.single('reviewImage'), async (req, res) => {
   try {
+    if (req.user.role === 'admin') {
+      return res.status(403).json({ success: false, message: 'Admins cannot submit reviews' });
+    }
+
     const { productId, comment, rating } = req.body;
     if (!productId || !comment) return res.status(400).json({ success: false, message: 'productId and comment are required' });
 

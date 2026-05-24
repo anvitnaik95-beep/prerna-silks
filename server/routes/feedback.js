@@ -8,6 +8,18 @@ const { sendAdminFeedbackEmail } = require('../services/notificationService');
 // POST /api/feedback - Public
 router.post('/', async (req, res) => {
   try {
+    const adminCheck = req.headers.authorization;
+    if (adminCheck) {
+      try {
+        const jwt = require('jsonwebtoken');
+        const token = adminCheck.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'prerna_silks_jwt_secret_2024');
+        if (decoded.role === 'admin') {
+          return res.status(403).json({ success: false, message: 'Admins cannot submit feedback' });
+        }
+      } catch {}
+    }
+
     const { name, email, message, rating } = req.body;
     const newFeedback = new Feedback({
       name: name || 'Anonymous',

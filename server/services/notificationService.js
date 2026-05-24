@@ -250,33 +250,19 @@ ${itemsList}`;
   console.log(`\n--- WhatsApp Content ---\n${whatsappMsg}`);
   console.log('------------------------------------------\n');
 
-  // Send emails via SMTP
-  if (transporter) {
+    // Send confirmation email to Customer via SMTP
+  if (transporter && user.email) {
     try {
-      // 1. Send confirmation email to Customer
-      if (user.email) {
-        await transporter.sendMail({
-          from: `"Prerna Silks" <${config.SMTP_USER}>`,
-          to: user.email,
-          subject: `Order Confirmed! - Prerna Silks (Order #${orderId})`,
-          text: `Dear ${user.name},\n\nYour order has been placed successfully!\n\nOrder Details:\nOrder ID: #${orderId}\nPayment Method: ${order.payment_method}\nShipping Address: ${order.shipping_address}\nTotal Amount: Rs. ${totalStr}\nEstimated Delivery: ${deliveryDate}\n\nTrack your order here: ${trackUrl}\n\nThank you for shopping with Prerna Silks!\nBest Regards,\nPrerna Silks Team`
-        });
-        console.log(`[Email Success] Confirmation email sent to customer: ${user.email}`);
-      }
-      
-      // 2. Send alert email to Admin
       await transporter.sendMail({
-        from: `"Prerna Silks Portal" <${config.SMTP_USER}>`,
-        to: config.ADMIN_EMAIL,
-        subject: `[NEW ORDER] Order #${orderId} placed by ${user.name}`,
-        text: `New order received!\n\nCustomer: ${user.name}\nEmail: ${user.email || 'N/A'}\nPhone: ${user.phone || 'N/A'}\n\nOrder Details:\nOrder ID: #${orderId}\nPayment Method: ${order.payment_method}\nShipping Address: ${order.shipping_address}\nTotal Amount: Rs. ${totalStr}\n\nItems:\n${itemsList}\n\nPlease prepare the order for dispatch.`
+        from: `"Prerna Silks" <${config.SMTP_USER}>`,
+        to: user.email,
+        subject: `Order Confirmed! - Prerna Silks (Order #${orderId})`,
+        text: `Dear ${user.name},\n\nYour order has been placed successfully!\n\nOrder Details:\nOrder ID: #${orderId}\nPayment Method: ${order.payment_method}\nShipping Address: ${order.shipping_address}\nTotal Amount: Rs. ${totalStr}\nEstimated Delivery: ${deliveryDate}\n\nTrack your order here: ${trackUrl}\n\nThank you for shopping with Prerna Silks!\nBest Regards,\nPrerna Silks Team`
       });
-      console.log(`[Email Success] Admin order alert email sent to: ${config.ADMIN_EMAIL}`);
+      console.log(`[Email Success] Confirmation email sent to customer: ${user.email}`);
     } catch (emailErr) {
-      console.error('Error sending order emails:', emailErr.message);
+      console.error('Error sending order confirmation email:', emailErr.message);
     }
-  } else {
-    console.log('SMTP credentials not configured. Skipping automated email notifications.');
   }
 
   if (!config.TWILIO_ACCOUNT_SID || !config.TWILIO_AUTH_TOKEN) {
@@ -292,13 +278,6 @@ ${itemsList}`;
     await sendWhatsApp(client, config.TWILIO_FROM_WHATSAPP, user.phone, whatsappMsg);
   } else {
     console.log('Customer phone number not provided. Skipping customer SMS/WhatsApp alerts.');
-  }
-
-  // Send admin notification via SMS and WhatsApp
-  if (config.ADMIN_PHONE) {
-    const adminSms = `[ADMIN ALERT] New Order! ID: ${orderId}, Customer: ${user.name}, Amount: Rs. ${totalStr}. Check portal.`;
-    await sendSMS(client, config.TWILIO_FROM_SMS, config.ADMIN_PHONE, adminSms);
-    await sendWhatsApp(client, config.TWILIO_FROM_WHATSAPP, config.ADMIN_PHONE, adminMsg);
   }
 }
 
@@ -460,7 +439,5 @@ async function sendDeliveredNotification(order, user) {
 module.exports = {
   sendAdminFeedbackEmail,
   sendOrderSMSAndWhatsApp,
-  sendDispatchNotification,
-  sendShippedNotification,
   sendDeliveredNotification
 };

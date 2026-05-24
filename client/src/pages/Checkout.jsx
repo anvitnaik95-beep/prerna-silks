@@ -1,19 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 export default function Checkout() {
+  const { user, isAdmin } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
+  const [deliveryFee, setDeliveryFee] = useState(0);
   const [showUpiQR, setShowUpiQR] = useState(false);
   const [verifyingUpi, setVerifyingUpi] = useState(false);
   const [upiStep, setUpiStep] = useState('');
-  const [orderResult, setOrderResult] = useState(null); // After successful order
+  const [orderResult, setOrderResult] = useState(null);
   const navigate = useNavigate();
 
   const fmt = v => `₹${Number(v).toLocaleString('en-IN')}`;
@@ -30,6 +33,18 @@ export default function Checkout() {
   };
 
   const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
+  const grandTotal = total + (total > 999 ? 0 : deliveryFee);
+
+  useEffect(() => {
+    if (!address.trim()) { setDeliveryFee(0); return; }
+    const timer = setTimeout(async () => {
+      try {
+        const { data } = await API.post('/orders/delivery-fee', { address });
+        if (data.success) setDeliveryFee(data.fee);
+      } catch { setDeliveryFee(0); }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [address]);
 
   const loadRazorpayScript = () => new Promise(resolve => {
     if (document.getElementById('razorpay-script')) return resolve(true);
@@ -45,7 +60,9 @@ export default function Checkout() {
     const orderItems = items.map(i => ({ productId: i.id || i._id || i.productId, name: i.name, price: i.price, quantity: i.quantity }));
     const { data } = await API.post('/orders', {
       items: orderItems,
-      totalAmount: total,
+      totalAmount: grandTotal,
+      subtotal: total,
+      deliveryFee,
       paymentMethod,
       shippingAddress: address,
       customerPhone: phone,
@@ -65,7 +82,7 @@ export default function Checkout() {
     if (!validatePhone(phone)) { alert('Please enter a valid 10-digit phone number'); return; }
     setPaying(true);
     try {
-      const { data: orderData } = await API.post('/orders/razorpay/create', { amount: total, currency: 'INR' });
+      const { data: orderData } = await API.post('/orders/razorpay/create', { amount: grandTotal, currency: 'INR' });
       const loaded = await loadRazorpayScript();
       if (!loaded) { alert('Razorpay failed to load.'); setPaying(false); return; }
 
@@ -360,6 +377,22 @@ export default function Checkout() {
   // ============================================================
   // CHECKOUT FORM (before order is placed)
   // ============================================================
+  if (isAdmin()) return (
+    <>
+      <Header />
+      <div style={{ maxWidth: 500, margin: '80px auto', padding: '0 20px', textAlign: 'center' }}>
+        <div style={{ background: '#fff3cd', padding: 40, borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid #ffc107' }}>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#856404" strokeWidth="1.5" style={{ marginBottom: 12 }}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+          <h3 style={{ fontFamily: 'var(--font-heading)', color: '#856404', fontWeight: 400, marginBottom: 8 }}>Admin Access Restricted</h3>
+          <p style={{ color: 'var(--text-light)', fontSize: '0.92rem' }}>Admins cannot place orders or make payments. Please use a customer account to shop.</p>
+        </div>
+      </div>
+      <Footer />
+    </>
+  );
+
   if (loading) return (
     <>
       <Header />
@@ -445,15 +478,15 @@ export default function Checkout() {
                   background: '#f8f9fa', padding: 20, borderRadius: 12, display: 'inline-block',
                   border: '1px solid var(--border)', marginBottom: 20
                 }}>
-                  <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=${encodeURIComponent(`upi://pay?pa=7019461619@ptyes&pn=Prerna%20Silks&am=${total}&cu=INR`)}`}
+                   <img 
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=${encodeURIComponent(`upi://pay?pa=7019461619@ptyes&pn=Prerna%20Silks&am=${grandTotal}&cu=INR`)}`}
                     alt="UPI Payment QR" 
                     style={{ width: 200, height: 200, display: 'block' }}
                   />
                 </div>
 
                 <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--primary)', marginBottom: 20 }}>
-                  Amount to Pay: {fmt(total)}
+                  Amount to Pay: {fmt(grandTotal)}
                 </div>
 
                 {/* Real-time Ledger Verification Pulse */}
@@ -492,12 +525,13 @@ export default function Checkout() {
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                 <span>Subtotal</span><span>{fmt(total)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, color: 'var(--success)' }}>
-                <span>Shipping</span><span>FREE</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, color: total > 999 ? 'var(--success)' : 'var(--text)' }}>
+                <span>Delivery Fee</span>
+                <span>{total > 999 ? 'FREE' : fmt(deliveryFee)}</span>
               </div>
               <hr />
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 700, color: 'var(--primary)' }}>
-                <span>Total</span><span>{fmt(total)}</span>
+                <span>Total</span><span>{fmt(grandTotal)}</span>
               </div>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 16, textAlign: 'center' }}>
                 By placing the order, you agree to our terms and conditions.

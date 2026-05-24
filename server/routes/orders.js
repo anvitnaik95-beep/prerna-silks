@@ -6,11 +6,40 @@ const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const User = require('../models/User');
 const { auth, adminOnly } = require('../middleware/auth');
-const { sendOrderSMSAndWhatsApp, sendDispatchNotification } = require('../services/notificationService');
+const { sendOrderSMSAndWhatsApp, sendDeliveredNotification } = require('../services/notificationService');
 
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_yourkeyhere';
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '';
 const ADMIN_PHONE = process.env.ADMIN_PHONE || '7019461619';
+
+// Geocode address using Nominatim and calculate distance from Hubli
+async function getDeliveryFee(address) {
+  try {
+    const query = encodeURIComponent(address + ', Karnataka, India');
+    const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+    const geoData = await geoRes.json();
+    if (!geoData || geoData.length === 0) return 50;
+
+    const lat = parseFloat(geoData[0].lat);
+    const lon = parseFloat(geoData[0].lon);
+    const hubLat = 15.3489, hubLon = 75.1394;
+
+    const R = 6371;
+    const dLat = (lat - hubLat) * Math.PI / 180;
+    const dLon = (lon - hubLon) * Math.PI / 180;
+    const a = Math.sin(dLat/2) ** 2 + Math.cos(hubLat * Math.PI / 180) * Math.cos(lat * Math.PI / 180) * Math.sin(dLon/2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distanceKm = R * c;
+
+    if (distanceKm <= 10) return 30;
+    if (distanceKm <= 50) return 50;
+    if (distanceKm <= 200) return 80;
+    if (distanceKm <= 500) return 120;
+    return 150;
+  } catch {
+    return 50;
+  }
+}
 
 // Helper: Format date for display
 function formatDate(d) {
@@ -54,6 +83,18 @@ function estimateDelivery(shippingAddress) {
   const estimatedDate = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
   return { days, estimatedDate };
 }
+
+// POST /api/orders/delivery-fee - Calculate delivery fee for an address
+router.post('/delivery-fee', async (req, res) => {
+  try {
+    const { address } = req.body;
+    if (!address) return res.json({ success: true, fee: 0 });
+    const fee = await getDeliveryFee(address);
+    res.json({ success: true, fee });
+  } catch {
+    res.json({ success: true, fee: 50 });
+  }
+});
 
 // POST /api/orders/razorpay/create - Create Razorpay order
 router.post('/razorpay/create', auth, async (req, res) => {
@@ -110,7 +151,11 @@ router.post('/razorpay/verify', auth, async (req, res) => {
 // POST /api/orders - Place order
 router.post('/', auth, async (req, res) => {
   try {
-    const { items, totalAmount, paymentMethod, shippingAddress, customerPhone, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+    if (req.user.role === 'admin') {
+      return res.status(403).json({ success: false, message: 'Admins cannot place orders' });
+    }
+
+    const { items, totalAmount, subtotal, deliveryFee, paymentMethod, shippingAddress, customerPhone, razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
     
     // Determine payment_status based on method
     let paymentStatus = 'Unpaid';
@@ -148,6 +193,8 @@ router.post('/', auth, async (req, res) => {
     const newOrder = new Order({
       userId: req.user.userId,
       total_amount: totalAmount,
+      subtotal: subtotal || totalAmount - (deliveryFee || 0),
+      delivery_fee: deliveryFee || 0,
       payment_method: paymentMethod || 'COD',
       payment_status: paymentStatus,
       shipping_address: shippingAddress || '',
@@ -229,6 +276,8 @@ router.get('/track/:trackingId', async (req, res) => {
         paymentMethod: order.payment_method,
         paymentStatus: order.payment_status,
         totalAmount: order.total_amount,
+        subtotal: order.subtotal,
+        deliveryFee: order.delivery_fee,
         items: order.items
       }
     });
@@ -289,21 +338,6 @@ router.put('/:id', auth, adminOnly, async (req, res) => {
     }
     
     await order.save();
-    
-    // Send dispatch notification to customer if status changed to Dispatched
-    if (req.body.status === 'Dispatched' && oldStatus !== 'Dispatched') {
-      const user = await User.findById(order.userId);
-      if (user) {
-        const notifUser = {
-          name: user.name || 'Customer',
-          email: user.email || '',
-          phone: user.phone || ''
-        };
-        sendDispatchNotification(order, notifUser).catch(err => {
-          console.error('Error sending dispatch notification:', err.message);
-        });
-      }
-    }
     
     res.json({ success: true, message: 'Order updated', trackingId: order.tracking_id });
   } catch (error) {

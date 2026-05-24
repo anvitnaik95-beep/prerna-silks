@@ -10,6 +10,8 @@ const orderItemSchema = new mongoose.Schema({
 const orderSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   total_amount: { type: Number, default: 0.00 },
+  subtotal: { type: Number, default: 0.00 },
+  delivery_fee: { type: Number, default: 0 },
   payment_method: { type: String, default: 'COD' },
   payment_status: { type: String, enum: ['Unpaid', 'Paid', 'Failed', 'Refunded'], default: 'Unpaid' },
   shipping_address: { type: String, default: '' },
