@@ -226,7 +226,7 @@ export default function Checkout() {
                 <div><small style={{ color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.5px' }}>Shipping To</small><br/><strong style={{ fontSize: '0.85rem' }}>{(summary.address || '').substring(0, 50)}</strong></div>
               </div>
 
-              {/* Items */}
+              {/* Items & Totals */}
               {summary.items && summary.items.length > 0 && (
                 <div style={{ marginTop: 20, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
                   <small style={{ color: 'var(--text-muted)', textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.5px', display: 'block', marginBottom: 8 }}>Items Ordered:</small>
@@ -236,6 +236,17 @@ export default function Checkout() {
                       <span style={{ fontWeight: 600 }}>{fmt(it.price * it.quantity)}</span>
                     </div>
                   ))}
+                  <div style={{ borderTop: '1px dashed var(--border)', marginTop: 10, paddingTop: 10 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                      <span>Subtotal</span><span>{fmt(summary.subtotal || summary.total - (summary.deliveryFee || 0))}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text)' }}>
+                      <span>Delivery Fee</span><span style={{color: (summary.deliveryFee || 0) ? 'var(--text)' : 'var(--success)'}}>{(summary.deliveryFee || 0) ? fmt(summary.deliveryFee) : 'FREE'}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.05rem', fontWeight: 700, color: 'var(--primary)', marginTop: 6, borderTop: '1px solid var(--border)', paddingTop: 8 }}>
+                      <span>Total</span><span>{fmt(summary.total || 0)}</span>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -255,6 +266,8 @@ export default function Checkout() {
                     items: summary.items || []
                   };
                   
+                  const orderSubtotal = orderForReceipt.total_amount - (summary.deliveryFee || 0);
+                  const orderDeliveryFee = summary.deliveryFee || 0;
                   const orderIdShort = summary.id?.slice(-8).toUpperCase() || 'N/A';
                   
                   const htmlContent = `
@@ -277,6 +290,7 @@ export default function Checkout() {
     .items-table th { background: #521220; color: #fff; padding: 12px; font-size: 14px; text-align: left; font-weight: 500; }
     .items-table td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #444; }
     .total-section { font-size: 20px; font-weight: 700; color: #521220; border-top: 2px dashed #eaeaea; padding-top: 15px; text-align: right; }
+    .fee-row { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; color: #666; }
     .footer { text-align: center; font-size: 12px; color: #999; margin-top: 40px; border-top: 1px solid #eaeaea; padding-top: 20px; }
   </style>
 </head>
@@ -329,6 +343,8 @@ export default function Checkout() {
       </tbody>
     </table>
     
+    <div class="fee-row"><span>Subtotal:</span><span>₹${Number(orderSubtotal).toLocaleString('en-IN')}</span></div>
+    <div class="fee-row" style="color: ${(orderDeliveryFee) ? '#666' : '#28a745'}"><span>Delivery Fee:</span><span>${(orderDeliveryFee) ? '₹' + Number(orderDeliveryFee).toLocaleString('en-IN') : 'FREE'}</span></div>
     <div class="total-section">
       Total Paid: ₹${Number(orderForReceipt.total_amount).toLocaleString('en-IN')}
     </div>

@@ -240,6 +240,8 @@ router.post('/', auth, async (req, res) => {
       orderSummary: {
         id: newOrder.id,
         total: totalAmount,
+        subtotal: subtotal || totalAmount - (deliveryFee || 0),
+        deliveryFee: deliveryFee || 0,
         method: paymentMethod,
         status: paymentStatus,
         delivery: formatDate(estimatedDate),

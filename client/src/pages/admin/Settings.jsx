@@ -8,9 +8,14 @@ const stars = (r) => '★'.repeat(Math.round(r)) + '☆'.repeat(5-Math.round(r))
 export default function Settings() {
   const [feedback, setFeedback] = useState([]);
   const [bannerUrls, setBannerUrls] = useState(['']);
+  const [notifStatus, setNotifStatus] = useState(null);
 
-  useEffect(() => { loadFeedback(); loadSettings(); }, []);
+  useEffect(() => { loadFeedback(); loadSettings(); loadNotifStatus(); }, []);
   
+  const loadNotifStatus = async () => {
+    try { const { data } = await API.get('/admin/notification-status'); setNotifStatus(data); } catch {}
+  };
+
   const loadFeedback = async () => { try { const { data } = await API.get('/feedback'); setFeedback(data.feedback||[]); } catch {} };
   
   const loadSettings = async () => { 
@@ -102,6 +107,47 @@ export default function Settings() {
             ))
           }
         </div> */}
+
+        <div className="admin-card mt-3" style={{padding:28}}>
+          <h4 style={{fontFamily:'var(--font-heading)',marginBottom:18}}>🔔 Notification Status</h4>
+          <div style={{fontSize:'0.88rem'}}>
+            {!notifStatus ? (
+              <p style={{color:'var(--text-muted)'}}>Loading configuration...</p>
+            ) : (
+              <>
+                <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>
+                  <span>📧 SMTP Email</span>
+                  <span style={{fontWeight:600,color:notifStatus.smtp.configured?'#28a745':'#dc3545'}}>
+                    {notifStatus.smtp.configured ? '✅ Configured ('+notifStatus.smtp.user+')' : '❌ Not configured'}
+                  </span>
+                </div>
+                <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>
+                  <span>📱 Twilio SMS/WhatsApp</span>
+                  <span style={{fontWeight:600,color:notifStatus.twilio.configured?'#28a745':'#dc3545'}}>
+                    {notifStatus.twilio.configured ? '✅ Configured' : '❌ Not configured'}
+                  </span>
+                </div>
+                {notifStatus.twilio.configured && <>
+                  <div style={{display:'flex',justifyContent:'space-between',padding:'4px 0 4px 20px',fontSize:'0.82rem',color:'var(--text-muted)'}}>
+                    <span>Twilio SID:</span><span>{notifStatus.twilio.sid}</span>
+                  </div>
+                  <div style={{display:'flex',justifyContent:'space-between',padding:'4px 0 4px 20px',fontSize:'0.82rem',color:'var(--text-muted)'}}>
+                    <span>SMS From:</span><span>{notifStatus.twilio.smsFrom || 'Not set'}</span>
+                  </div>
+                  <div style={{display:'flex',justifyContent:'space-between',padding:'4px 0 4px 20px',fontSize:'0.82rem',color:'var(--text-muted)'}}>
+                    <span>WhatsApp From:</span><span>{notifStatus.twilio.whatsappFrom || 'Not set'}</span>
+                  </div>
+                </>}
+                <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>
+                  <span>👤 Admin Email</span><span>{notifStatus.admin.email || 'Not set'}</span>
+                </div>
+                <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0'}}>
+                  <span>📞 Admin Phone</span><span>{notifStatus.admin.phone || 'Not set'}</span>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
 
         <div className="admin-card mt-3" style={{ padding: 28, border: '1px solid #f5c6cb', background: '#fff5f5', borderRadius: 12 }}>
           <h4 style={{ fontFamily: 'var(--font-heading)', color: '#721c24', marginBottom: 12 }}>⚠️ RESET DETAILS</h4>

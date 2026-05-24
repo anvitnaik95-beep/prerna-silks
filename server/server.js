@@ -52,7 +52,36 @@ const PORT = process.env.PORT || 5000;
 
 const { startBackgroundJobs } = require('./backgroundJobs');
 
+// Startup notification config diagnostic
+function checkNotificationConfig() {
+  const checks = [
+    { key: 'TWILIO_ACCOUNT_SID', label: 'Twilio Account SID', required: false },
+    { key: 'TWILIO_AUTH_TOKEN', label: 'Twilio Auth Token', required: false },
+    { key: 'TWILIO_FROM_SMS', label: 'Twilio SMS From Number', required: false },
+    { key: 'TWILIO_FROM_WHATSAPP', label: 'Twilio WhatsApp From Number', required: false },
+    { key: 'SMTP_USER', label: 'SMTP Username', required: false },
+    { key: 'SMTP_PASS', label: 'SMTP Password', required: false },
+    { key: 'ADMIN_EMAIL', label: 'Admin Email', required: true },
+    { key: 'ADMIN_PHONE', label: 'Admin Phone', required: true },
+  ];
+  const missing = checks.filter(c => !process.env[c.key]);
+  if (missing.length > 0) {
+    console.warn('\n⚠️  Notification Configuration Warnings:');
+    missing.forEach(c => console.warn(`   - ${c.label} (${c.key}) is not set in environment`));
+    if (missing.some(c => c.key.startsWith('TWILIO'))) {
+      console.warn('   → SMS/WhatsApp notifications will be disabled until set.');
+    }
+    if (missing.some(c => c.key.startsWith('SMTP'))) {
+      console.warn('   → Email notifications will be disabled until set.');
+    }
+    console.warn('   Set these in your Render dashboard or .env file.\n');
+  } else {
+    console.log('✅ All notification configuration variables are present.\n');
+  }
+}
+
 testConnection().then(() => {
+  checkNotificationConfig();
   app.listen(PORT, () => {
     console.log(`\n🚀 Server running on http://localhost:${PORT}`);
     console.log(`📡 API at http://localhost:${PORT}/api\n`);
