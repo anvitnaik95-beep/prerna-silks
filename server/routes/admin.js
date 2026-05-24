@@ -236,7 +236,7 @@ router.get('/notification-status', auth, adminOnly, async (req, res) => {
     },
     whatsapp: {
       configured: !!(process.env.WA_PHONE_NUMBER_ID && process.env.WA_ACCESS_TOKEN),
-      pendingSetup: true
+      maskedToken: process.env.WA_ACCESS_TOKEN ? process.env.WA_ACCESS_TOKEN.substring(0, 8) + '***' : null
     },
     admin: {
       email: process.env.ADMIN_EMAIL || null,

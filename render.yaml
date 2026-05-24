@@ -30,8 +30,7 @@ services:
         value: "REPLACE_WITH_YOUR_SENDGRID_API_KEY"
       - key: SENDGRID_FROM
         value: "anvitnaik95@gmail.com"
-      # WhatsApp Cloud API (add after Facebook setup)
-      # - key: WA_PHONE_NUMBER_ID
-      #   sync: false
-      # - key: WA_ACCESS_TOKEN
-      #   sync: false
+      - key: WA_PHONE_NUMBER_ID
+        sync: false  # Set in Render dashboard
+      - key: WA_ACCESS_TOKEN
+        sync: false

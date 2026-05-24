@@ -123,8 +123,8 @@ export default function Settings() {
                 </div>
                 <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>
                   <span>💬 WhatsApp Cloud API</span>
-                  <span style={{fontWeight:600,color:notifStatus.whatsapp?.configured?'#28a745':'#ffc107'}}>
-                    {notifStatus.whatsapp?.configured ? '✅ Connected' : '⏳ Pending setup'}
+                  <span style={{fontWeight:600,color:notifStatus.whatsapp?.configured?'#28a745':'#dc3545'}}>
+                    {notifStatus.whatsapp?.configured ? '✅ Connected ('+notifStatus.whatsapp?.maskedToken+')' : '❌ Not configured'}
                   </span>
                 </div>
                 <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>

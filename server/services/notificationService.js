@@ -18,6 +18,41 @@ function initSendGrid() {
   return false;
 }
 
+async function sendWhatsAppMessage(to, body) {
+  const phoneNumberId = process.env.WA_PHONE_NUMBER_ID;
+  const accessToken = process.env.WA_ACCESS_TOKEN;
+  if (!phoneNumberId || !accessToken) {
+    console.log(`[WhatsApp] Skipped (not configured): would send to ${to}`);
+    return false;
+  }
+  try {
+    const res = await fetch(`https://graph.facebook.com/v22.0/${phoneNumberId}/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to,
+        type: 'text',
+        text: { preview_url: false, body }
+      })
+    });
+    const data = await res.json();
+    if (data.messages && data.messages[0]) {
+      console.log(`[WhatsApp] Sent to ${to}, msg ID: ${data.messages[0].id}`);
+      return true;
+    }
+    console.error('[WhatsApp] Error:', JSON.stringify(data.error || data));
+    return false;
+  } catch (err) {
+    console.error('[WhatsApp] Error:', err.message);
+    return false;
+  }
+}
+
 async function sendAdminFeedbackEmail(feedback) {
   const starsStr = String.fromCharCode(9733).repeat(Math.round(feedback.rating)) + String.fromCharCode(9734).repeat(5 - Math.round(feedback.rating));
   const mailSubject = `[New Feedback] Rating: ${feedback.rating}/5 from ${feedback.name}`;
@@ -74,9 +109,10 @@ async function sendOrderSMSAndWhatsApp(order, items, user) {
     }
   }
 
-  // WhatsApp — placeholder for Cloud API integration
+  // WhatsApp via Cloud API
   if (user.phone) {
-    console.log(`[WhatsApp] Would send to ${user.phone} once WhatsApp Cloud API is configured.`);
+    const msg = `Dear ${user.name},\n\nYour order has been placed successfully!\n\nOrder ID: #${orderId}\nTotal Amount: Rs. ${totalStr}\nEstimated Delivery: ${deliveryDate}\n\nTrack: ${trackUrl}\n\nThank you for shopping with Prerna Silks!`;
+    await sendWhatsAppMessage(user.phone, msg);
   }
 }
 
@@ -101,9 +137,10 @@ async function sendDeliveredNotification(order, user) {
     }
   }
 
-  // WhatsApp — placeholder for Cloud API integration
+  // WhatsApp via Cloud API
   if (user.phone) {
-    console.log(`[WhatsApp] Would notify ${user.phone} once WhatsApp Cloud API is configured.`);
+    const msg = `Dear ${user.name},\n\nGood news! Your order has been successfully delivered.\n\nOrder ID: #${orderId}\n\nWe hope you love your new saree! Thank you for choosing Prerna Silks.`;
+    await sendWhatsAppMessage(user.phone, msg);
   }
 }
 
