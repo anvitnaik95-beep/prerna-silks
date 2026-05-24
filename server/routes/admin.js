@@ -230,9 +230,9 @@ router.post('/delete-all-data', auth, adminOnly, async (req, res) => {
 // GET /api/admin/notification-status - Check notification config
 router.get('/notification-status', auth, adminOnly, async (req, res) => {
   const checks = {
-    smtp: {
-      configured: !!(process.env.SMTP_USER && process.env.SMTP_PASS),
-      user: process.env.SMTP_USER ? process.env.SMTP_USER.substring(0, 3) + '***' : null
+    sendgrid: {
+      configured: !!process.env.SENDGRID_API_KEY,
+      maskedKey: process.env.SENDGRID_API_KEY ? process.env.SENDGRID_API_KEY.substring(0, 8) + '***' : null
     },
     whatsapp: {
       configured: !!(process.env.WA_PHONE_NUMBER_ID && process.env.WA_ACCESS_TOKEN),

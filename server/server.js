@@ -6,8 +6,6 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const dns = require('dns');
-dns.setDefaultResultOrder('ipv4first');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const { testConnection } = require('./config/db');
@@ -36,78 +34,29 @@ app.use('/api/expenses', require('./routes/expenses'));
 app.use('/api/bills', require('./routes/bills'));
 app.use('/api/settings', require('./routes/settings'));
 
-// Diagnostic endpoint - tests SMTP connectivity across ports
+// Diagnostic endpoint - tests SendGrid connectivity
 app.get('/api/test-email', async (req, res) => {
-  const net = require('net');
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const apiKey = process.env.SENDGRID_API_KEY;
+  const fromEmail = process.env.SENDGRID_FROM || process.env.ADMIN_EMAIL || 'anvitnaik95@gmail.com';
   const adminEmail = process.env.ADMIN_EMAIL || 'anvitnaik95@gmail.com';
 
-  // Test raw TCP connectivity first
-  const testPort = (host, port, timeout = 8000) => new Promise(r => {
-    const s = new net.Socket();
-    s.setTimeout(timeout);
-    s.on('connect', () => { s.destroy(); r(true); });
-    s.on('error', () => { s.destroy(); r(false); });
-    s.on('timeout', () => { s.destroy(); r(false); });
-    s.connect(port, host);
-  });
-
-  const hosts = [
-    { host: 'smtp.gmail.com', port: 587, label: 'Gmail 587' },
-    { host: 'smtp.gmail.com', port: 465, label: 'Gmail 465' },
-    { host: 'smtp.gmail.com', port: 25, label: 'Gmail 25' },
-    { host: 'smtp-relay.gmail.com', port: 587, label: 'Relay 587' },
-    { host: 'smtp-relay.gmail.com', port: 465, label: 'Relay 465' },
-  ];
-
-  const results = [];
-  for (const h of hosts) {
-    const ok = await testPort(h.host, h.port);
-    results.push({ label: h.label, reachable: ok });
+  if (!apiKey) {
+    return res.json({ success: false, message: 'SENDGRID_API_KEY not set', apiKeyConfigured: false, fromEmail, adminEmail });
   }
 
-  // Try nodemailer on port 465 (SSL) as fallback
-  let emailResult = null;
-  if (!user || !pass) {
-    emailResult = { success: false, message: 'SMTP_USER or SMTP_PASS not set' };
-  } else {
-    const nodemailer = require('nodemailer');
-    for (const cfg of [
-      { host: 'smtp.gmail.com', port: 465, secure: true },
-      { host: 'smtp.gmail.com', port: 587, secure: false },
-    ]) {
-      try {
-        const t = nodemailer.createTransport({
-          host: cfg.host, port: cfg.port, secure: cfg.secure,
-          auth: { user, pass },
-          connectionTimeout: 8000,
-          greetingTimeout: 8000,
-          socketTimeout: 8000
-        });
-        await t.sendMail({
-          from: `"Prerna Silks" <${user}>`,
-          to: adminEmail,
-          subject: 'SMTP Test - Prerna Silks',
-          text: 'If you see this, SMTP is working on Render!'
-        });
-        t.close();
-        emailResult = { success: true, message: `Test email sent via ${cfg.host}:${cfg.port}!`, host: cfg.host, port: cfg.port };
-        break;
-      } catch (err) {
-        emailResult = { success: false, message: err.message, host: cfg.host, port: cfg.port };
-      }
-    }
+  try {
+    const sgMail = require('@sendgrid/mail');
+    sgMail.setApiKey(apiKey);
+    await sgMail.send({
+      to: adminEmail,
+      from: fromEmail,
+      subject: 'SendGrid Test - Prerna Silks',
+      text: 'If you see this, SendGrid is working on Render!'
+    });
+    res.json({ success: true, message: 'Test email sent via SendGrid!', apiKeyConfigured: true, fromEmail, adminEmail });
+  } catch (err) {
+    res.json({ success: false, message: err.message, apiKeyConfigured: true, fromEmail, adminEmail });
   }
-
-  res.json({
-    portTests: results,
-    email: emailResult,
-    smtpUser: !!user,
-    smtpPass: !!pass,
-    adminEmail,
-    dnsOrder: require('dns').getDefaultResultOrder ? require('dns').getDefaultResultOrder() : 'unknown'
-  });
 });
 
 // Serve React build in production
@@ -131,8 +80,7 @@ const { startBackgroundJobs } = require('./backgroundJobs');
 // Startup notification config diagnostic
 function checkNotificationConfig() {
   const checks = [
-    { key: 'SMTP_USER', label: 'SMTP Username', required: false },
-    { key: 'SMTP_PASS', label: 'SMTP Password', required: false },
+    { key: 'SENDGRID_API_KEY', label: 'SendGrid API Key', required: false },
     { key: 'ADMIN_EMAIL', label: 'Admin Email', required: true },
     { key: 'ADMIN_PHONE', label: 'Admin Phone', required: true },
   ];
@@ -140,8 +88,8 @@ function checkNotificationConfig() {
   if (missing.length) {
     console.warn('\n\u{26A0}\u{FE0F}  Notification Configuration Warnings:');
     missing.forEach(c => console.warn(`   - ${c.label} (${c.key}) is not set in environment`));
-    if (missing.some(c => c.key.startsWith('SMTP'))) {
-      console.warn('   \u{1F4E7} Email notifications will be disabled until set.');
+    if (missing.some(c => c.key === 'SENDGRID_API_KEY')) {
+      console.warn('   \u{1F4E7} Email notifications will be disabled until SendGrid API key is set.');
     }
     console.warn('   Set these in your Render dashboard or .env file.\n');
   } else {

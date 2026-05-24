@@ -116,9 +116,9 @@ export default function Settings() {
             ) : (
               <>
                 <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>
-                  <span>📧 SMTP Email</span>
-                  <span style={{fontWeight:600,color:notifStatus.smtp.configured?'#28a745':'#dc3545'}}>
-                    {notifStatus.smtp.configured ? '✅ Configured ('+notifStatus.smtp.user+')' : '❌ Not configured'}
+                  <span>📧 SendGrid Email</span>
+                  <span style={{fontWeight:600,color:notifStatus.sendgrid?.configured?'#28a745':'#dc3545'}}>
+                    {notifStatus.sendgrid?.configured ? '✅ Configured ('+notifStatus.sendgrid?.maskedKey+')' : '❌ Not configured'}
                   </span>
                 </div>
                 <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>

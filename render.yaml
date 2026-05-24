@@ -26,14 +26,10 @@ services:
         value: "anvitnaik95@gmail.com"
       - key: ADMIN_UPI
         value: "7019461619@ptyes"
-      - key: SMTP_HOST
-        value: "smtp.gmail.com"
-      - key: SMTP_PORT
-        value: "587"
-      - key: SMTP_USER
+      - key: SENDGRID_API_KEY
+        value: "REPLACE_WITH_YOUR_SENDGRID_API_KEY"
+      - key: SENDGRID_FROM
         value: "anvitnaik95@gmail.com"
-      - key: SMTP_PASS
-        value: "iqzb cswt jwcl cukw"
       # WhatsApp Cloud API (add after Facebook setup)
       # - key: WA_PHONE_NUMBER_ID
       #   sync: false
