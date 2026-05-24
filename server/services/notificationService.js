@@ -18,6 +18,8 @@ function initSendGrid() {
   return false;
 }
 
+const WA_API_VERSION = 'v22.0';
+
 async function sendWhatsAppMessage(to, body) {
   const phoneNumberId = process.env.WA_PHONE_NUMBER_ID;
   const accessToken = process.env.WA_ACCESS_TOKEN;
@@ -30,7 +32,7 @@ async function sendWhatsAppMessage(to, body) {
     normalized = '+91' + normalized.replace(/^0+/, '');
   }
   try {
-    const res = await fetch(`https://graph.facebook.com/v22.0/${phoneNumberId}/messages`, {
+    const res = await fetch(`https://graph.facebook.com/${WA_API_VERSION}/${phoneNumberId}/messages`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -53,6 +55,49 @@ async function sendWhatsAppMessage(to, body) {
     return false;
   } catch (err) {
     console.error('[WhatsApp] Error sending to', normalized, ':', err.message);
+    return false;
+  }
+}
+
+async function sendWhatsAppTemplate(to, templateName, params) {
+  const phoneNumberId = process.env.WA_PHONE_NUMBER_ID;
+  const accessToken = process.env.WA_ACCESS_TOKEN;
+  if (!phoneNumberId || !accessToken) {
+    console.log(`[WhatsApp] Template skipped (not configured): would send ${templateName} to ${to}`);
+    return false;
+  }
+  let normalized = to.replace(/[\s\-\(\)]/g, '');
+  if (!normalized.startsWith('+')) {
+    normalized = '+91' + normalized.replace(/^0+/, '');
+  }
+  try {
+    const components = [{
+      type: 'body',
+      parameters: params.map(p => ({ type: 'text', text: p }))
+    }];
+    const res = await fetch(`https://graph.facebook.com/${WA_API_VERSION}/${phoneNumberId}/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to: normalized,
+        type: 'template',
+        template: { name: templateName, language: { code: 'en_US' }, components }
+      })
+    });
+    const data = await res.json();
+    if (data.messages && data.messages[0]) {
+      console.log(`[WhatsApp] Template ${templateName} sent to ${normalized}, msg ID: ${data.messages[0].id}`);
+      return true;
+    }
+    console.error('[WhatsApp] Template error:', JSON.stringify(data.error || data));
+    return false;
+  } catch (err) {
+    console.error('[WhatsApp] Template error:', err.message);
     return false;
   }
 }
