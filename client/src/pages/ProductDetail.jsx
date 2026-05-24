@@ -24,6 +24,7 @@ export default function ProductDetail() {
   const [reviewImage, setReviewImage] = useState(null);
   const [zoom, setZoom] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+  const [lightbox, setLightbox] = useState(false);
 
   useEffect(() => { loadProduct(); loadComments(); checkUserReview(); checkCart(); }, [id, user]);
 
@@ -150,6 +151,7 @@ export default function ProductDetail() {
                 onMouseEnter={() => setZoom(true)}
                 onMouseMove={e => { const r=e.target.getBoundingClientRect(); setZoomPos({ x:((e.clientX-r.left)/r.width)*100, y:((e.clientY-r.top)/r.height)*100 }); }}
                 onMouseLeave={() => setZoom(false)}
+                onClick={() => setLightbox(true)}
                 style={{ transform:zoom?'scale(2)':'scale(1)', transformOrigin:`${zoomPos.x}% ${zoomPos.y}%`, transition:'transform 0.1s ease-out', cursor:'zoom-in' }}
               />
               {allImages.length > 1 && (
@@ -199,6 +201,13 @@ export default function ProductDetail() {
               </button>
             </div>
           </div>
+
+          {/* Lightbox */}
+          {lightbox && (
+            <div onClick={() => setLightbox(false)} style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.85)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'zoom-out' }}>
+              <img src={activeImage} alt={product.name} style={{ maxWidth:'90%', maxHeight:'90%', objectFit:'contain', borderRadius:4 }} onClick={e => e.stopPropagation()} />
+            </div>
+          )}
 
           {/* Right: Info */}
           <div className="pd-info">
