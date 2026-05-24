@@ -1,5 +1,7 @@
 const nodemailer = require('nodemailer');
 const path = require('path');
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 const Setting = require('../models/Setting');
