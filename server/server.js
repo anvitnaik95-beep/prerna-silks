@@ -34,6 +34,27 @@ app.use('/api/expenses', require('./routes/expenses'));
 app.use('/api/bills', require('./routes/bills'));
 app.use('/api/settings', require('./routes/settings'));
 
+// Test endpoint - checks SMTP config and sends test email
+app.get('/api/test-email', async (req, res) => {
+  const nodemailer = require('nodemailer');
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const smtpPort = parseInt(process.env.SMTP_PORT || '587');
+  const adminEmail = process.env.ADMIN_EMAIL || 'anvitnaik95@gmail.com';
+  if (!user || !pass) {
+    return res.json({ success: false, message: 'SMTP_USER or SMTP_PASS not set', smtpUser: !!user, smtpPass: !!pass });
+  }
+  try {
+    const t = nodemailer.createTransport({ host: smtpHost, port: smtpPort, secure: false, auth: { user, pass } });
+    await t.sendMail({ from: `"Prerna Silks" <${user}>`, to: adminEmail, subject: 'SMTP Test - Prerna Silks', text: 'If you see this, SMTP is working on Render!' });
+    t.close();
+    res.json({ success: true, message: 'Test email sent!', smtpUser: user, adminEmail });
+  } catch (err) {
+    res.json({ success: false, message: err.message, smtpUser: !!user, smtpPass: !!pass, smtpHost, smtpPort });
+  }
+});
+
 // Serve React build in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
