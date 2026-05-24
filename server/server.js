@@ -55,22 +55,28 @@ const { startBackgroundJobs } = require('./backgroundJobs');
 // Startup notification config diagnostic
 function checkNotificationConfig() {
   const checks = [
-    { key: 'TWILIO_ACCOUNT_SID', label: 'Twilio Account SID', required: false },
-    { key: 'TWILIO_AUTH_TOKEN', label: 'Twilio Auth Token', required: false },
-    { key: 'TWILIO_FROM_SMS', label: 'Twilio SMS From Number', required: false },
-    { key: 'TWILIO_FROM_WHATSAPP', label: 'Twilio WhatsApp From Number', required: false },
     { key: 'SMTP_USER', label: 'SMTP Username', required: false },
     { key: 'SMTP_PASS', label: 'SMTP Password', required: false },
+    { key: 'SMS_PROVIDER', label: 'SMS Provider', required: false },
+    { key: 'FAST2SMS_API_KEY', label: 'Fast2SMS API Key', required: false },
     { key: 'ADMIN_EMAIL', label: 'Admin Email', required: true },
     { key: 'ADMIN_PHONE', label: 'Admin Phone', required: true },
   ];
   const missing = checks.filter(c => !process.env[c.key]);
-  if (missing.length > 0) {
-    console.warn('\n⚠️  Notification Configuration Warnings:');
+  if (missing.length) {
+    console.warn('\n\u{26A0}\u{FE0F}  Notification Configuration Warnings:');
     missing.forEach(c => console.warn(`   - ${c.label} (${c.key}) is not set in environment`));
-    if (missing.some(c => c.key.startsWith('TWILIO'))) {
-      console.warn('   → SMS/WhatsApp notifications will be disabled until set.');
+    if (missing.some(c => c.key.startsWith('SMS') || c.key.startsWith('FAST2SMS'))) {
+      console.warn('   \u{1F4F1} SMS will fall back to console logging only.');
     }
+    if (missing.some(c => c.key.startsWith('SMTP'))) {
+      console.warn('   \u{1F4E7} Email notifications will be disabled until set.');
+    }
+    console.warn('   Set these in your Render dashboard or .env file.\n');
+  } else {
+    console.log('\u{2705} All notification configuration variables are present.\n');
+  }
+}
     if (missing.some(c => c.key.startsWith('SMTP'))) {
       console.warn('   → Email notifications will be disabled until set.');
     }

@@ -234,11 +234,10 @@ router.get('/notification-status', auth, adminOnly, async (req, res) => {
       configured: !!(process.env.SMTP_USER && process.env.SMTP_PASS),
       user: process.env.SMTP_USER ? process.env.SMTP_USER.substring(0, 3) + '***' : null
     },
-    twilio: {
-      configured: !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN),
-      sid: process.env.TWILIO_ACCOUNT_SID ? process.env.TWILIO_ACCOUNT_SID.substring(0, 5) + '***' : null,
-      smsFrom: process.env.TWILIO_FROM_SMS || null,
-      whatsappFrom: process.env.TWILIO_FROM_WHATSAPP || null
+    sms: {
+      provider: process.env.SMS_PROVIDER || 'not set',
+      configured: process.env.SMS_PROVIDER === 'fast2sms' && !!(process.env.FAST2SMS_API_KEY),
+      apiKeySet: !!process.env.FAST2SMS_API_KEY
     },
     admin: {
       email: process.env.ADMIN_EMAIL || null,

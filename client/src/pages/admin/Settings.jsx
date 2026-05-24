@@ -122,22 +122,16 @@ export default function Settings() {
                   </span>
                 </div>
                 <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>
-                  <span>📱 Twilio SMS/WhatsApp</span>
-                  <span style={{fontWeight:600,color:notifStatus.twilio.configured?'#28a745':'#dc3545'}}>
-                    {notifStatus.twilio.configured ? '✅ Configured' : '❌ Not configured'}
+                  <span>📱 SMS (Fast2SMS)</span>
+                  <span style={{fontWeight:600,color:notifStatus.sms?.configured?'#28a745':'#dc3545'}}>
+                    {notifStatus.sms?.configured ? '✅ Configured' : notifStatus.sms?.provider === 'fast2sms' ? '❌ API Key missing' : '⏸️ Not set (console only)'}
                   </span>
                 </div>
-                {notifStatus.twilio.configured && <>
+                {notifStatus.sms?.provider && (
                   <div style={{display:'flex',justifyContent:'space-between',padding:'4px 0 4px 20px',fontSize:'0.82rem',color:'var(--text-muted)'}}>
-                    <span>Twilio SID:</span><span>{notifStatus.twilio.sid}</span>
+                    <span>Provider:</span><span>{notifStatus.sms.provider}</span>
                   </div>
-                  <div style={{display:'flex',justifyContent:'space-between',padding:'4px 0 4px 20px',fontSize:'0.82rem',color:'var(--text-muted)'}}>
-                    <span>SMS From:</span><span>{notifStatus.twilio.smsFrom || 'Not set'}</span>
-                  </div>
-                  <div style={{display:'flex',justifyContent:'space-between',padding:'4px 0 4px 20px',fontSize:'0.82rem',color:'var(--text-muted)'}}>
-                    <span>WhatsApp From:</span><span>{notifStatus.twilio.whatsappFrom || 'Not set'}</span>
-                  </div>
-                </>}
+                )}
                 <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>
                   <span>👤 Admin Email</span><span>{notifStatus.admin.email || 'Not set'}</span>
                 </div>
