@@ -40,7 +40,19 @@ router.get('/', async (req, res) => {
     else if (sort === 'rating') sortOption = { rating: -1 };
     else if (sort === 'name') sortOption = { name: 1 };
 
-    const products = await Product.find(query).sort(sortOption);
+    // Fetch without MongoDB sort (avoids 32MB memory limit with large base64 images stored in products)
+    let products = await Product.find(query);
+
+    // Sort in JavaScript
+    if (sortOption.price) {
+      products.sort((a, b) => sortOption.price === 1 ? a.price - b.price : b.price - a.price);
+    } else if (sortOption.rating) {
+      products.sort((a, b) => b.rating - a.rating);
+    } else if (sortOption.name) {
+      products.sort((a, b) => a.name.localeCompare(b.name));
+    } else {
+      products.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    }
 
     // Format images property so the frontend gets up to 2 images for card hover
     const formattedProducts = products.map(p => {
