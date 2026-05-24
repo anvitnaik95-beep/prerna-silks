@@ -351,6 +351,21 @@ export default function Header({ onSearch }) {
           color: #fff !important;
           border-color: #2d2d2d !important;
         }
+        body.dark-theme input::placeholder,
+        body.dark-theme textarea::placeholder {
+          color: #888888 !important;
+          opacity: 0.8 !important;
+        }
+        body.dark-theme select option {
+          background-color: #1e1e1e !important;
+          color: #fff !important;
+        }
+        body.dark-theme .share-btn,
+        body.dark-theme .wish-btn {
+          background-color: #1e1e1e !important;
+          color: #fff !important;
+          border: 1px solid #2d2d2d !important;
+        }
         body.dark-theme .form-control {
           background-color: #1e1e1e !important;
           color: #fff !important;

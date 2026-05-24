@@ -85,12 +85,101 @@ async function extractAmountFromImage(filePath) {
   }
 }
 
+// Advanced English words to number parser
+function parseEnglishWordsToNumber(text) {
+  if (!text) return null;
+
+  const words = {
+    zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+    eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19,
+    twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90
+  };
+  const multipliers = {
+    hundred: 100,
+    thousand: 1000,
+    lakh: 100000,
+    lakhs: 100000,
+    crore: 10000000
+  };
+
+  const lines = text.split('\n');
+  for (const line of lines) {
+    const lowerLine = line.toLowerCase();
+    if (lowerLine.includes('rupee') || lowerLine.includes('rupees') || lowerLine.includes('only') || lowerLine.includes('total in words') || lowerLine.includes('sum of')) {
+      const tokens = lowerLine
+        .replace(/[^a-z]/g, ' ')
+        .split(/\s+/)
+        .filter(w => words[w] !== undefined || multipliers[w] !== undefined);
+      
+      if (tokens.length > 0) {
+        let total = 0;
+        let current = 0;
+        for (const token of tokens) {
+          if (words[token] !== undefined) {
+            current += words[token];
+          } else if (multipliers[token] !== undefined) {
+            const mult = multipliers[token];
+            if (mult === 100) {
+              current *= 100;
+            } else {
+              total += current * mult;
+              current = 0;
+            }
+          }
+        }
+        total += current;
+        if (total >= 50 && total <= 1000000) {
+          console.log(`Matched English word total in line: "${line.trim()}" -> ${total}`);
+          return total;
+        }
+      }
+    }
+  }
+
+  // Fallback: search globally for a long sequence of number words containing thousand/hundred
+  const allTokens = text.toLowerCase()
+    .replace(/[^a-z]/g, ' ')
+    .split(/\s+/)
+    .filter(w => words[w] !== undefined || multipliers[w] !== undefined);
+  
+  if (allTokens.includes('thousand') || allTokens.includes('hundred') || allTokens.includes('lakh') || allTokens.includes('lakhs')) {
+    let total = 0;
+    let current = 0;
+    for (const token of allTokens) {
+      if (words[token] !== undefined) {
+        current += words[token];
+      } else if (multipliers[token] !== undefined) {
+        const mult = multipliers[token];
+        if (mult === 100) {
+          current *= 100;
+        } else {
+          total += current * mult;
+          current = 0;
+        }
+      }
+    }
+    total += current;
+    if (total >= 50 && total <= 1000000) {
+      console.log(`Matched English word total globally -> ${total}`);
+      return total;
+    }
+  }
+
+  return null;
+}
+
 /**
  * Intelligent amount extraction from OCR text
- * Looks for total/grand total first, then falls back to largest amount
+ * Looks for English words total first, then total/grand total keywords, then falls back to largest amount
  */
 function findBestAmount(text) {
   if (!text) return null;
+
+  // 1. Try English words total first (extremely accurate for invoices/receipts)
+  const wordTotal = parseEnglishWordsToNumber(text);
+  if (wordTotal) {
+    return wordTotal;
+  }
   
   // Normalize lines and text
   const lines = text.split('\n');
@@ -110,7 +199,7 @@ function findBestAmount(text) {
     return false;
   };
 
-  // 1. Look line-by-line for lines containing ledger keywords
+  // 2. Look line-by-line for lines containing ledger keywords
   for (const line of lines) {
     const lowerLine = line.toLowerCase();
     if (
@@ -150,7 +239,7 @@ function findBestAmount(text) {
     return candidates[0].val;
   }
 
-  // 2. Fallback: Parse all numbers in the entire document, filter out invalid ones, and return the largest sensible number
+  // 3. Fallback: Parse all numbers in the entire document, filter out invalid ones, and return the largest sensible number
   const allNumbers = text.match(/[\d,]+\.\d{2}\b|[\d,]+\b/g);
   const fallbackAmounts = [];
   if (allNumbers) {

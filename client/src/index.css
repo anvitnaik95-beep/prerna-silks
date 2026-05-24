@@ -78,8 +78,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-we
 .product-card:hover .img-hover{opacity:1;transform:scale(1);}
 .product-card:hover .img-main:only-child{opacity:1;transform:scale(1.07);}
 
-.wish-btn{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;background:#fff;color:var(--text);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;transition:all 0.3s;box-shadow:var(--shadow);opacity:0;}
-.share-btn{position:absolute;top:10px;left:10px;width:34px;height:34px;border-radius:50%;background:#fff;color:var(--text);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);opacity:0;transition:opacity 0.3s;}
+.wish-btn{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;background:var(--bg-card);color:var(--text);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2;transition:all 0.3s;box-shadow:var(--shadow);opacity:0;}
+.share-btn{position:absolute;top:10px;left:10px;width:34px;height:34px;border-radius:50%;background:var(--bg-card);color:var(--text);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow);opacity:0;transition:opacity 0.3s;}
 .product-card:hover .wish-btn,.product-card:hover .share-btn{opacity:1;}
 .wish-btn:hover{color:var(--danger);transform:scale(1.1);}
 

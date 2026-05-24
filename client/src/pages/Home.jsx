@@ -177,7 +177,7 @@ export default function Home() {
         <div style={{ maxWidth:1400, margin:'0 auto', padding:'22px 30px 0', display:'flex', gap:'12px', overflowX:'auto' }}>
           {categories.map(cat => (
             <button key={cat} onClick={() => setFilter('category', cat)}
-              style={{ flexShrink:0, padding:'7px 18px', borderRadius:'20px', border:`1.5px solid ${filters.category===cat?'var(--primary)':'var(--border)'}`, background:filters.category===cat?'var(--primary)':'#fff', color:filters.category===cat?'#fff':'var(--text)', cursor:'pointer', fontSize:'0.85rem', fontFamily:'var(--font-body)', transition:'all 0.25s' }}>
+              style={{ flexShrink:0, padding:'7px 18px', borderRadius:'20px', border:`1.5px solid ${filters.category===cat?'var(--primary)':'var(--border)'}`, background:filters.category===cat?'var(--primary)':'var(--bg-card)', color:filters.category===cat?'#fff':'var(--text)', cursor:'pointer', fontSize:'0.85rem', fontFamily:'var(--font-body)', transition:'all 0.25s' }}>
               {cat}
             </button>
           ))}
