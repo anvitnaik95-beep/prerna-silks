@@ -17,8 +17,9 @@ router.get('/', auth, async (req, res) => {
     const formattedItems = cart.items
       .filter(item => item.productId) // ensure product still exists
       .map(item => {
-        const prodJSON = item.productId.toJSON ? item.productId.toJSON() : item.productId;
-        const prodId = item.productId._id ? item.productId._id.toString() : item.productId.toString();
+        const prod = item.productId;
+        const prodJSON = prod.toJSON ? prod.toJSON() : prod;
+        const prodId = prod._id ? prod._id.toString() : prod.toString();
         return {
           cart_item_id: item.id,
           quantity: item.quantity,
@@ -30,6 +31,7 @@ router.get('/', auth, async (req, res) => {
         };
       });
 
+    console.log(`[Cart] User ${req.user.userId}: ${formattedItems.length} items fetched`);
     res.json({ success: true, items: formattedItems });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
