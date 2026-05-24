@@ -22,6 +22,8 @@ export default function ProductDetail() {
   const [hasReviewed, setHasReviewed] = useState(false);
   const [inCart, setInCart] = useState(false);
   const [reviewImage, setReviewImage] = useState(null);
+  const [zoom, setZoom] = useState(false);
+  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
 
   useEffect(() => { loadProduct(); loadComments(); checkUserReview(); checkCart(); }, [id, user]);
 
@@ -145,6 +147,10 @@ export default function ProductDetail() {
                 src={activeImage || ''}
                 alt={product.name}
                 onError={e => { e.target.style.display='none'; }}
+                onMouseEnter={() => setZoom(true)}
+                onMouseMove={e => { const r=e.target.getBoundingClientRect(); setZoomPos({ x:((e.clientX-r.left)/r.width)*100, y:((e.clientY-r.top)/r.height)*100 }); }}
+                onMouseLeave={() => setZoom(false)}
+                style={{ transform:zoom?'scale(2)':'scale(1)', transformOrigin:`${zoomPos.x}% ${zoomPos.y}%`, transition:'transform 0.1s ease-out', cursor:'zoom-in' }}
               />
               {allImages.length > 1 && (
                 <>
