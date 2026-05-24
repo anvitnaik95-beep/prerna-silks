@@ -36,21 +36,43 @@ app.use('/api/expenses', require('./routes/expenses'));
 app.use('/api/bills', require('./routes/bills'));
 app.use('/api/settings', require('./routes/settings'));
 
-// Diagnostic endpoint - checks SMTP config and env vars (no email send)
-app.get('/api/test-email', (req, res) => {
+// Diagnostic endpoint - tests SMTP with 15s timeout
+app.get('/api/test-email', async (req, res) => {
+  const nodemailer = require('nodemailer');
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
-  res.json({
-    success: !!user && !!pass,
-    smtpUser: user || null,
-    smtpPass: !!pass,
-    smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
-    smtpPort: process.env.SMTP_PORT || '587',
-    adminEmail: process.env.ADMIN_EMAIL || 'anvitnaik95@gmail.com',
-    nodeVersion: process.version,
-    platform: process.platform,
-    dnsOrder: require('dns').getDefaultResultOrder ? require('dns').getDefaultResultOrder() : 'unknown'
-  });
+  const adminEmail = process.env.ADMIN_EMAIL || 'anvitnaik95@gmail.com';
+  if (!user || !pass) {
+    return res.json({ success: false, message: 'SMTP_USER or SMTP_PASS not set', smtpUser: !!user, smtpPass: !!pass });
+  }
+  let responseSent = false;
+  const timer = setTimeout(() => {
+    if (!responseSent) {
+      responseSent = true;
+      res.json({ success: false, message: 'SMTP connection timed out after 15s', smtpUser: user, smtpPass: !!pass, adminEmail, dnsOrder: require('dns').getDefaultResultOrder ? require('dns').getDefaultResultOrder() : 'unknown' });
+    }
+  }, 15000);
+  try {
+    const t = nodemailer.createTransport({
+      host: 'smtp.gmail.com', port: 587, secure: false,
+      auth: { user, pass },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000
+    });
+    await t.sendMail({
+      from: `"Prerna Silks" <${user}>`,
+      to: adminEmail,
+      subject: 'SMTP Test - Prerna Silks',
+      text: 'If you see this, SMTP is working on Render!'
+    });
+    t.close();
+    clearTimeout(timer);
+    if (!responseSent) { responseSent = true; res.json({ success: true, message: 'Test email sent!', smtpUser: user, adminEmail }); }
+  } catch (err) {
+    clearTimeout(timer);
+    if (!responseSent) { responseSent = true; res.json({ success: false, message: err.message, smtpUser: !!user, smtpPass: !!pass, adminEmail }); }
+  }
 });
 
 // Serve React build in production
