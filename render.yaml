@@ -34,7 +34,7 @@ services:
         sync: false
       - key: SMTP_PASS
         sync: false
-      - key: SMS_PROVIDER
-        value: "fast2sms"
-      - key: FAST2SMS_API_KEY
-        value: "NMvVIGo3y4Y2JjFqahnwSAUQf1RPpx9W7DHumdlOT8kE5Cc6ZKk12J6mwobAgR47Wyqz0UZQHChjIpPB"
+      - key: TEXBEE_API_KEY
+        sync: false
+      - key: TEXBEE_DEVICE_ID
+        sync: false

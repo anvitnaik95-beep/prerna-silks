@@ -57,8 +57,8 @@ function checkNotificationConfig() {
   const checks = [
     { key: 'SMTP_USER', label: 'SMTP Username', required: false },
     { key: 'SMTP_PASS', label: 'SMTP Password', required: false },
-    { key: 'SMS_PROVIDER', label: 'SMS Provider', required: false },
-    { key: 'FAST2SMS_API_KEY', label: 'Fast2SMS API Key', required: false },
+    { key: 'TEXBEE_API_KEY', label: 'textbee.dev API Key', required: false },
+    { key: 'TEXBEE_DEVICE_ID', label: 'textbee.dev Device ID', required: false },
     { key: 'ADMIN_EMAIL', label: 'Admin Email', required: true },
     { key: 'ADMIN_PHONE', label: 'Admin Phone', required: true },
   ];
@@ -66,7 +66,7 @@ function checkNotificationConfig() {
   if (missing.length) {
     console.warn('\n\u{26A0}\u{FE0F}  Notification Configuration Warnings:');
     missing.forEach(c => console.warn(`   - ${c.label} (${c.key}) is not set in environment`));
-    if (missing.some(c => c.key.startsWith('SMS') || c.key.startsWith('FAST2SMS'))) {
+    if (missing.some(c => c.key.startsWith('TEXBEE'))) {
       console.warn('   \u{1F4F1} SMS will fall back to console logging only.');
     }
     if (missing.some(c => c.key.startsWith('SMTP'))) {

@@ -10,8 +10,7 @@ function buildTrackOrderUrl(trackingId) {
 }
 
 async function loadConfig() {
-  const keys = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_SECURE', 'SMTP_USER', 'SMTP_PASS', 'ADMIN_EMAIL', 'ADMIN_PHONE'];
-  
+  const keys = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_SECURE', 'SMTP_USER', 'SMTP_PASS', 'ADMIN_EMAIL', 'ADMIN_PHONE', 'TEXBEE_API_KEY', 'TEXBEE_DEVICE_ID'];
   const config = {
     SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
     SMTP_PORT: parseInt(process.env.SMTP_PORT || '587'),
@@ -20,8 +19,8 @@ async function loadConfig() {
     SMTP_PASS: process.env.SMTP_PASS || '',
     ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'anvitnaik95@gmail.com',
     ADMIN_PHONE: process.env.ADMIN_PHONE || '7019461619',
-    SMS_PROVIDER: process.env.SMS_PROVIDER || '',
-    FAST2SMS_API_KEY: process.env.FAST2SMS_API_KEY || ''
+    TEXBEE_API_KEY: process.env.TEXBEE_API_KEY || '',
+    TEXBEE_DEVICE_ID: process.env.TEXBEE_DEVICE_ID || ''
   };
 
   try {
@@ -61,39 +60,43 @@ async function getTransporterAndConfig() {
 function formatPhone(phone) {
   if (!phone) return null;
   const digits = phone.replace(/[^0-9]/g, '');
-  if (digits.length === 10) return digits;
-  if (digits.length > 10) return digits.slice(-10);
+  if (digits.length === 10) return `+91${digits}`;
+  if (digits.length > 10 && !phone.startsWith('+')) return `+${digits}`;
+  if (phone.startsWith('+')) return phone;
   return null;
 }
 
 async function sendSMS(phone, message) {
   const { config } = await getTransporterAndConfig();
-  const cleanPhone = formatPhone(phone);
-  if (!cleanPhone) {
+  const to = formatPhone(phone);
+  if (!to) {
     console.log('No valid phone number. Skipping SMS.');
-    return false;
+    return;
   }
 
-  if (config.SMS_PROVIDER === 'fast2sms' && config.FAST2SMS_API_KEY) {
+  if (config.TEXBEE_API_KEY && config.TEXBEE_DEVICE_ID) {
     try {
-      const url = `https://www.fast2sms.com/dev/bulkV2?authorization=${config.FAST2SMS_API_KEY}&sender_id=FSTSMS&message=${encodeURIComponent(message)}&language=english&route=q&numbers=${cleanPhone}`;
-      const res = await fetch(url);
+      const res = await fetch(`https://api.textbee.dev/api/v1/gateway/devices/${config.TEXBEE_DEVICE_ID}/send-sms`, {
+        method: 'POST',
+        headers: { 'x-api-key': config.TEXBEE_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipients: [to], message })
+      });
       const data = await res.json();
-      if (data.return === true) {
-        console.log(`SMS sent to ${cleanPhone} via Fast2SMS`);
+      if (res.ok) {
+        console.log(`[SMS Sent] To: ${to} via textbee.dev`);
         return true;
       }
-      console.error(`Fast2SMS error: ${data.message || 'Unknown'}`);
+      console.error(`[SMS Error] textbee.dev: ${data.message || res.statusText}`);
       return false;
     } catch (err) {
-      console.error(`Fast2SMS request failed: ${err.message}`);
+      console.error(`[SMS Error] textbee.dev request failed: ${err.message}`);
       return false;
     }
   }
 
-  console.log(`[SMS Log] To: ${cleanPhone}`);
+  console.log(`[SMS Log] To: ${to}`);
   console.log(`   Message: "${message}"`);
-  console.log('   SMS_PROVIDER not configured. Set SMS_PROVIDER=fast2sms and FAST2SMS_API_KEY to send live SMS.');
+  console.log('   Set TEXBEE_API_KEY and TEXBEE_DEVICE_ID to send live SMS via textbee.dev.');
   return false;
 }
 
@@ -143,18 +146,13 @@ async function sendOrderSMSAndWhatsApp(order, items, user) {
   const deliveryDate = new Date(order.estimated_delivery).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   const orderId = String(order.id || order._id).slice(-8).toUpperCase();
 
-  console.log('\n--- [Notification Config Check] ---');
-  console.log(`SMTP configured: ${!!transporter}, User email: ${user.email || 'MISSING'}`);
-  console.log(`SMS provider: ${config.SMS_PROVIDER || 'not set'}, Phone: ${user.phone || 'MISSING'}`);
-  console.log(`Admin email: ${config.ADMIN_EMAIL}`);
-  console.log('-----------------------------------\n');
-
   const smsMsg = `Prerna Silks: Order Confirmed! ID: ${orderId}, Total: Rs. ${totalStr}. Delivery via XpressBees. Est: ${deliveryDate}. Track: ${trackUrl}`;
 
-  console.log('\n--- [Automatic Customer Notifications] ---');
-  console.log(`To Customer Phone: ${user.phone}`);
-  console.log(`\n--- SMS Content ---\n${smsMsg}`);
-  console.log('------------------------------------------\n');
+  console.log('\n--- [Customer Notifications] ---');
+  console.log(`Email: ${user.email || 'MISSING'}`);
+  console.log(`Phone: ${user.phone || 'MISSING'}`);
+  console.log(`SMS: ${smsMsg}`);
+  console.log('--------------------------------\n');
 
   if (transporter && user.email) {
     try {
@@ -173,7 +171,7 @@ async function sendOrderSMSAndWhatsApp(order, items, user) {
   if (user.phone) {
     await sendSMS(user.phone, smsMsg);
   } else {
-    console.log('Customer phone number not provided. Skipping SMS alert.');
+    console.log('Customer phone not provided. Skipping SMS.');
   }
 }
 

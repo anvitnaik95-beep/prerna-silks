@@ -122,14 +122,14 @@ export default function Settings() {
                   </span>
                 </div>
                 <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>
-                  <span>📱 SMS (Fast2SMS)</span>
+                  <span>📱 SMS (textbee.dev)</span>
                   <span style={{fontWeight:600,color:notifStatus.sms?.configured?'#28a745':'#dc3545'}}>
-                    {notifStatus.sms?.configured ? '✅ Configured' : notifStatus.sms?.provider === 'fast2sms' ? '❌ API Key missing' : '⏸️ Not set (console only)'}
+                    {notifStatus.sms?.configured ? '✅ Connected' : notifStatus.sms?.deviceSet ? '❌ API Key missing' : '⏸️ Not set'}
                   </span>
                 </div>
-                {notifStatus.sms?.provider && (
+                {notifStatus.sms?.deviceSet && (
                   <div style={{display:'flex',justifyContent:'space-between',padding:'4px 0 4px 20px',fontSize:'0.82rem',color:'var(--text-muted)'}}>
-                    <span>Provider:</span><span>{notifStatus.sms.provider}</span>
+                    <span>Device:</span><span>Connected</span>
                   </div>
                 )}
                 <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>
