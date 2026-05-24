@@ -20,9 +20,13 @@ router.post('/', async (req, res) => {
     // Automatically send email notification to admin (non-blocking)
     sendAdminFeedbackEmail(newFeedback).catch(err => console.error('Feedback email error:', err));
     
+    const adminPhone = process.env.ADMIN_PHONE || '7019461619';
+    const adminWhatsAppUrl = `https://wa.me/91${adminPhone.replace(/[^0-9]/g, '')}`;
+
     res.status(201).json({ 
       success: true, 
-      message: 'Thank you for your feedback!'
+      message: 'Thank you for your feedback!',
+      adminWhatsAppUrl
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
