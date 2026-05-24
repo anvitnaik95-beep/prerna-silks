@@ -10,7 +10,7 @@ function buildTrackOrderUrl(trackingId) {
 }
 
 async function loadConfig() {
-  const keys = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_SECURE', 'SMTP_USER', 'SMTP_PASS', 'ADMIN_EMAIL', 'ADMIN_PHONE', 'TEXBEE_API_KEY', 'TEXBEE_DEVICE_ID'];
+  const keys = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_SECURE', 'SMTP_USER', 'SMTP_PASS', 'ADMIN_EMAIL', 'ADMIN_PHONE'];
   const config = {
     SMTP_HOST: process.env.SMTP_HOST || 'smtp.gmail.com',
     SMTP_PORT: parseInt(process.env.SMTP_PORT || '587'),
@@ -18,28 +18,21 @@ async function loadConfig() {
     SMTP_USER: process.env.SMTP_USER || '',
     SMTP_PASS: process.env.SMTP_PASS || '',
     ADMIN_EMAIL: process.env.ADMIN_EMAIL || 'anvitnaik95@gmail.com',
-    ADMIN_PHONE: process.env.ADMIN_PHONE || '7019461619',
-    TEXBEE_API_KEY: process.env.TEXBEE_API_KEY || '',
-    TEXBEE_DEVICE_ID: process.env.TEXBEE_DEVICE_ID || ''
+    ADMIN_PHONE: process.env.ADMIN_PHONE || '7019461619'
   };
 
   try {
     const dbSettings = await Setting.find({ setting_key: { $in: keys } });
     for (const s of dbSettings) {
       if (s.setting_value) {
-        if (s.setting_key === 'SMTP_PORT') {
-          config.SMTP_PORT = parseInt(s.setting_value);
-        } else if (s.setting_key === 'SMTP_SECURE') {
-          config.SMTP_SECURE = s.setting_value === 'true';
-        } else {
-          config[s.setting_key] = s.setting_value;
-        }
+        if (s.setting_key === 'SMTP_PORT') config.SMTP_PORT = parseInt(s.setting_value);
+        else if (s.setting_key === 'SMTP_SECURE') config.SMTP_SECURE = s.setting_value === 'true';
+        else config[s.setting_key] = s.setting_value;
       }
     }
   } catch (err) {
     console.error('Error fetching settings from database:', err.message);
   }
-
   return config;
 }
 
@@ -57,49 +50,6 @@ async function getTransporterAndConfig() {
   return { transporter, config };
 }
 
-function formatPhone(phone) {
-  if (!phone) return null;
-  const digits = phone.replace(/[^0-9]/g, '');
-  if (digits.length === 10) return `+91${digits}`;
-  if (digits.length > 10 && !phone.startsWith('+')) return `+${digits}`;
-  if (phone.startsWith('+')) return phone;
-  return null;
-}
-
-async function sendSMS(phone, message) {
-  const { config } = await getTransporterAndConfig();
-  const to = formatPhone(phone);
-  if (!to) {
-    console.log('No valid phone number. Skipping SMS.');
-    return;
-  }
-
-  if (config.TEXBEE_API_KEY && config.TEXBEE_DEVICE_ID) {
-    try {
-      const res = await fetch(`https://api.textbee.dev/api/v1/gateway/devices/${config.TEXBEE_DEVICE_ID}/send-sms`, {
-        method: 'POST',
-        headers: { 'x-api-key': config.TEXBEE_API_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recipients: [to], message })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        console.log(`[SMS Sent] To: ${to} via textbee.dev`);
-        return true;
-      }
-      console.error(`[SMS Error] textbee.dev: ${data.message || res.statusText}`);
-      return false;
-    } catch (err) {
-      console.error(`[SMS Error] textbee.dev request failed: ${err.message}`);
-      return false;
-    }
-  }
-
-  console.log(`[SMS Log] To: ${to}`);
-  console.log(`   Message: "${message}"`);
-  console.log('   Set TEXBEE_API_KEY and TEXBEE_DEVICE_ID to send live SMS via textbee.dev.');
-  return false;
-}
-
 async function sendAdminFeedbackEmail(feedback) {
   const starsStr = String.fromCharCode(9733).repeat(Math.round(feedback.rating)) + String.fromCharCode(9734).repeat(5 - Math.round(feedback.rating));
   const { transporter, config } = await getTransporterAndConfig();
@@ -115,12 +65,7 @@ Message:
 
 Date: ${new Date(feedback.created_at || Date.now()).toLocaleString('en-IN')}`;
 
-  console.log('\n--- [Automatic Email to Admin] ---');
-  console.log(`To: ${config.ADMIN_EMAIL}`);
-  console.log(`Subject: ${mailSubject}`);
-  console.log(`Content:\n${mailText}`);
-  console.log('----------------------------------\n');
-
+  console.log(`\n[Feedback Email] To: ${config.ADMIN_EMAIL} | Subject: ${mailSubject}`);
   if (transporter) {
     try {
       await transporter.sendMail({
@@ -129,12 +74,12 @@ Date: ${new Date(feedback.created_at || Date.now()).toLocaleString('en-IN')}`;
         subject: mailSubject,
         text: mailText
       });
-      console.log('Feedback email successfully sent to admin.');
+      console.log('Feedback email sent to admin.');
     } catch (err) {
-      console.error('Error sending feedback email to admin:', err.message);
+      console.error('Error sending feedback email:', err.message);
     }
   } else {
-    console.log('SMTP credentials not configured. E-mail outputted to console log only.');
+    console.log('SMTP not configured. Email output logged above.');
   }
 }
 
@@ -146,14 +91,9 @@ async function sendOrderSMSAndWhatsApp(order, items, user) {
   const deliveryDate = new Date(order.estimated_delivery).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   const orderId = String(order.id || order._id).slice(-8).toUpperCase();
 
-  const smsMsg = `Prerna Silks: Order Confirmed! ID: ${orderId}, Total: Rs. ${totalStr}. Delivery via XpressBees. Est: ${deliveryDate}. Track: ${trackUrl}`;
+  console.log(`\n[Order Notification] #${orderId} | To: ${user.email || 'no email'} | ${user.phone || 'no phone'}`);
 
-  console.log('\n--- [Customer Notifications] ---');
-  console.log(`Email: ${user.email || 'MISSING'}`);
-  console.log(`Phone: ${user.phone || 'MISSING'}`);
-  console.log(`SMS: ${smsMsg}`);
-  console.log('--------------------------------\n');
-
+  // Email
   if (transporter && user.email) {
     try {
       await transporter.sendMail({
@@ -162,16 +102,15 @@ async function sendOrderSMSAndWhatsApp(order, items, user) {
         subject: `Order Confirmed! - Prerna Silks (Order #${orderId})`,
         text: `Dear ${user.name},\n\nYour order has been placed successfully!\n\nOrder Details:\nOrder ID: #${orderId}\nPayment Method: ${order.payment_method}\nShipping Address: ${order.shipping_address}\nTotal Amount: Rs. ${totalStr}\nEstimated Delivery: ${deliveryDate}\n\nTrack your order here: ${trackUrl}\n\nThank you for shopping with Prerna Silks!\nBest Regards,\nPrerna Silks Team`
       });
-      console.log(`[Email Success] Confirmation email sent to customer: ${user.email}`);
-    } catch (emailErr) {
-      console.error('Error sending order confirmation email:', emailErr.message);
+      console.log(`[Email] Confirmation sent to ${user.email}`);
+    } catch (err) {
+      console.error('Error sending confirmation email:', err.message);
     }
   }
 
+  // WhatsApp — placeholder for Cloud API integration
   if (user.phone) {
-    await sendSMS(user.phone, smsMsg);
-  } else {
-    console.log('Customer phone not provided. Skipping SMS.');
+    console.log(`[WhatsApp] Would send to ${user.phone} once WhatsApp Cloud API is configured.`);
   }
 }
 
@@ -179,26 +118,27 @@ async function sendDeliveredNotification(order, user) {
   const { transporter, config } = await getTransporterAndConfig();
   const orderId = String(order.id || order._id).slice(-8).toUpperCase();
   const trackUrl = buildTrackOrderUrl(order.tracking_id || '');
-  const smsMsg = `Prerna Silks: Good news! Your order ${orderId} has been successfully delivered. Thank you for shopping with us! Track history: ${trackUrl}`;
 
+  console.log(`\n[Delivery Notification] #${orderId} | To: ${user.email || 'no email'} | ${user.phone || 'no phone'}`);
+
+  // Email
   if (transporter && user.email) {
     try {
       await transporter.sendMail({
         from: `"Prerna Silks" <${config.SMTP_USER}>`,
         to: user.email,
         subject: `Delivered! - Prerna Silks Order #${orderId}`,
-        text: `Dear ${user.name},\n\nGood news! Your order has been successfully delivered.\n\nOrder Details:\nOrder ID: #${orderId}\n\nWe hope you love your new saree! Thank you for choosing Prerna Silks.\n\nBest Regards,\nPrerna Silks Team`
+        text: `Dear ${user.name},\n\nGood news! Your order has been successfully delivered.\n\nOrder ID: #${orderId}\n\nWe hope you love your new saree! Thank you for choosing Prerna Silks.\n\nBest Regards,\nPrerna Silks Team`
       });
-      console.log(`[Email Success] Delivery email sent to customer: ${user.email}`);
-    } catch (emailErr) {
-      console.error('Error sending delivery email:', emailErr.message);
+      console.log(`[Email] Delivery notice sent to ${user.email}`);
+    } catch (err) {
+      console.error('Error sending delivery email:', err.message);
     }
   }
 
+  // WhatsApp — placeholder for Cloud API integration
   if (user.phone) {
-    await sendSMS(user.phone, smsMsg);
-  } else {
-    console.log('Customer phone not provided. Skipping delivery SMS.');
+    console.log(`[WhatsApp] Would notify ${user.phone} once WhatsApp Cloud API is configured.`);
   }
 }
 

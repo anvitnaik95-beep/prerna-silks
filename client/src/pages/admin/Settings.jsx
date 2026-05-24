@@ -122,16 +122,11 @@ export default function Settings() {
                   </span>
                 </div>
                 <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>
-                  <span>📱 SMS (textbee.dev)</span>
-                  <span style={{fontWeight:600,color:notifStatus.sms?.configured?'#28a745':'#dc3545'}}>
-                    {notifStatus.sms?.configured ? '✅ Connected' : notifStatus.sms?.deviceSet ? '❌ API Key missing' : '⏸️ Not set'}
+                  <span>💬 WhatsApp Cloud API</span>
+                  <span style={{fontWeight:600,color:notifStatus.whatsapp?.configured?'#28a745':'#ffc107'}}>
+                    {notifStatus.whatsapp?.configured ? '✅ Connected' : '⏳ Pending setup'}
                   </span>
                 </div>
-                {notifStatus.sms?.deviceSet && (
-                  <div style={{display:'flex',justifyContent:'space-between',padding:'4px 0 4px 20px',fontSize:'0.82rem',color:'var(--text-muted)'}}>
-                    <span>Device:</span><span>Connected</span>
-                  </div>
-                )}
                 <div style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>
                   <span>👤 Admin Email</span><span>{notifStatus.admin.email || 'Not set'}</span>
                 </div>

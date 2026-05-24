@@ -234,10 +234,9 @@ router.get('/notification-status', auth, adminOnly, async (req, res) => {
       configured: !!(process.env.SMTP_USER && process.env.SMTP_PASS),
       user: process.env.SMTP_USER ? process.env.SMTP_USER.substring(0, 3) + '***' : null
     },
-    sms: {
-      provider: 'textbee.dev',
-      configured: !!(process.env.TEXBEE_API_KEY && process.env.TEXBEE_DEVICE_ID),
-      deviceSet: !!process.env.TEXBEE_DEVICE_ID
+    whatsapp: {
+      configured: !!(process.env.WA_PHONE_NUMBER_ID && process.env.WA_ACCESS_TOKEN),
+      pendingSetup: true
     },
     admin: {
       email: process.env.ADMIN_EMAIL || null,
