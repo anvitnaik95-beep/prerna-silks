@@ -72,14 +72,6 @@ function checkNotificationConfig() {
     console.log('\u{2705} Email configuration is complete.\n');
   }
 }
-    if (missing.some(c => c.key.startsWith('SMTP'))) {
-      console.warn('   → Email notifications will be disabled until set.');
-    }
-    console.warn('   Set these in your Render dashboard or .env file.\n');
-  } else {
-    console.log('✅ All notification configuration variables are present.\n');
-  }
-}
 
 testConnection().then(() => {
   checkNotificationConfig();
