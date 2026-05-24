@@ -25,6 +25,10 @@ async function sendWhatsAppMessage(to, body) {
     console.log(`[WhatsApp] Skipped (not configured): would send to ${to}`);
     return false;
   }
+  let normalized = to.replace(/[\s\-\(\)]/g, '');
+  if (!normalized.startsWith('+')) {
+    normalized = '+91' + normalized.replace(/^0+/, '');
+  }
   try {
     const res = await fetch(`https://graph.facebook.com/v22.0/${phoneNumberId}/messages`, {
       method: 'POST',
@@ -35,20 +39,20 @@ async function sendWhatsAppMessage(to, body) {
       body: JSON.stringify({
         messaging_product: 'whatsapp',
         recipient_type: 'individual',
-        to,
+        to: normalized,
         type: 'text',
         text: { preview_url: false, body }
       })
     });
     const data = await res.json();
     if (data.messages && data.messages[0]) {
-      console.log(`[WhatsApp] Sent to ${to}, msg ID: ${data.messages[0].id}`);
+      console.log(`[WhatsApp] Sent to ${normalized}, msg ID: ${data.messages[0].id}`);
       return true;
     }
-    console.error('[WhatsApp] Error:', JSON.stringify(data.error || data));
+    console.error('[WhatsApp] Error sending to', normalized, ':', JSON.stringify(data.error || data));
     return false;
   } catch (err) {
-    console.error('[WhatsApp] Error:', err.message);
+    console.error('[WhatsApp] Error sending to', normalized, ':', err.message);
     return false;
   }
 }
