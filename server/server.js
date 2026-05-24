@@ -36,43 +36,78 @@ app.use('/api/expenses', require('./routes/expenses'));
 app.use('/api/bills', require('./routes/bills'));
 app.use('/api/settings', require('./routes/settings'));
 
-// Diagnostic endpoint - tests SMTP with 15s timeout
+// Diagnostic endpoint - tests SMTP connectivity across ports
 app.get('/api/test-email', async (req, res) => {
-  const nodemailer = require('nodemailer');
+  const net = require('net');
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
   const adminEmail = process.env.ADMIN_EMAIL || 'anvitnaik95@gmail.com';
+
+  // Test raw TCP connectivity first
+  const testPort = (host, port, timeout = 8000) => new Promise(r => {
+    const s = new net.Socket();
+    s.setTimeout(timeout);
+    s.on('connect', () => { s.destroy(); r(true); });
+    s.on('error', () => { s.destroy(); r(false); });
+    s.on('timeout', () => { s.destroy(); r(false); });
+    s.connect(port, host);
+  });
+
+  const hosts = [
+    { host: 'smtp.gmail.com', port: 587, label: 'Gmail 587' },
+    { host: 'smtp.gmail.com', port: 465, label: 'Gmail 465' },
+    { host: 'smtp.gmail.com', port: 25, label: 'Gmail 25' },
+    { host: 'smtp-relay.gmail.com', port: 587, label: 'Relay 587' },
+    { host: 'smtp-relay.gmail.com', port: 465, label: 'Relay 465' },
+  ];
+
+  const results = [];
+  for (const h of hosts) {
+    const ok = await testPort(h.host, h.port);
+    results.push({ label: h.label, reachable: ok });
+  }
+
+  // Try nodemailer on port 465 (SSL) as fallback
+  let emailResult = null;
   if (!user || !pass) {
-    return res.json({ success: false, message: 'SMTP_USER or SMTP_PASS not set', smtpUser: !!user, smtpPass: !!pass });
-  }
-  let responseSent = false;
-  const timer = setTimeout(() => {
-    if (!responseSent) {
-      responseSent = true;
-      res.json({ success: false, message: 'SMTP connection timed out after 15s', smtpUser: user, smtpPass: !!pass, adminEmail, dnsOrder: require('dns').getDefaultResultOrder ? require('dns').getDefaultResultOrder() : 'unknown' });
+    emailResult = { success: false, message: 'SMTP_USER or SMTP_PASS not set' };
+  } else {
+    const nodemailer = require('nodemailer');
+    for (const cfg of [
+      { host: 'smtp.gmail.com', port: 465, secure: true },
+      { host: 'smtp.gmail.com', port: 587, secure: false },
+    ]) {
+      try {
+        const t = nodemailer.createTransport({
+          host: cfg.host, port: cfg.port, secure: cfg.secure,
+          auth: { user, pass },
+          connectionTimeout: 8000,
+          greetingTimeout: 8000,
+          socketTimeout: 8000
+        });
+        await t.sendMail({
+          from: `"Prerna Silks" <${user}>`,
+          to: adminEmail,
+          subject: 'SMTP Test - Prerna Silks',
+          text: 'If you see this, SMTP is working on Render!'
+        });
+        t.close();
+        emailResult = { success: true, message: `Test email sent via ${cfg.host}:${cfg.port}!`, host: cfg.host, port: cfg.port };
+        break;
+      } catch (err) {
+        emailResult = { success: false, message: err.message, host: cfg.host, port: cfg.port };
+      }
     }
-  }, 15000);
-  try {
-    const t = nodemailer.createTransport({
-      host: 'smtp.gmail.com', port: 587, secure: false,
-      auth: { user, pass },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 10000
-    });
-    await t.sendMail({
-      from: `"Prerna Silks" <${user}>`,
-      to: adminEmail,
-      subject: 'SMTP Test - Prerna Silks',
-      text: 'If you see this, SMTP is working on Render!'
-    });
-    t.close();
-    clearTimeout(timer);
-    if (!responseSent) { responseSent = true; res.json({ success: true, message: 'Test email sent!', smtpUser: user, adminEmail }); }
-  } catch (err) {
-    clearTimeout(timer);
-    if (!responseSent) { responseSent = true; res.json({ success: false, message: err.message, smtpUser: !!user, smtpPass: !!pass, adminEmail }); }
   }
+
+  res.json({
+    portTests: results,
+    email: emailResult,
+    smtpUser: !!user,
+    smtpPass: !!pass,
+    adminEmail,
+    dnsOrder: require('dns').getDefaultResultOrder ? require('dns').getDefaultResultOrder() : 'unknown'
+  });
 });
 
 // Serve React build in production
