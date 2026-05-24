@@ -41,7 +41,7 @@ router.get('/', async (req, res) => {
     else if (sort === 'name') sortOption = { name: 1 };
 
     // Fetch without MongoDB sort (avoids 32MB memory limit with large base64 images stored in products)
-    let products = await Product.find(query);
+    let products = await Product.find(query, { name:1, price:1, original_price:1, image:1, rating:1, category:1, color:1, occasion:1, pattern:1, stock:1, featured:1, sareeDetails:1, blouseDetails:1, images:1, created_at:1 }).lean();
 
     // Sort in JavaScript
     if (sortOption.price) {
@@ -56,13 +56,15 @@ router.get('/', async (req, res) => {
 
     // Format images property so the frontend gets up to 2 images for card hover
     const formattedProducts = products.map(p => {
-      const plain = p.toJSON();
-      const imgs = plain.images || [];
+      const imgs = p.images || [];
       const sortedImgs = [...imgs]
         .sort((a, b) => (b.is_cover ? 1 : 0) - (a.is_cover ? 1 : 0))
         .slice(0, 2);
-      plain.images = sortedImgs;
-      return plain;
+      p.id = p._id?.toString() || p._id;
+      delete p._id;
+      delete p.__v;
+      p.images = sortedImgs;
+      return p;
     });
 
     res.json({ success: true, count: formattedProducts.length, products: formattedProducts });
