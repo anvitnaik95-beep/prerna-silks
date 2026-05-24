@@ -34,29 +34,43 @@ app.use('/api/expenses', require('./routes/expenses'));
 app.use('/api/bills', require('./routes/bills'));
 app.use('/api/settings', require('./routes/settings'));
 
-// Diagnostic endpoint - tests SendGrid connectivity
+// Diagnostic endpoint - tests SendGrid + WhatsApp
 app.get('/api/test-email', async (req, res) => {
   const apiKey = process.env.SENDGRID_API_KEY;
   const fromEmail = process.env.SENDGRID_FROM || process.env.ADMIN_EMAIL || 'anvitnaik95@gmail.com';
   const adminEmail = process.env.ADMIN_EMAIL || 'anvitnaik95@gmail.com';
+  const waPhoneNumberId = process.env.WA_PHONE_NUMBER_ID;
+  const waAccessToken = process.env.WA_ACCESS_TOKEN;
 
-  if (!apiKey) {
-    return res.json({ success: false, message: 'SENDGRID_API_KEY not set', apiKeyConfigured: false, fromEmail, adminEmail });
-  }
-
+  // Test SendGrid
+  let emailResult;
   try {
     const sgMail = require('@sendgrid/mail');
     sgMail.setApiKey(apiKey);
-    await sgMail.send({
-      to: adminEmail,
-      from: fromEmail,
-      subject: 'SendGrid Test - Prerna Silks',
-      text: 'If you see this, SendGrid is working on Render!'
-    });
-    res.json({ success: true, message: 'Test email sent via SendGrid!', apiKeyConfigured: true, fromEmail, adminEmail });
+    await sgMail.send({ to: adminEmail, from: fromEmail, subject: 'SendGrid Test - Prerna Silks', text: 'Test from Render!' });
+    emailResult = { success: true, message: 'Email sent!' };
   } catch (err) {
-    res.json({ success: false, message: err.message, apiKeyConfigured: true, fromEmail, adminEmail });
+    emailResult = { success: false, message: err.message };
   }
+
+  // Test WhatsApp
+  let waResult = null;
+  if (waPhoneNumberId && waAccessToken) {
+    try {
+      const testNumber = req.query.to || '+917019461619';
+      const res2 = await fetch(`https://graph.facebook.com/v22.0/${waPhoneNumberId}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${waAccessToken}` },
+        body: JSON.stringify({ messaging_product: 'whatsapp', recipient_type: 'individual', to: testNumber, type: 'text', text: { preview_url: false, body: 'Test from Prerna Silks server!' } })
+      });
+      const data = await res2.json();
+      waResult = { success: !!data.messages, response: data };
+    } catch (err) {
+      waResult = { success: false, error: err.message };
+    }
+  }
+
+  res.json({ email: emailResult, whatsapp: waResult, waConfigured: !!waPhoneNumberId && !!waAccessToken, adminEmail });
 });
 
 // Serve React build in production
