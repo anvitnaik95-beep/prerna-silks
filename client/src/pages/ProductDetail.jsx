@@ -25,6 +25,7 @@ export default function ProductDetail() {
   const [zoom, setZoom] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const [lightbox, setLightbox] = useState(false);
+  const [lbZoom, setLbZoom] = useState(false);
 
   useEffect(() => { loadProduct(); loadComments(); checkUserReview(); checkCart(); }, [id, user]);
 
@@ -204,8 +205,8 @@ export default function ProductDetail() {
 
           {/* Lightbox */}
           {lightbox && (
-            <div onClick={() => setLightbox(false)} style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.85)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'zoom-out' }}>
-              <img src={activeImage} alt={product.name} style={{ maxWidth:'90%', maxHeight:'90%', objectFit:'contain', borderRadius:4 }} onClick={e => e.stopPropagation()} />
+            <div onClick={() => { setLightbox(false); setLbZoom(false); }} style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.85)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'zoom-out', overflow:'auto' }}>
+              <img src={activeImage} alt={product.name} onClick={e => { e.stopPropagation(); setLbZoom(!lbZoom); }} style={{ maxWidth:lbZoom?'none':'90%', maxHeight:lbZoom?'none':'90%', width:lbZoom?'auto':'auto', height:lbZoom?'auto':'auto', cursor:lbZoom?'zoom-out':'zoom-in', borderRadius:4, transition:'all 0.2s' }} />
             </div>
           )}
 
