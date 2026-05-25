@@ -13,6 +13,7 @@ export default function Checkout() {
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
   const [deliveryFee, setDeliveryFee] = useState(0);
+  const [isFirstOrder, setIsFirstOrder] = useState(false);
   const [showUpiQR, setShowUpiQR] = useState(false);
   const [verifyingUpi, setVerifyingUpi] = useState(false);
   const [upiStep, setUpiStep] = useState('');
@@ -35,7 +36,8 @@ export default function Checkout() {
   };
 
   const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
-  const isFreeDelivery = total > 999;
+  const qualifiesByAmount = total > 999;
+  const isFreeDelivery = qualifiesByAmount && isFirstOrder;
   const effectiveFee = isFreeDelivery ? 0 : deliveryFee;
   const grandTotal = total + effectiveFee;
 
@@ -46,10 +48,13 @@ export default function Checkout() {
         const { data } = await API.post('/orders/delivery-fee', { address });
         if (data.success) {
           setDeliveryFee(data.fee);
+          setIsFirstOrder(data.isFirstOrder);
           if (address !== prevAddress) {
             setPrevAddress(address);
-            setShowFeePopup(true);
-            setTimeout(() => setShowFeePopup(false), 4000);
+            setTimeout(() => {
+              setShowFeePopup(true);
+              setTimeout(() => setShowFeePopup(false), 4000);
+            }, 2000);
           }
         }
       } catch { setDeliveryFee(0); }
@@ -603,15 +608,17 @@ export default function Checkout() {
               fontSize: '3rem', marginBottom: 12,
               animation: 'bounce 0.6s ease-in-out infinite alternate'
             }}>
-              {isFreeDelivery ? '🎉' : '🚚'}
+              {isFreeDelivery ? '🎊' : isFirstOrder && !qualifiesByAmount ? '🛒' : '🚚'}
             </div>
             <h3 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 8px', color: 'var(--primary)', fontWeight: 400 }}>
               {isFreeDelivery ? 'Free Delivery Applied!' : 'Delivery Fee Applied'}
             </h3>
             <p style={{ color: 'var(--text-light)', fontSize: '0.95rem', margin: 0 }}>
               {isFreeDelivery
-                ? 'Your order qualifies for free delivery. No shipping charges!'
-                : `A delivery fee of ${fmt(deliveryFee)} has been added to your order based on your location.`}
+                ? 'Welcome! As a first-time customer with an order above ₹999, you get free delivery! 🎊'
+                : isFirstOrder && !qualifiesByAmount
+                  ? `Add items worth ₹${(999 - total).toLocaleString('en-IN')} more to qualify for free delivery on your first order!`
+                  : `A delivery fee of ${fmt(deliveryFee)} has been added based on your location distance from our store.`}
             </p>
             <button onClick={() => setShowFeePopup(false)}
               style={{

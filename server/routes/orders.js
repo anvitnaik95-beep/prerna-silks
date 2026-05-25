@@ -85,14 +85,16 @@ function estimateDelivery(shippingAddress) {
 }
 
 // POST /api/orders/delivery-fee - Calculate delivery fee for an address
-router.post('/delivery-fee', async (req, res) => {
+router.post('/delivery-fee', auth, async (req, res) => {
   try {
     const { address } = req.body;
-    if (!address) return res.json({ success: true, fee: 0 });
+    if (!address) return res.json({ success: true, fee: 0, isFirstOrder: false });
     const fee = await getDeliveryFee(address);
-    res.json({ success: true, fee });
+    const orderCount = await Order.countDocuments({ userId: req.user.userId });
+    const isFirstOrder = orderCount === 0;
+    res.json({ success: true, fee, isFirstOrder });
   } catch {
-    res.json({ success: true, fee: 50 });
+    res.json({ success: true, fee: 50, isFirstOrder: false });
   }
 });
 
