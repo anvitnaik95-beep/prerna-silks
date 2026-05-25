@@ -133,9 +133,15 @@ router.post('/', auth, adminOnly, async (req, res) => {
 // PUT /api/products/:id - Update product (admin)
 router.put('/:id', auth, adminOnly, async (req, res) => {
   try {
-    const allowed = ['name','price','original_price','description','image','rating','category','color','occasion','pattern','stock','featured','sareeDetails','blouseDetails'];
+    const flatFields = ['name','price','original_price','description','image','rating','category','color','occasion','pattern','stock','featured'];
+    const subDocs = ['sareeDetails','blouseDetails'];
+
     const updates = {};
-    allowed.forEach(f => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
+    flatFields.forEach(f => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
+    subDocs.forEach(sd => {
+      if (req.body[sd] && typeof req.body[sd] === 'object')
+        Object.keys(req.body[sd]).forEach(k => { updates[`${sd}.${k}`] = req.body[sd][k]; });
+    });
 
     const product = await Product.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
     if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
