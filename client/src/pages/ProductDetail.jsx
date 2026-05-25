@@ -288,58 +288,22 @@ export default function ProductDetail() {
           </div>
         </div>
 
-        {/* Product Description & Specifications Grid */}
+        {/* Product Description */}
         <div style={{ marginTop:50, borderTop:'1px solid var(--border)', paddingTop:40 }}>
-          <div className="pd-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 30 }}>
-            {/* Left: Description */}
-            <div style={{ background:'#fff', padding:30, borderRadius:12, boxShadow:'var(--shadow)', border:'1px solid var(--border)' }}>
-              <h2 style={{ fontFamily:'var(--font-heading)', color:'var(--primary)', marginBottom:20, fontSize:'1.4rem', fontWeight:400, marginTop:0 }}>Product Description</h2>
-              <p style={{ color:'var(--text-light)', fontSize:'0.95rem', lineHeight:1.8, whiteSpace:'pre-line', marginBottom:25 }}>
-                {product.description || 'No description available for this product.'}
-              </p>
-              
-              <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))', gap:15 }}>
-                <div style={{ padding:12, background:'var(--bg)', borderRadius:8 }}>
-                  <h4 style={{ fontSize:'0.85rem', color:'var(--primary)', marginBottom:4, marginTop:0 }}>✨ Quality Assurance</h4>
-                  <p style={{ fontSize:'0.78rem', color:'var(--text-muted)', margin:0 }}>Each saree is hand-inspected for quality and craftsmanship.</p>
-                </div>
-                <div style={{ padding:12, background:'var(--bg)', borderRadius:8 }}>
-                  <h4 style={{ fontSize:'0.85rem', color:'var(--primary)', marginBottom:4, marginTop:0 }}>🎨 Authentic Designs</h4>
-                  <p style={{ fontSize:'0.78rem', color:'var(--text-muted)', margin:0 }}>Traditional patterns sourced directly from master weavers.</p>
-                </div>
+          <div style={{ background:'#fff', padding:30, borderRadius:12, boxShadow:'var(--shadow)', border:'1px solid var(--border)', maxWidth:800, margin:'0 auto' }}>
+            <h2 style={{ fontFamily:'var(--font-heading)', color:'var(--primary)', marginBottom:20, fontSize:'1.4rem', fontWeight:400, marginTop:0 }}>Product Description</h2>
+            <p style={{ color:'var(--text-light)', fontSize:'0.95rem', lineHeight:1.8, whiteSpace:'pre-line', marginBottom:25 }}>
+              {product.description || 'No description available for this product.'}
+            </p>
+            
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))', gap:15 }}>
+              <div style={{ padding:12, background:'var(--bg)', borderRadius:8 }}>
+                <h4 style={{ fontSize:'0.85rem', color:'var(--primary)', marginBottom:4, marginTop:0 }}>✨ Quality Assurance</h4>
+                <p style={{ fontSize:'0.78rem', color:'var(--text-muted)', margin:0 }}>Each saree is hand-inspected for quality and craftsmanship.</p>
               </div>
-            </div>
-
-            {/* Right: Technical Specifications Table (Saree & Blouse details) */}
-            <div style={{ background:'#fff', padding:30, borderRadius:12, boxShadow:'var(--shadow)', border:'1px solid var(--border)' }}>
-              <h2 style={{ fontFamily:'var(--font-heading)', color:'var(--primary)', marginBottom:20, fontSize:'1.4rem', fontWeight:400, marginTop:0 }}>Product Specifications</h2>
-              
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                {/* Saree Spec Table */}
-                <div>
-                  <h4 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: 6, marginBottom: 10, fontSize: '0.95rem', fontWeight: 600 }}>Saree Details</h4>
-                  <table className="pd-spec-table" style={{ margin: 0 }}>
-                    <tbody>
-                      {[['Fabric', sd.fabric], ['Purity', sd.purity], ['Work', sd.work], ['Border', sd.border], ['Length', sd.length], ['Color', sd.color || product.color]]
-                        .map(([k, v]) => (
-                          <tr key={k}><td style={{ width: '40%', fontWeight: 600 }}>{k}</td><td>{v || 'N/A'}</td></tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Blouse Spec Table */}
-                <div>
-                  <h4 style={{ color: 'var(--primary)', borderBottom: '1px solid var(--border)', paddingBottom: 6, marginBottom: 10, fontSize: '0.95rem', fontWeight: 600 }}>Blouse Details</h4>
-                  <table className="pd-spec-table" style={{ margin: 0 }}>
-                    <tbody>
-                      {[['Fabric', bd.fabric], ['Work', bd.work], ['Border', bd.border], ['Length', bd.length], ['Pattern', bd.pattern], ['Color', bd.color || product.color]]
-                        .map(([k, v]) => (
-                          <tr key={k}><td style={{ width: '40%', fontWeight: 600 }}>{k}</td><td>{v || 'N/A'}</td></tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
+              <div style={{ padding:12, background:'var(--bg)', borderRadius:8 }}>
+                <h4 style={{ fontSize:'0.85rem', color:'var(--primary)', marginBottom:4, marginTop:0 }}>🎨 Authentic Designs</h4>
+                <p style={{ fontSize:'0.78rem', color:'var(--text-muted)', margin:0 }}>Traditional patterns sourced directly from master weavers.</p>
               </div>
             </div>
           </div>
