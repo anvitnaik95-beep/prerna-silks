@@ -48,7 +48,11 @@ export default function Products() {
       if (editId) await API.put(`/products/${editId}`, body);
       else await API.post('/products', body);
       setShowModal(false); load();
-    } catch (e) { alert(e.response?.data?.message||'Failed'); }
+    } catch (e) {
+      const msg = e.response?.data?.message || e.message || 'Failed';
+      console.error('Product save error:', e.response?.status, e.response?.data || e);
+      alert(msg);
+    }
   };
 
   const del = async (id, name) => { if (!confirm(`Delete "${name}"?`)) return; try { await API.delete(`/products/${id}`); load(); } catch {} };

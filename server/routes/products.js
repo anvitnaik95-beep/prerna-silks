@@ -126,38 +126,25 @@ router.post('/', auth, adminOnly, async (req, res) => {
     res.status(201).json({ success: true, message: 'Product created', productId: newProduct.id });
   } catch (error) {
     console.error('POST /products error:', error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.errors ? Object.values(error.errors).map(e=>e.message).join('; ') : error.message });
   }
 });
 
 // PUT /api/products/:id - Update product (admin)
 router.put('/:id', auth, adminOnly, async (req, res) => {
   try {
-    const { name, price, original_price, description, image, rating, category, color, occasion, pattern, stock, featured, sareeDetails, blouseDetails } = req.body;
+    const allowed = ['name','price','original_price','description','image','rating','category','color','occasion','pattern','stock','featured','sareeDetails','blouseDetails'];
+    const updates = {};
+    allowed.forEach(f => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
 
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true, runValidators: true });
     if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
 
-    product.name = name;
-    product.price = price;
-    product.original_price = original_price;
-    product.description = description;
-    product.image = image;
-    product.rating = rating;
-    product.category = category;
-    product.color = color;
-    product.occasion = occasion;
-    product.pattern = pattern;
-    product.stock = stock;
-    product.featured = featured;
-    if (sareeDetails) product.sareeDetails = sareeDetails;
-    if (blouseDetails) product.blouseDetails = blouseDetails;
-
-    await product.save();
     res.json({ success: true, message: 'Product updated' });
   } catch (error) {
     console.error('PUT /products/:id error:', error);
-    res.status(500).json({ success: false, message: error.message });
+    const msg = error.errors ? Object.values(error.errors).map(e=>e.message).join('; ') : error.message;
+    res.status(500).json({ success: false, message: msg });
   }
 });
 
