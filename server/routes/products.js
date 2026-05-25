@@ -57,8 +57,8 @@ router.get('/', async (req, res) => {
     else if (sort === 'rating') sortOption = { rating: -1 };
     else if (sort === 'name') sortOption = { name: 1 };
 
-    let fields = { name:1, price:1, original_price:1, rating:1, category:1, color:1, occasion:1, pattern:1, stock:1, featured:1, sareeDetails:1, blouseDetails:1, created_at:1 };
-    if (!basic) { fields.image = 1; fields.images = 1; }
+    let fields = { name:1, price:1, original_price:1, rating:1, category:1, color:1, occasion:1, pattern:1, stock:1, featured:1, sareeDetails:1, blouseDetails:1, created_at:1, image:1 };
+    if (!basic) { fields.images = 1; }
     let products = await Product.find(query, fields).lean();
 
     if (sortOption.price) {
