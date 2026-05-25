@@ -75,7 +75,8 @@ router.get('/', async (req, res) => {
       const imgs = p.images || [];
       const sortedImgs = [...imgs]
         .sort((a, b) => (b.is_cover ? 1 : 0) - (a.is_cover ? 1 : 0))
-        .slice(0, 2);
+        .slice(0, 2)
+        .map(img => ({ ...img, id: img._id?.toString() || img._id }));
       p.id = p._id?.toString() || p._id;
       delete p._id;
       delete p.__v;
@@ -99,9 +100,11 @@ router.get('/:id', async (req, res) => {
     delete product.__v;
     if (product.image && product.image.length > 500) product.image = '';
     if (product.images) {
-      product.images.forEach(img => {
-        if (img.image_url && img.image_url.length > 500) img.image_url = '';
-      });
+      product.images = product.images.map(img => ({
+        ...img,
+        id: img._id?.toString() || img._id,
+        image_url: img.image_url && img.image_url.length > 500 ? '' : img.image_url
+      }));
     }
     res.json({ success: true, product });
   } catch (error) {
