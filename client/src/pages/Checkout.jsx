@@ -55,7 +55,7 @@ export default function Checkout() {
             setTimeout(() => {
               setShowFeePopup(true);
               setTimeout(() => setShowFeePopup(false), 4000);
-            }, 2000);
+            }, 4000);
           }
         }
       } catch { setDeliveryFee(0); }
