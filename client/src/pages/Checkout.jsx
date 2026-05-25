@@ -37,7 +37,7 @@ export default function Checkout() {
 
   const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
   const qualifiesByAmount = total > 999;
-  const isFreeDelivery = qualifiesByAmount && isFirstOrder;
+  const isFreeDelivery = isFirstOrder || qualifiesByAmount;
   const effectiveFee = isFreeDelivery ? 0 : deliveryFee;
   const grandTotal = total + effectiveFee;
 
@@ -608,17 +608,19 @@ export default function Checkout() {
               fontSize: '3rem', marginBottom: 12,
               animation: 'bounce 0.6s ease-in-out infinite alternate'
             }}>
-              {isFreeDelivery ? '🎊' : isFirstOrder && !qualifiesByAmount ? '🛒' : '🚚'}
+              {isFreeDelivery ? '🎊' : '🛒'}
             </div>
             <h3 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 8px', color: 'var(--primary)', fontWeight: 400 }}>
-              {isFreeDelivery ? 'Free Delivery Applied!' : 'Delivery Fee Applied'}
+              {isFreeDelivery
+                ? (isFirstOrder ? 'Free Delivery for First Order!' : 'Free Delivery Applied!')
+                : 'Delivery Fee Applied'}
             </h3>
             <p style={{ color: 'var(--text-light)', fontSize: '0.95rem', margin: 0 }}>
               {isFreeDelivery
-                ? 'Welcome! As a first-time customer with an order above ₹999, you get free delivery! 🎊'
-                : isFirstOrder && !qualifiesByAmount
-                  ? `Add items worth ₹${(999 - total).toLocaleString('en-IN')} more to qualify for free delivery on your first order!`
-                  : `A delivery fee of ${fmt(deliveryFee)} has been added based on your location distance from our store.`}
+                ? (isFirstOrder
+                  ? 'Welcome! As a first-time customer, you get free delivery on this order! 🎊'
+                  : 'Your order qualifies for free delivery as the total is above ₹999! 🎊')
+                : `Add items worth ₹${(999 - total).toLocaleString('en-IN')} more to get free delivery! A delivery fee of ${fmt(deliveryFee)} has been applied based on your location.`}
             </p>
             <button onClick={() => setShowFeePopup(false)}
               style={{
