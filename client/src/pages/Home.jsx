@@ -71,6 +71,7 @@ export default function Home() {
     setLoading(true);
     try {
       const params = new URLSearchParams();
+      params.set('basic', 'true');
       Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, v); });
       if (sortBy) params.set('sort', sortBy);
       if (search) params.set('search', search);
