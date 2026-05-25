@@ -182,13 +182,16 @@ export default function Products() {
                     </div>
                   </div>
                   <div className="d-flex flex-wrap gap-2">
-                    {images.map(img => (
-                      <div key={img.id} style={{position:'relative', width:100, height:100, border:'1px solid #ccc', borderRadius:4, overflow:'hidden'}}>
+                    {images.map(img => {
+                      const imgId = img.id || img._id;
+                      return (
+                      <div key={imgId} style={{position:'relative', width:100, height:100, border:'1px solid #ccc', borderRadius:4, overflow:'hidden'}}>
                         <img src={img.image_url} alt="" style={{width:'100%', height:'100%', objectFit:'cover'}} />
                         {img.is_cover ? <span className="badge bg-primary position-absolute top-0 start-0" style={{fontSize:'0.6rem'}}>Cover</span> : null}
-                        <button className="btn btn-danger btn-sm position-absolute top-0 end-0 p-0" style={{width:20,height:20,lineHeight:'10px'}} onClick={() => deleteImage(img.id)}>&times;</button>
+                        <button className="btn btn-danger btn-sm position-absolute top-0 end-0 p-0" style={{width:20,height:20,lineHeight:'10px'}} onClick={() => deleteImage(imgId)}>&times;</button>
                       </div>
-                    ))}
+                      );
+                    })}
                     {images.length === 0 && <span className="text-muted small">No images uploaded yet.</span>}
                   </div>
                 </div>
