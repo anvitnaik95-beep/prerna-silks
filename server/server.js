@@ -10,6 +10,10 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const { testConnection } = require('./config/db');
 
+process.on('unhandledRejection', (reason) => {
+  console.error('UNHANDLED REJECTION:', reason);
+});
+
 const app = express();
 
 // Middleware

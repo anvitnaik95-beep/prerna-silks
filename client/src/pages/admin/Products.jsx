@@ -31,10 +31,12 @@ export default function Products() {
       const { data } = await API.get(`/products/${p.id}`);
       const prod = data.product;
       setForm({ name:prod.name, category:prod.category, price:prod.price, original_price:prod.original_price, stock:prod.stock, rating:prod.rating, color:prod.color, occasion:prod.occasion, pattern:prod.pattern, description:prod.description||'', image:prod.image||'', featured:prod.featured,
-        sareeDetails: prod.sareeDetails||{...empty.sareeDetails}, blouseDetails: prod.blouseDetails||{...empty.blouseDetails} });
+        sareeDetails: {...empty.sareeDetails, ...(prod.sareeDetails||{})}, blouseDetails: {...empty.blouseDetails, ...(prod.blouseDetails||{})} });
       setImages(prod.images || []);
     } catch (e) {
       setImages([]);
+      alert('Failed to load product details');
+      setForm({...empty, sareeDetails:{...empty.sareeDetails}, blouseDetails:{...empty.blouseDetails}});
     }
     setShowModal(true);
   };
@@ -42,7 +44,7 @@ export default function Products() {
   const save = async () => {
     if (!form.name||!form.category) { alert('Name & Category required'); return; }
     try {
-      const body = {...form, price:Number(form.price), original_price:Number(form.original_price), stock:Number(form.stock), rating:Number(form.rating)};
+      const body = {...form, price:Number(form.price)||0, original_price:Number(form.original_price)||0, stock:Number(form.stock)||0, rating:Number(form.rating)||0};
       if (editId) await API.put(`/products/${editId}`, body);
       else await API.post('/products', body);
       setShowModal(false); load();

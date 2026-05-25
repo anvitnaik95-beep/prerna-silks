@@ -125,6 +125,7 @@ router.post('/', auth, adminOnly, async (req, res) => {
     await newProduct.save();
     res.status(201).json({ success: true, message: 'Product created', productId: newProduct.id });
   } catch (error) {
+    console.error('POST /products error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 });
@@ -155,6 +156,7 @@ router.put('/:id', auth, adminOnly, async (req, res) => {
     await product.save();
     res.json({ success: true, message: 'Product updated' });
   } catch (error) {
+    console.error('PUT /products/:id error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 });
