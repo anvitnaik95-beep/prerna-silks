@@ -1,13 +1,11 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
-if (process.env.NODE_ENV !== 'production' && !process.env.RENDER) {
-  try {
-    const dns = require('dns');
-    dns.setServers(['8.8.8.8', '8.8.4.4']);
-  } catch (err) {
-    console.warn('Could not set custom DNS servers:', err.message);
-  }
+try {
+  const dns = require('dns');
+  dns.setServers(['8.8.8.8', '8.8.4.4']);
+} catch (err) {
+  console.warn('Could not set custom DNS servers:', err.message);
 }
 
 const mongoose = require('mongoose');
