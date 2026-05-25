@@ -17,6 +17,8 @@ export default function Checkout() {
   const [verifyingUpi, setVerifyingUpi] = useState(false);
   const [upiStep, setUpiStep] = useState('');
   const [orderResult, setOrderResult] = useState(null);
+  const [showFeePopup, setShowFeePopup] = useState(false);
+  const [prevAddress, setPrevAddress] = useState('');
   const navigate = useNavigate();
 
   const fmt = v => `₹${Number(v).toLocaleString('en-IN')}`;
@@ -33,14 +35,23 @@ export default function Checkout() {
   };
 
   const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
-  const grandTotal = total + (total > 999 ? 0 : deliveryFee);
+  const isFreeDelivery = total > 999;
+  const effectiveFee = isFreeDelivery ? 0 : deliveryFee;
+  const grandTotal = total + effectiveFee;
 
   useEffect(() => {
     if (!address.trim()) { setDeliveryFee(0); return; }
     const timer = setTimeout(async () => {
       try {
         const { data } = await API.post('/orders/delivery-fee', { address });
-        if (data.success) setDeliveryFee(data.fee);
+        if (data.success) {
+          setDeliveryFee(data.fee);
+          if (address !== prevAddress) {
+            setPrevAddress(address);
+            setShowFeePopup(true);
+            setTimeout(() => setShowFeePopup(false), 4000);
+          }
+        }
       } catch { setDeliveryFee(0); }
     }, 800);
     return () => clearTimeout(timer);
@@ -62,7 +73,7 @@ export default function Checkout() {
       items: orderItems,
       totalAmount: grandTotal,
       subtotal: total,
-      deliveryFee,
+      deliveryFee: effectiveFee,
       paymentMethod,
       shippingAddress: address,
       customerPhone: phone,
@@ -541,9 +552,9 @@ export default function Checkout() {
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                 <span>Subtotal</span><span>{fmt(total)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, color: total > 999 ? 'var(--success)' : 'var(--text)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, color: isFreeDelivery ? 'var(--success)' : 'var(--text)' }}>
                 <span>Delivery Fee</span>
-                <span>{total > 999 ? 'FREE' : fmt(deliveryFee)}</span>
+                <span>{isFreeDelivery ? 'FREE' : fmt(deliveryFee)}</span>
               </div>
               <hr />
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem', fontWeight: 700, color: 'var(--primary)' }}>
@@ -556,6 +567,64 @@ export default function Checkout() {
           </div>
         </div>
       </div>
+
+      {/* Delivery Fee Popup with Confetti */}
+      {showFeePopup && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999,
+          animation: 'fadeIn 0.3s ease-out'
+        }}>
+          {/* Confetti particles */}
+          {Array.from({ length: 50 }).map((_, i) => (
+            <div key={i} style={{
+              position: 'absolute',
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              width: `${6 + Math.random() * 8}px`,
+              height: `${6 + Math.random() * 8}px`,
+              background: `hsl(${Math.random() * 360}, 80%, 60%)`,
+              borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+              animation: `confettiFall ${1.5 + Math.random() * 2}s ease-out forwards`,
+              transform: `rotate(${Math.random() * 360}deg)`,
+              opacity: 1,
+              pointerEvents: 'none'
+            }} />
+          ))}
+          {/* Popup card */}
+          <div style={{
+            background: '#fff', borderRadius: 20, padding: '40px 48px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.2)', textAlign: 'center',
+            maxWidth: 420, width: '90%', border: `2px solid ${isFreeDelivery ? '#28a745' : 'var(--gold)'}`,
+            animation: 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+            position: 'relative', zIndex: 1
+          }}>
+            <div style={{
+              fontSize: '3rem', marginBottom: 12,
+              animation: 'bounce 0.6s ease-in-out infinite alternate'
+            }}>
+              {isFreeDelivery ? '🎉' : '🚚'}
+            </div>
+            <h3 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 8px', color: 'var(--primary)', fontWeight: 400 }}>
+              {isFreeDelivery ? 'Free Delivery Applied!' : 'Delivery Fee Applied'}
+            </h3>
+            <p style={{ color: 'var(--text-light)', fontSize: '0.95rem', margin: 0 }}>
+              {isFreeDelivery
+                ? 'Your order qualifies for free delivery. No shipping charges!'
+                : `A delivery fee of ${fmt(deliveryFee)} has been added to your order based on your location.`}
+            </p>
+            <button onClick={() => setShowFeePopup(false)}
+              style={{
+                marginTop: 20, padding: '10px 32px', border: 'none', borderRadius: 8,
+                background: 'var(--primary)', color: '#fff', cursor: 'pointer', fontWeight: 600,
+                fontSize: '0.9rem'
+              }}>
+              Got it!
+            </button>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </>
   );

@@ -264,6 +264,18 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-we
   0% { transform: scale(0.6); opacity: 0.8; }
   100% { transform: scale(2.2); opacity: 0; }
 }
+@keyframes confettiFall {
+  0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+@keyframes popIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-10px); }
+}
 
 .loading-spinner {
   animation: spin 0.8s linear infinite;
