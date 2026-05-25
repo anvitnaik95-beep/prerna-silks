@@ -165,7 +165,7 @@ export default function Home() {
                   <div className="hero-label">Prerna Silks</div>
                   <div className="hero-title">{s.title}</div>
                   <div className="hero-sub">{s.sub}</div>
-                  <button className="hero-btn" onClick={() => navigate('/?scrollTo=shop')}>Shop Now</button>
+                  <button className="hero-btn" onClick={() => { const el = document.getElementById('shop'); const h = document.querySelector('.site-header'); const off = h ? h.offsetHeight : 0; if (el) { const top = el.getBoundingClientRect().top + window.pageYOffset - off; window.scrollTo({ top, behavior: 'smooth' }); } }}>Shop Now</button>
                 </div>
               </div>
             </div>
