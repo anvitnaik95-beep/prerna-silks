@@ -362,7 +362,7 @@ export default function TrackOrder() {
         </p>
 
         {/* Search Box */}
-        <div style={{ display: 'flex', gap: 12, maxWidth: 500, margin: '0 auto 40px', flexWrap: 'wrap' }}>
+        <div className="track-order-search">
           <input
             type="text"
             className="form-control"
@@ -419,8 +419,8 @@ export default function TrackOrder() {
 
             {/* Progress Steps */}
             {!isCancelled && (
-              <div style={{ padding: '28px 28px 12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', marginBottom: 20 }}>
+              <div className="track-progress" style={{ padding: '28px 28px 12px' }}>
+                <div className="track-progress-inner" style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', marginBottom: 20 }}>
                   {/* Progress Line */}
                   <div style={{
                     position: 'absolute', top: 14, left: '10%', right: '10%', height: 3,

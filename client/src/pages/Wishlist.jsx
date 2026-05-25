@@ -33,7 +33,7 @@ export default function Wishlist() {
     <>
       <Header />
       <div style={{ maxWidth: 1200, margin: '32px auto', padding: '0 24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <div className="wishlist-header">
           <h2 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', fontSize: '1.7rem', fontWeight: 400 }}>
             ♡ My Wishlist {items.length > 0 && <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontFamily: 'var(--font-body)' }}>({items.length} items)</span>}
           </h2>

@@ -439,7 +439,7 @@ export default function Checkout() {
       <div className="pd-container" style={{ maxWidth: 900, margin: '40px auto' }}>
         <h2 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', textAlign: 'center', marginBottom: 40 }}>Checkout</h2>
         
-        <div className="pd-grid" style={{ gridTemplateColumns: '1.2fr 0.8fr' }}>
+        <div className="checkout-grid">
           {/* Left Side: Address & Payment */}
           <div>
             <div style={{ background: '#fff', padding: 24, borderRadius: 10, boxShadow: 'var(--shadow)', marginBottom: 20 }}>

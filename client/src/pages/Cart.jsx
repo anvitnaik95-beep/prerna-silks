@@ -138,7 +138,7 @@ export default function Cart() {
               <Link to="/" className="btn-buy" style={{ padding: '12px 28px', textDecoration: 'none', display: 'inline-block' }}>Continue Shopping</Link>
             </div>
           ) : (
-            <div className="cart-container" style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 28, alignItems: 'start' }}>
+            <div className="cart-container">
               {/* Items */}
               <div style={{ background: '#fff', borderRadius: 10, boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
                 <div style={{ padding: '16px 22px', borderBottom: '1px solid var(--border)', fontFamily: 'var(--font-heading)', color: 'var(--primary)', fontSize: '1rem' }}>

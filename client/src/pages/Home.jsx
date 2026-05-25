@@ -149,13 +149,11 @@ export default function Home() {
                   }}
                 />
                 <div className="hero-blur-bottom" />
-                <div style={{ position:'absolute', bottom:'60px', left:'60px', zIndex:5, color:'#fff', textShadow:'0 2px 8px rgba(0,0,0,0.5)' }}>
-                  <div style={{ fontSize:'0.8rem', letterSpacing:'3px', textTransform:'uppercase', marginBottom:'6px', opacity:0.85 }}>Prerna Silks</div>
-                  <div style={{ fontFamily:'var(--font-heading)', fontSize:'2.2rem', fontWeight:400, lineHeight:1.2 }}>{s.title}</div>
-                  <div style={{ fontSize:'0.95rem', opacity:0.8, marginTop:'6px' }}>{s.sub}</div>
-                  <button onClick={() => navigate('/?scrollTo=shop')} style={{ marginTop:'16px', padding:'10px 28px', background:'var(--gold)', color:'#1a0a0e', border:'none', borderRadius:'4px', cursor:'pointer', fontWeight:600, fontSize:'0.85rem', letterSpacing:'1.5px', textTransform:'uppercase', fontFamily:'var(--font-body)' }}>
-                    Shop Now
-                  </button>
+                <div className="hero-text-overlay">
+                  <div className="hero-label">Prerna Silks</div>
+                  <div className="hero-title">{s.title}</div>
+                  <div className="hero-sub">{s.sub}</div>
+                  <button className="hero-btn" onClick={() => navigate('/?scrollTo=shop')}>Shop Now</button>
                 </div>
               </div>
             </div>
@@ -174,7 +172,7 @@ export default function Home() {
 
       {/* Category Quick Links */}
       {showHero && (
-        <div style={{ maxWidth:1400, margin:'0 auto', padding:'22px 30px 0', display:'flex', gap:'12px', overflowX:'auto' }}>
+        <div className="category-pills">
           {categories.map(cat => (
             <button key={cat} onClick={() => setFilter('category', cat)}
               style={{ flexShrink:0, padding:'7px 18px', borderRadius:'20px', border:`1.5px solid ${filters.category===cat?'var(--primary)':'var(--border)'}`, background:filters.category===cat?'var(--primary)':'var(--bg-card)', color:filters.category===cat?'#fff':'var(--text)', cursor:'pointer', fontSize:'0.85rem', fontFamily:'var(--font-body)', transition:'all 0.25s' }}>

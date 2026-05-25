@@ -183,7 +183,7 @@ export default function MyOrders() {
 
                   {/* Body details */}
                   <div style={{ padding: 24 }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 20 }}>
+                    <div className="myorders-detail-grid">
                       {/* Products detail */}
                       <div>
                         <h4 style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', borderBottom: '1px solid #eee', paddingBottom: 8, marginBottom: 12 }}>Items Purchased</h4>
