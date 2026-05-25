@@ -38,6 +38,10 @@ const HERO_SLIDES = [
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
   const [filters, setFilters] = useState({});
   const [sortBy, setSortBy] = useState('');
   const [search, setSearch] = useState('');
@@ -65,7 +69,28 @@ export default function Home() {
     if (Object.keys(newFilters).length > 0) setFilters(newFilters);
   }, [urlSearch]);
 
-  useEffect(() => { fetchProducts(); }, [filters, sortBy, search]);
+  useEffect(() => { setPage(1); setProducts([]); fetchPage(1); }, [filters, sortBy, search]);
+
+  const fetchPage = async (pageNum, append = false) => {
+    if (append) { setLoadingMore(true); } else { setLoading(true); }
+    try {
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, v); });
+      if (sortBy) params.set('sort', sortBy);
+      if (search) params.set('search', search);
+      params.set('page', pageNum);
+      params.set('limit', 12);
+      const { data } = await API.get(`/products?${params.toString()}`);
+      setProducts(prev => append ? [...prev, ...(data.products || [])] : (data.products || []));
+      setHasMore(data.hasMore);
+      setTotalProducts(data.total);
+      setPage(pageNum);
+    } catch { if (!append) setProducts([]); }
+    setLoading(false);
+    setLoadingMore(false);
+  };
+
+  const loadMore = () => fetchPage(page + 1, true);
 
   useEffect(() => {
     if (user) {
@@ -93,19 +118,6 @@ export default function Home() {
       }
     }).catch(() => {});
   }, []);
-
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-      Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, v); });
-      if (sortBy) params.set('sort', sortBy);
-      if (search) params.set('search', search);
-      const { data } = await API.get(`/products?${params.toString()}`);
-      setProducts(data.products || []);
-    } catch { setProducts([]); }
-    setLoading(false);
-  };
 
   const setFilter = (key, val) => setFilters(prev => ({ ...prev, [key]: prev[key] === val ? '' : val }));
   const clearFilters = () => { setFilters({}); setSortBy(''); setSearch(''); };
@@ -192,7 +204,7 @@ export default function Home() {
               <input type="number" placeholder="Min" className="form-control" style={{ padding:'7px 10px' }} onChange={e => setFilter('minPrice', e.target.value)} />
               <input type="number" placeholder="Max" className="form-control" style={{ padding:'7px 10px' }} onChange={e => setFilter('maxPrice', e.target.value)} />
             </div>
-            <button onClick={fetchProducts} className="btn-buy" style={{ width:'100%', padding:'9px' }}>Apply</button>
+            <button onClick={() => fetchPage(1)} className="btn-buy" style={{ width:'100%', padding:'9px' }}>Apply</button>
           </div>
           {[{title:'Categories',items:categories,key:'category'},{title:'Color',items:colors,key:'color'},
             {title:'Occasion',items:occasions,key:'occasion'},{title:'Pattern',items:patterns,key:'pattern'}].map(s => (
@@ -220,7 +232,7 @@ export default function Home() {
         <main style={{ flex:1, minWidth:0 }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20, flexWrap:'wrap', gap:10 }}>
             <h2 style={{ fontFamily:'var(--font-heading)', color:'var(--primary)', fontSize:'1.5rem', fontWeight:400 }}>
-              Our Collection <span style={{ fontSize:'0.85rem', color:'var(--text-muted)', fontFamily:'var(--font-body)' }}>({products.length} sarees)</span>
+              Our Collection <span style={{ fontSize:'0.85rem', color:'var(--text-muted)', fontFamily:'var(--font-body)' }}>({totalProducts} sarees)</span>
             </h2>
             <select value={sortBy} onChange={e => setSortBy(e.target.value)}
               style={{ padding:'8px 14px', border:'1.5px solid var(--border)', borderRadius:30, fontFamily:'var(--font-body)', outline:'none', background:'transparent', color:'var(--text)', fontSize:'0.88rem' }}>
@@ -256,7 +268,7 @@ export default function Home() {
               </p>
               <button className="btn-buy" style={{ padding:'10px 28px', fontSize: '0.9rem' }} onClick={clearFilters}>Clear Filters</button>
             </div>
-          ) : (
+          ) : (<>
             <div className="product-grid">
               {products.map(p => {
                 const disc = p.original_price > p.price ? Math.round((1 - p.price / p.original_price) * 100) : 0;
@@ -304,7 +316,23 @@ export default function Home() {
                 );
               })}
             </div>
-          )}
+            {hasMore && (
+              <div style={{ textAlign:'center', marginTop:'24px' }}>
+                <button
+                  className="btn-buy"
+                  onClick={loadMore}
+                  disabled={loadingMore}
+                  style={{ padding:'12px 40px', fontSize:'0.9rem', display:'inline-flex', alignItems:'center', gap:8 }}
+                >
+                  {loadingMore ? (
+                    <><span className="loading-spinner" style={{ width:16, height:16, border:'2px solid rgba(255,255,255,0.3)', borderTopColor:'#fff', borderRadius:'50%', display:'inline-block' }} /> Loading...</>
+                  ) : (
+                    <>Load More ({totalProducts - products.length} remaining)</>
+                  )}
+                </button>
+              </div>
+            )}
+          </>)}
         </main>
       </div>
 

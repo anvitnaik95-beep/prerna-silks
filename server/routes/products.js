@@ -24,10 +24,10 @@ router.get('/clear-base64', auth, adminOnly, async (req, res) => {
   }
 });
 
-// GET /api/products - Get all products with optional filters
+// GET /api/products - Get products with pagination, filters, and sorting
 router.get('/', async (req, res) => {
   try {
-    const { category, color, occasion, pattern, rating, minPrice, maxPrice, search, sort, basic } = req.query;
+    const { category, color, occasion, pattern, rating, minPrice, maxPrice, search, sort, basic, page, limit } = req.query;
     const query = {};
 
     if (category) query.category = new RegExp(category.trim(), 'i');
@@ -51,30 +51,50 @@ router.get('/', async (req, res) => {
       ];
     }
 
-    let sortOption = { created_at: -1 };
-    if (sort === 'price_asc') sortOption = { price: 1 };
-    else if (sort === 'price_desc') sortOption = { price: -1 };
-    else if (sort === 'rating') sortOption = { rating: -1 };
-    else if (sort === 'name') sortOption = { name: 1 };
+    const sortMap = {
+      price_asc: { price: 1 },
+      price_desc: { price: -1 },
+      rating: { rating: -1 },
+      name: { name: 1 },
+    };
+    const sortOption = sortMap[sort] || { created_at: -1 };
 
-    // Fetch without MongoDB sort (avoids 32MB memory limit with large base64 images stored in products)
-    // When basic=1, skip heavy image fields to speed up admin listing queries
-    let fields = { name:1, price:1, original_price:1, rating:1, category:1, color:1, occasion:1, pattern:1, stock:1, featured:1, sareeDetails:1, blouseDetails:1, created_at:1 };
-    if (!basic) { fields.image = 1; fields.images = 1; }
-    let products = await Product.find(query, fields).lean();
+    // Pagination
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 12));
+    const skip = (pageNum - 1) * limitNum;
+
+    // Count total matching (lightweight)
+    const total = await Product.countDocuments(query);
+
+    // Fetch only sort+id fields first (avoids base64 image memory overhead)
+    const lightFields = { _id: 1, price: 1, rating: 1, name: 1, created_at: 1 };
+    let sortedDocs = await Product.find(query, lightFields).lean();
 
     // Sort in JavaScript
     if (sortOption.price) {
-      products.sort((a, b) => sortOption.price === 1 ? a.price - b.price : b.price - a.price);
+      sortedDocs.sort((a, b) => sortOption.price === 1 ? a.price - b.price : b.price - a.price);
     } else if (sortOption.rating) {
-      products.sort((a, b) => b.rating - a.rating);
+      sortedDocs.sort((a, b) => b.rating - a.rating);
     } else if (sortOption.name) {
-      products.sort((a, b) => a.name.localeCompare(b.name));
+      sortedDocs.sort((a, b) => a.name.localeCompare(b.name));
     } else {
-      products.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+      sortedDocs.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
     }
 
-    // Format images property so the frontend gets up to 2 images for card hover
+    // Slice to requested page
+    const pageIds = sortedDocs.slice(skip, skip + limitNum).map(p => p._id);
+
+    // Fetch full documents only for this page
+    let fields = { name:1, price:1, original_price:1, rating:1, category:1, color:1, occasion:1, pattern:1, stock:1, featured:1, sareeDetails:1, blouseDetails:1, created_at:1 };
+    if (!basic) { fields.image = 1; fields.images = 1; }
+    let products = await Product.find({ _id: { $in: pageIds } }, fields).lean();
+
+    // Restore page order
+    const idOrder = pageIds.map(id => id.toString());
+    products.sort((a, b) => idOrder.indexOf(a._id.toString()) - idOrder.indexOf(b._id.toString()));
+
+    // Format images: up to 2 per product for card hover
     const formattedProducts = products.map(p => {
       const imgs = p.images || [];
       const sortedImgs = [...imgs]
@@ -87,7 +107,14 @@ router.get('/', async (req, res) => {
       return p;
     });
 
-    res.json({ success: true, count: formattedProducts.length, products: formattedProducts });
+    res.json({
+      success: true,
+      count: formattedProducts.length,
+      total,
+      page: pageNum,
+      hasMore: skip + limitNum < total,
+      products: formattedProducts
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
