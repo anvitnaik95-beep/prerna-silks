@@ -92,8 +92,17 @@ router.get('/', async (req, res) => {
 // GET /api/products/:id - Get single product
 router.get('/:id', async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).lean();
     if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+    product.id = product._id?.toString() || product._id;
+    delete product._id;
+    delete product.__v;
+    if (product.image && product.image.length > 500) product.image = '';
+    if (product.images) {
+      product.images.forEach(img => {
+        if (img.image_url && img.image_url.length > 500) img.image_url = '';
+      });
+    }
     res.json({ success: true, product });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
