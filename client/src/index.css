@@ -283,8 +283,24 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-we
   .admin-mobile-overlay{display:block;}
   .admin-main{margin-left:0;padding:16px;padding-top:60px;}
   .admin-header{flex-direction:column;align-items:flex-start !important;gap:12px;}
+  .admin-header h1{font-size:1.3rem !important;}
+  .admin-header input,.admin-header select{width:100% !important;}
   .stats-grid{grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;}
   .admin-card-header{flex-direction:column;gap:10px;}
+  .admin-card-header input,.admin-card-header select{width:100% !important;}
+  .admin-card .table td,.admin-card .table th{padding:10px 12px !important;font-size:0.82rem !important;white-space:nowrap;}
+  .admin-card .table-responsive{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .admin-card > .table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;max-width:100%;}
+  .admin-card-header h3{font-size:0.95rem !important;}
+  .admin .btn-buy,.admin-main .btn-buy{padding:8px 14px !important;font-size:0.82rem !important;}
+  .admin-card .stat-card{padding:16px !important;}
+  .modal-box{padding:18px !important;}
+  .modal-box .col-6{flex:0 0 100%;max-width:100%;}
+  .modal-box .row{gap:0;}
+  .modal-box h2{font-size:1.2rem !important;}
+  .feedback-filters{overflow-x:auto;flex-wrap:nowrap !important;padding-bottom:6px;gap:6px !important;}
+  .settings-banner-row .col-md-9,.settings-banner-row .col-md-3{flex:0 0 100%;max-width:100%;}
+  .settings-banner-row .d-flex{gap:8px !important;margin-top:6px;}
   .footer-top{grid-template-columns:1fr;gap:28px;padding-bottom:30px;}
   .site-footer{padding:40px 24px 0;margin-top:40px;}
   .footer-col h4{font-size:0.95rem;margin-bottom:14px;}
@@ -378,7 +394,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-we
   .pd-thumb{width:48px;height:48px;}
   .modal-box{padding:16px;}
   .admin-main{padding:12px;}
-  .stats-grid{grid-template-columns:1fr;gap:10px;}
+  .stats-grid{grid-template-columns:1fr!important;gap:10px;}
   .stat-card{padding:16px;}
   .site-footer{padding:30px 16px 0;margin-top:30px;}
   .category-pills{padding:14px 12px 0 !important;gap:8px !important;}
