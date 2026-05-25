@@ -27,7 +27,7 @@ router.get('/clear-base64', auth, adminOnly, async (req, res) => {
 // GET /api/products - Get all products with optional filters
 router.get('/', async (req, res) => {
   try {
-    const { category, color, occasion, pattern, rating, minPrice, maxPrice, search, sort } = req.query;
+    const { category, color, occasion, pattern, rating, minPrice, maxPrice, search, sort, basic } = req.query;
     const query = {};
 
     if (category) query.category = new RegExp(category.trim(), 'i');
@@ -58,7 +58,10 @@ router.get('/', async (req, res) => {
     else if (sort === 'name') sortOption = { name: 1 };
 
     // Fetch without MongoDB sort (avoids 32MB memory limit with large base64 images stored in products)
-    let products = await Product.find(query, { name:1, price:1, original_price:1, image:1, rating:1, category:1, color:1, occasion:1, pattern:1, stock:1, featured:1, sareeDetails:1, blouseDetails:1, images:1, created_at:1 }).lean();
+    // When basic=1, skip heavy image fields to speed up admin listing queries
+    let fields = { name:1, price:1, original_price:1, rating:1, category:1, color:1, occasion:1, pattern:1, stock:1, featured:1, sareeDetails:1, blouseDetails:1, created_at:1 };
+    if (!basic) { fields.image = 1; fields.images = 1; }
+    let products = await Product.find(query, fields).lean();
 
     // Sort in JavaScript
     if (sortOption.price) {

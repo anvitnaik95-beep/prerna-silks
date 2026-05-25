@@ -15,9 +15,10 @@ export default function Products() {
   const [images, setImages] = useState([]);
   const [search, setSearch] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => { load(); }, []);
-  const load = async () => { try { const { data } = await API.get('/products?limit=200'); setProducts(data.products||[]); } catch {} };
+  const load = async () => { try { setLoading(true); const { data } = await API.get('/products?basic=1'); setProducts(data.products||[]); } catch {} finally { setLoading(false); } };
 
   const set = (k,v) => setForm({...form,[k]:v});
   const setSaree = (k,v) => setForm({...form, sareeDetails:{...form.sareeDetails,[k]:v}});
@@ -26,11 +27,12 @@ export default function Products() {
   const openAdd = () => { setEditId(null); setForm({...empty, sareeDetails:{...empty.sareeDetails}, blouseDetails:{...empty.blouseDetails}}); setImages([]); setShowModal(true); };
   const openEdit = async (p) => {
     setEditId(p.id);
-    setForm({ name:p.name, category:p.category, price:p.price, original_price:p.original_price, stock:p.stock, rating:p.rating, color:p.color, occasion:p.occasion, pattern:p.pattern, description:p.description||'', image:p.image||'', featured:p.featured,
-      sareeDetails: p.sareeDetails||{...empty.sareeDetails}, blouseDetails: p.blouseDetails||{...empty.blouseDetails} });
     try {
       const { data } = await API.get(`/products/${p.id}`);
-      setImages(data.product.images || []);
+      const prod = data.product;
+      setForm({ name:prod.name, category:prod.category, price:prod.price, original_price:prod.original_price, stock:prod.stock, rating:prod.rating, color:prod.color, occasion:prod.occasion, pattern:prod.pattern, description:prod.description||'', image:prod.image||'', featured:prod.featured,
+        sareeDetails: prod.sareeDetails||{...empty.sareeDetails}, blouseDetails: prod.blouseDetails||{...empty.blouseDetails} });
+      setImages(prod.images || []);
     } catch (e) {
       setImages([]);
     }
@@ -99,7 +101,7 @@ export default function Products() {
             <table className="table table-hover mb-0">
               <thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Rating</th><th>Actions</th></tr></thead>
               <tbody>
-                {filtered.length === 0 ? <tr><td colSpan={6} style={{textAlign:'center',padding:40,color:'var(--text-muted)'}}>No products found</td></tr> :
+                {loading ? <tr><td colSpan={6} style={{textAlign:'center',padding:40,color:'var(--text-muted)'}}>Loading products...</td></tr> : filtered.length === 0 ? <tr><td colSpan={6} style={{textAlign:'center',padding:40,color:'var(--text-muted)'}}>No products found</td></tr> :
                   filtered.map(p => (
                     <tr key={p.id}>
                       <td><strong>{p.name}</strong></td><td>{p.category}</td>
