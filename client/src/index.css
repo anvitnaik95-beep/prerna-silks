@@ -41,11 +41,6 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-we
 .header-btn:hover{color:var(--primary);background:rgba(82,18,32,0.05);}
 
 /* HERO BANNER */
-.hero-text-overlay{position:absolute;bottom:60px;left:60px;z-index:5;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,0.5);}
-.hero-text-overlay .hero-label{font-size:0.8rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;opacity:0.85;}
-.hero-text-overlay .hero-title{font-family:var(--font-heading);font-size:2.2rem;font-weight:400;line-height:1.2;}
-.hero-text-overlay .hero-sub{font-size:0.95rem;opacity:0.8;margin-top:6px;}
-.hero-text-overlay .hero-btn{margin-top:16px;padding:10px 28px;background:var(--gold);color:#1a0a0e;border:none;border-radius:4px;cursor:pointer;font-weight:600;font-size:0.85rem;letter-spacing:1.5px;text-transform:uppercase;font-family:var(--font-body);}
 .hero-slider{position:relative;width:100%;overflow:hidden;background:#1a0a0e;}
 .hero-slide{position:absolute;inset:0;opacity:0;transition:opacity 1s ease;}
 .hero-slide.active{opacity:1;position:relative;}
@@ -60,6 +55,12 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-we
 .hero-arrows button:hover{background:#fff;box-shadow:var(--shadow-lg);}
 .hero-prev{left:20px;}
 .hero-next{right:20px;}
+.hero-text-overlay{position:absolute;bottom:50px;left:50px;z-index:5;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,0.6);max-width:550px;}
+.hero-text-overlay .hero-label{font-size:0.78rem;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;opacity:0.85;}
+.hero-text-overlay .hero-title{font-family:var(--font-heading);font-size:2.2rem;font-weight:400;line-height:1.2;}
+.hero-text-overlay .hero-sub{font-size:0.95rem;opacity:0.85;margin-top:6px;}
+.hero-text-overlay .hero-btn{margin-top:16px;padding:10px 28px;background:var(--gold);color:#1a0a0e;border:none;border-radius:4px;cursor:pointer;font-weight:600;font-size:0.85rem;letter-spacing:1.5px;text-transform:uppercase;font-family:var(--font-body);transition:all 0.25s;}
+.hero-text-overlay .hero-btn:active{transform:scale(0.95);}
 
 /* SHOP LAYOUT */
 .shop-layout{display:flex;max-width:1400px;margin:0 auto;padding:20px 30px 60px;gap:36px;}
@@ -239,6 +240,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-we
   .myorders-detail-grid{grid-template-columns:1fr !important;}
   .myorders-detail-grid>div:last-child{border-left:none !important;padding-left:0 !important;}
   .hero-slide img,.hero-slide-inner{height:400px;}
+  .hero-text-overlay{bottom:45px;left:40px;}
+  .hero-text-overlay .hero-title{font-size:1.8rem;}
+  .hero-text-overlay .hero-sub{font-size:0.9rem;}
+  .hero-text-overlay .hero-btn{padding:9px 24px;font-size:0.82rem;}
 }
 @media(max-width:992px){
   .sidebar{display:none;}
@@ -246,6 +251,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-we
   .admin-sidebar{width:200px;}
   .admin-main{margin-left:200px;padding:20px;}
   .hero-slide img,.hero-slide-inner{height:380px;}
+  .hero-text-overlay{bottom:40px;left:35px;}
+  .hero-text-overlay .hero-title{font-size:1.7rem;}
+  .hero-text-overlay .hero-sub{font-size:0.88rem;}
+  .hero-text-overlay .hero-btn{padding:8px 22px;font-size:0.8rem;}
   .wishlist-header{flex-direction:column;align-items:flex-start !important;gap:12px;}
   .pd-main-img{height:400px;}
 }
@@ -281,21 +290,25 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-we
   .footer-col h4{font-size:0.95rem;margin-bottom:14px;}
   .footer-bottom-bar{flex-direction:column;text-align:center;}
   .footer-payment-icons{justify-content:center;}
-  .hero-text-overlay{bottom:30px;left:30px;}
-  .hero-text-overlay .hero-title{font-size:1.5rem;}
-  .hero-text-overlay .hero-sub{font-size:0.85rem;}
-  .hero-text-overlay .hero-btn{padding:8px 20px;font-size:0.78rem;margin-top:12px;}
+  .hero-slide img,.hero-slide-inner{height:260px;}
+  .hero-text-overlay{bottom:28px;left:28px;max-width:380px;}
+  .hero-text-overlay .hero-label{font-size:0.7rem;margin-bottom:4px;}
+  .hero-text-overlay .hero-title{font-size:1.3rem;}
+  .hero-text-overlay .hero-sub{font-size:0.82rem;margin-top:4px;}
+  .hero-text-overlay .hero-btn{padding:7px 18px;font-size:0.75rem;margin-top:10px;}
+  .hero-arrows button{width:30px;height:30px;font-size:0.95rem;}
+  .hero-prev{left:8px;}
+  .hero-next{right:8px;}
+  .hero-dots{bottom:12px;gap:6px;}
+  .hero-dot{width:6px;height:6px;}
+  .hero-dot.active{width:16px;}
+  .hero-blur-bottom{height:90px;}
   .pd-main-img{height:320px;cursor:default;}
   .pd-main-img:hover{transform:none;}
   .pd-info h1{font-size:1.3rem;}
   .pd-price-box .price{font-size:1.5rem;}
   .pd-cta button{padding:12px;font-size:0.85rem;}
   .pd-thumb{width:56px;height:56px;}
-  .hero-slide img,.hero-slide-inner{height:250px;}
-  .hero-arrows button{width:32px;height:32px;font-size:1rem;}
-  .hero-prev{left:8px;}
-  .hero-next{right:8px;}
-  .hero-blur-bottom{height:100px;}
   .cart-container{padding:0 12px;}
   .cart-item-row{flex-wrap:wrap;gap:12px;padding:14px 16px;}
   .cart-item-img{width:64px;height:64px;}
@@ -314,6 +327,16 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-we
   .product-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
   .product-img{height:190px;}
   .hero-slide img,.hero-slide-inner{height:200px;}
+  .hero-text-overlay{bottom:22px;left:20px;right:20px;max-width:none;}
+  .hero-text-overlay .hero-label{font-size:0.65rem;margin-bottom:3px;}
+  .hero-text-overlay .hero-title{font-size:1.1rem;}
+  .hero-text-overlay .hero-sub{font-size:0.78rem;margin-top:3px;}
+  .hero-text-overlay .hero-btn{padding:6px 16px;font-size:0.72rem;margin-top:8px;}
+  .hero-arrows button{width:28px;height:28px;font-size:0.85rem;}
+  .hero-blur-bottom{height:70px;}
+  .hero-dots{bottom:8px;gap:5px;}
+  .hero-dot{width:5px;height:5px;}
+  .hero-dot.active{width:14px;}
   .pd-main-img{height:280px;}
   .pd-container{padding:16px 12px;}
   .cart-item-row{gap:10px;padding:12px 14px;}
@@ -339,15 +362,19 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-we
   .search-bar input{padding:7px 12px 7px 34px;font-size:0.82rem;}
   .search-bar .icon{left:10px;}
   .cart-container{padding:0 8px;}
-  .hero-slide img,.hero-slide-inner{height:170px;}
-  .hero-text-overlay{bottom:20px;left:16px;right:16px;}
-  .hero-text-overlay .hero-title{font-size:1.2rem;}
-  .hero-text-overlay .hero-sub{font-size:0.78rem;}
-  .hero-text-overlay .hero-btn{padding:6px 16px;font-size:0.72rem;margin-top:8px;}
-  .hero-text-overlay .hero-label{font-size:0.7rem;margin-bottom:4px;}
-  .hero-dots{bottom:8px;}
-  .hero-dot{width:6px;height:6px;}
-  .hero-dot.active{width:18px;}
+  .hero-slide img,.hero-slide-inner{height:180px;}
+  .hero-text-overlay{bottom:16px;left:14px;right:14px;max-width:none;}
+  .hero-text-overlay .hero-label{font-size:0.6rem;margin-bottom:2px;letter-spacing:2px;}
+  .hero-text-overlay .hero-title{font-size:1rem;}
+  .hero-text-overlay .hero-sub{font-size:0.72rem;margin-top:2px;}
+  .hero-text-overlay .hero-btn{padding:5px 14px;font-size:0.68rem;margin-top:6px;letter-spacing:1px;}
+  .hero-arrows button{width:24px;height:24px;font-size:0.8rem;}
+  .hero-prev{left:5px;}
+  .hero-next{right:5px;}
+  .hero-blur-bottom{height:60px;}
+  .hero-dots{bottom:5px;gap:4px;}
+  .hero-dot{width:5px;height:5px;}
+  .hero-dot.active{width:12px;}
   .pd-thumb{width:48px;height:48px;}
   .modal-box{padding:16px;}
   .admin-main{padding:12px;}
@@ -364,7 +391,13 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);font-we
   .product-price .current{font-size:0.82rem;}
   .product-info{padding:6px 6px 8px;}
   .hero-slide img,.hero-slide-inner{height:150px;}
-  .hero-arrows button{width:28px;height:28px;font-size:0.85rem;}
+  .hero-text-overlay .hero-title{font-size:0.9rem;}
+  .hero-text-overlay .hero-sub{display:none;}
+  .hero-text-overlay .hero-label{font-size:0.55rem;}
+  .hero-text-overlay .hero-btn{padding:4px 12px;font-size:0.62rem;margin-top:5px;}
+  .hero-arrows{display:none;}
+  .hero-blur-bottom{height:50px;}
+  .hero-dots{display:none;}
   .pd-main-img{height:240px;}
   .logo{font-size:1rem;}
   .auth-card{padding:20px 14px;}
