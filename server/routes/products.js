@@ -137,14 +137,14 @@ router.put('/:id', auth, adminOnly, async (req, res) => {
     const updates = {};
     allowed.forEach(f => { if (req.body[f] !== undefined) updates[f] = req.body[f]; });
 
-    const product = await Product.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true, runValidators: true });
+    const product = await Product.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
     if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
 
     res.json({ success: true, message: 'Product updated' });
   } catch (error) {
     console.error('PUT /products/:id error:', error);
     const msg = error.errors ? Object.values(error.errors).map(e=>e.message).join('; ') : error.message;
-    res.status(500).json({ success: false, message: msg });
+    try { res.status(500).json({ success: false, message: msg }); } catch(e) {}
   }
 });
 
