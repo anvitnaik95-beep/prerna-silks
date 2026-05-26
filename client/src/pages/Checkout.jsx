@@ -154,14 +154,22 @@ export default function Checkout() {
               razorpay_signature: response.razorpay_signature
             });
             setOrderResult(result);
-          } catch { alert('Order failed after payment.'); }
+            setPaying(false);
+          } catch (err) { console.error('Order placement after Razorpay failed:', err); alert('Order failed after payment. Contact support.'); }
         },
         modal: { ondismiss: () => setPaying(false) }
       };
       const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', (response) => {
+        console.error('Razorpay payment failed:', response.error);
+        alert('Payment failed: ' + (response.error?.description || 'Please try again.'));
+        setPaying(false);
+      });
       rzp.open();
-    } catch {
-      alert('Payment initiation failed');
+    } catch (err) {
+      console.error('Razorpay payment initiation failed:', err?.response?.data || err);
+      const msg = err?.response?.data?.message || 'Payment initiation failed. Check console for details.';
+      alert(msg);
       setPaying(false);
     }
   };
@@ -174,7 +182,7 @@ export default function Checkout() {
     try {
       const result = await placeOrder('COD');
       setOrderResult(result);
-    } catch { alert('Order failed'); }
+    } catch (err) { console.error('COD order failed:', err); alert('Order failed. Please try again.'); }
     setPaying(false);
   };
 
@@ -196,9 +204,7 @@ export default function Checkout() {
           try {
             const result = await placeOrder('Direct UPI');
             setOrderResult(result);
-          } catch {
-            alert('Failed to catalog your UPI order.');
-          } finally {
+          } catch (err) { console.error('UPI order failed:', err); alert('Failed to place your UPI order.'); } finally {
             setVerifyingUpi(false);
             setShowUpiQR(false);
           }
