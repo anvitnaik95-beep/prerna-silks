@@ -79,6 +79,7 @@ export default function Header({ onSearch }) {
             {user && <Link to="/wishlist" className="header-btn"><WishIcon /><span>Wishlist</span></Link>}
             {user && <Link to="/cart" className="header-btn"><CartIcon /><span>Cart</span></Link>}
             {user && <Link to="/my-orders" className="header-btn"><UserIcon /><span>My Orders</span></Link>}
+            {user && <Link to="/my-enquiries" className="header-btn"><span>📋</span><span>Enquiries</span></Link>}
             {user ? (
               <>
                 {isAdmin() && <Link to="/admin/dashboard" className="header-btn"><AdminIcon /><span>Admin</span></Link>}
@@ -184,6 +185,7 @@ export default function Header({ onSearch }) {
                 { label: '♡ Wishlist', path: '/wishlist' },
                 { label: '🛒 Cart', path: '/cart' },
                 { label: '📦 My Orders', path: '/my-orders' },
+                { label: '📋 Enquiries', path: '/my-enquiries' },
                 ...(isAdmin() ? [{ label: '📊 Admin Dashboard', path: '/admin/dashboard' }] : []),
               ] : [
                 { label: '👤 Login', path: '/login' },

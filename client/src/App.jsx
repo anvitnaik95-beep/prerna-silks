@@ -24,6 +24,9 @@ import AdminSettings from './pages/admin/Settings';
 import AdminFeedback from './pages/admin/Feedback';
 import Checkout from './pages/Checkout';
 import MyOrders from './pages/MyOrders';
+import MyEnquiries from './pages/MyEnquiries';
+import PayEnquiry from './pages/PayEnquiry';
+import AdminEnquiries from './pages/admin/Enquiries';
 
 // Protected route wrapper
 function ProtectedRoute({ children, adminRequired }) {
@@ -46,6 +49,8 @@ function App() {
       <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
       <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
       <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+      <Route path="/my-enquiries" element={<ProtectedRoute><MyEnquiries /></ProtectedRoute>} />
+      <Route path="/pay-enquiry/:token" element={<PayEnquiry />} />
 
       {/* Admin Routes */}
       <Route path="/admin/dashboard" element={<ProtectedRoute adminRequired><AdminDashboard /></ProtectedRoute>} />
@@ -58,6 +63,7 @@ function App() {
       <Route path="/admin/expenses" element={<ProtectedRoute adminRequired><AdminExpenses /></ProtectedRoute>} />
       <Route path="/admin/feedback" element={<ProtectedRoute adminRequired><AdminFeedback /></ProtectedRoute>} />
       <Route path="/admin/bills" element={<ProtectedRoute adminRequired><AdminBills /></ProtectedRoute>} />
+      <Route path="/admin/enquiries" element={<ProtectedRoute adminRequired><AdminEnquiries /></ProtectedRoute>} />
       <Route path="/admin/settings" element={<ProtectedRoute adminRequired><AdminSettings /></ProtectedRoute>} />
     </Routes>
   );

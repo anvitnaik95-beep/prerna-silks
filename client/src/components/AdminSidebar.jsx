@@ -7,6 +7,7 @@ const navItems = [
   { path: '/admin/dashboard', icon: '📊', label: 'Dashboard' },
   { path: '/admin/products', icon: '👗', label: 'Products' },
   { path: '/admin/orders', icon: '🧾', label: 'Orders' },
+  { path: '/admin/enquiries', icon: '📋', label: 'Enquiries' },
   { path: '/admin/customers', icon: '👥', label: 'Customers' },
   { path: '/admin/suppliers', icon: '🚚', label: 'Suppliers' },
   'divider',
