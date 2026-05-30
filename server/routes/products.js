@@ -27,13 +27,14 @@ router.get('/clear-base64', auth, adminOnly, async (req, res) => {
 // GET /api/products - Get all products with optional filters
 router.get('/', async (req, res) => {
   try {
-    const { category, color, occasion, pattern, rating, minPrice, maxPrice, search, sort, basic } = req.query;
+    const { category, color, occasion, pattern, fabric, rating, minPrice, maxPrice, search, sort, basic } = req.query;
     const query = {};
 
     if (category) query.category = new RegExp(category.trim(), 'i');
     if (color) query.color = new RegExp(color.trim(), 'i');
     if (occasion) query.occasion = new RegExp(occasion.trim(), 'i');
     if (pattern) query.pattern = new RegExp(pattern.trim(), 'i');
+    if (fabric) query['sareeDetails.fabric'] = new RegExp(fabric.trim(), 'i');
     if (rating) query.rating = { $gte: Number(rating) };
     
     if (minPrice || maxPrice) {
@@ -57,7 +58,7 @@ router.get('/', async (req, res) => {
     else if (sort === 'rating') sortOption = { rating: -1 };
     else if (sort === 'name') sortOption = { name: 1 };
 
-    let fields = { name:1, price:1, original_price:1, rating:1, category:1, color:1, occasion:1, pattern:1, stock:1, featured:1, sareeDetails:1, blouseDetails:1, created_at:1, image:1 };
+    let fields = { name:1, price:1, original_price:1, rating:1, category:1, color:1, occasion:1, pattern:1, stock:1, featured:1, sareeDetails:1, blouseDetails:1, created_at:1, image:1, badge:1, colorCount:1, moq:1 };
     if (!basic) { fields.images = 1; }
     let products = await Product.find(query, fields).lean();
 
@@ -245,6 +246,20 @@ router.delete('/:id', auth, adminOnly, async (req, res) => {
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
     res.json({ success: true, message: 'Product deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// POST /api/products/reset-stats - Admin: Reset ratings, boost stock, reset sales data
+router.post('/reset-stats', auth, adminOnly, async (req, res) => {
+  try {
+    const ratingResult = await Product.updateMany({}, { $set: { rating: 0 } });
+    const stockResult = await Product.updateMany({}, { $set: { stock: 500 } });
+    res.json({
+      success: true,
+      message: `Ratings reset (${ratingResult.modifiedCount} products), stock set to 500 (${stockResult.modifiedCount} products)`
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import API from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useOrderList } from '../components/OrderList';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
@@ -26,6 +27,7 @@ export default function ProductDetail() {
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const [lightbox, setLightbox] = useState(false);
   const [lbZoom, setLbZoom] = useState(false);
+  const { addItem } = useOrderList();
 
   useEffect(() => { loadProduct(); loadComments(); checkUserReview(); checkCart(); }, [id, user]);
 
@@ -220,15 +222,17 @@ export default function ProductDetail() {
             </div>
 
             <div className="pd-price-box">
-              <span className="price">₹{Number(product.price).toLocaleString('en-IN')}</span>
-              {product.original_price > product.price && <span className="orig">₹{Number(product.original_price).toLocaleString('en-IN')}</span>}
+              <span className="price">₹{(Number(product.price) * (product.moq || 5)).toLocaleString('en-IN')}</span>
+              <span style={{ fontSize:'0.82rem', color:'var(--text-muted)', marginLeft:6 }}>/ {product.moq || 5} pcs lot</span>
+              {product.original_price > product.price && <span className="orig">₹{(Number(product.original_price) * (product.moq || 5)).toLocaleString('en-IN')}</span>}
               {disc > 0 && <span className="disc">{disc}% OFF</span>}
             </div>
+            <div style={{ fontSize:'0.82rem', color:'var(--text-muted)', marginBottom:8 }}>₹{Number(product.price).toLocaleString('en-IN')}/pc · MOQ {product.moq || 5} pcs</div>
 
             <div className="pd-stock-badge">
               {product.stock > 0
-                ? <span style={{ color:'var(--success)', fontWeight:500 }}>✓ In Stock ({product.stock} available)</span>
-                : <span style={{ color:'var(--danger)', fontWeight:500 }}>✗ Out of Stock</span>}
+                ? <span style={{ color:'var(--success)', fontWeight:500 }}>✓ Wholesale Available</span>
+                : <span style={{ color:'var(--danger)', fontWeight:500 }}>✗ Currently Unavailable</span>}
             </div>
 
             <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:16 }}>
@@ -271,19 +275,23 @@ export default function ProductDetail() {
 
             {/* CTA Buttons */}
             <div className="pd-cta">
-              <button className="cta-cart" onClick={addToCart} disabled={product.stock === 0}>
-                {added ? '✓ Added!' : inCart ? '➔ Go to Cart' : '🛒 Add to Cart'}
-              </button>
-              <button className="cta-buy" onClick={buyNow} disabled={product.stock === 0 || buying}>
-                {buying ? 'Processing...' : 'Buy Now'}
+              <button className="cta-buy" onClick={() => addItem({ id:product.id, name:product.name, price:product.price, image: activeImage, moq: product.moq })} style={{ width:'100%' }}>
+                💬 Enquire B2B Price
               </button>
             </div>
 
+            {/* Colors available */}
+            {product.colorCount > 0 && (
+              <div style={{ marginTop:12, fontSize:'0.88rem', color:'var(--text-muted)' }}>
+                <span style={{ fontWeight:600, color:'var(--text)' }}>🎨 {product.colorCount} Colors</span> available
+              </div>
+            )}
+
             {/* Delivery info */}
             <div style={{ marginTop:18, padding:'14px 16px', background:'var(--bg)', borderRadius:8, border:'1px solid var(--border)', fontSize:'0.85rem' }}>
-              <div style={{ marginBottom:6 }}>🚚 <b>Free Delivery</b> on orders above ₹999</div>
-              {/* <div style={{ marginBottom:6 }}>↩️ <b>Easy Returns</b> within 7 days</div> */}
-              <div>🔒 <b>Secure Payment</b> via Razorpay UPI/Card</div>
+              <div style={{ marginBottom:6 }}>📦 <b>Bulk Orders</b> — Flexible MOQ</div>
+              <div style={{ marginBottom:6 }}>🚚 <b>Pan India Shipping</b> — Reliable delivery</div>
+              <div>💬 <b>WhatsApp Enquiry</b> — Quick response</div>
             </div>
           </div>
         </div>

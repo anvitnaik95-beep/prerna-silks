@@ -34,6 +34,17 @@ export default function Orders() {
         <div className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
           <h1 style={{ fontSize: '1.8rem', fontWeight: 400, color: 'var(--primary)', margin: 0 }}>Orders Portal</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <button className="btn-buy" style={{ background:'var(--danger)', color:'#fff', border:'none', padding:'8px 16px', borderRadius:6, fontSize:'0.82rem', cursor:'pointer' }}
+              onClick={async () => {
+                if (!window.confirm('Are you sure you want to clear ALL order history? This cannot be undone.')) return;
+                if (!window.confirm('Really delete all orders? This action is permanent.')) return;
+                try {
+                  await API.delete('/orders/clear-all');
+                  setOrders([]);
+                  alert('All orders cleared successfully.');
+                } catch { alert('Failed to clear orders.'); }
+              }}
+            >Clear All Orders</button>
             <span style={{ fontSize: '0.88rem', color: 'var(--text-muted)' }}>Filter Status:</span>
             <select className="form-select" style={{ width: 180, padding: '8px 12px' }} value={filter} onChange={e => setFilter(e.target.value)}>
               <option value="">All Orders</option>
@@ -49,7 +60,6 @@ export default function Orders() {
                 <tr style={{ background: '#fafafa' }}>
                   <th style={{ padding: '16px 20px' }}>Order ID</th>
                   <th style={{ padding: '16px 20px' }}>Customer</th>
-                  <th style={{ padding: '16px 20px' }}>Items & Tracking</th>
                   <th style={{ padding: '16px 20px' }}>Amount</th>
                   <th style={{ padding: '16px 20px' }}>Payment</th>
                   <th style={{ padding: '16px 20px' }}>Status</th>
@@ -60,7 +70,7 @@ export default function Orders() {
               <tbody>
                 {orders.length === 0 ? (
                   <tr>
-                    <td colSpan={8} style={{ textAlign: 'center', padding: 50, color: 'var(--text-muted)' }}>
+                    <td colSpan={7} style={{ textAlign: 'center', padding: 50, color: 'var(--text-muted)' }}>
                       No orders found matching the filter criteria.
                     </td>
                   </tr>
@@ -74,17 +84,6 @@ export default function Orders() {
                         <div style={{ fontWeight: 600 }}>{o.customer_name || '—'}</div>
                         <small style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.8rem' }}>{o.customer_email || ''}</small>
                         {o.customer_phone && <small style={{ color: 'var(--text-light)', display: 'block', fontSize: '0.78rem' }}>Phone: {o.customer_phone}</small>}
-                      </td>
-                      <td style={{ padding: '16px 20px' }}>
-                        <div style={{ fontWeight: 500 }}>{o.items ? o.items.length : 0} items</div>
-                        <small style={{ color: 'var(--text-muted)', display: 'block', fontSize: '0.8rem' }}>
-                          Delivery: {o.delivery_service || 'XpressBees'}
-                        </small>
-                        {o.tracking_id && (
-                          <span style={{ fontSize: '0.75rem', background: '#eef2ff', color: '#4f46e5', padding: '2px 6px', borderRadius: 4, display: 'inline-block', marginTop: 4, fontFamily: 'monospace' }}>
-                            ID: {o.tracking_id}
-                          </span>
-                        )}
                       </td>
                       <td style={{ padding: '16px 20px', fontWeight: 600, color: 'var(--primary)' }}>
                         {fmt(o.total_amount)}

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const InstagramIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>;
@@ -7,15 +8,39 @@ const WhatsAppIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill=
 
 export default function Footer() {
   const navigate = useNavigate();
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+
+  const handleNewsletter = (e) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim()) return;
+    const text = `Hi! I want to subscribe to the Prerna Silks newsletter.\nEmail: ${newsletterEmail}`;
+    window.open(`https://wa.me/917019461619?text=${encodeURIComponent(text)}`, '_blank');
+    setNewsletterEmail('');
+  };
 
   return (
     <footer className="site-footer">
+      {/* Newsletter */}
+      <div style={{ background:'rgba(255,255,255,0.04)', padding:'28px 0', borderBottom:'1px solid rgba(255,255,255,0.08)' }}>
+        <div className="footer-top" style={{ alignItems:'center', gap:20 }}>
+          <div style={{ flex:1, minWidth:200 }}>
+            <div style={{ color:'var(--gold)', fontSize:'1rem', fontWeight:600, marginBottom:4 }}>Stay Updated</div>
+            <div style={{ fontSize:'0.82rem', color:'rgba(255,255,255,0.5)' }}>Get updates on new arrivals & exclusive offers</div>
+          </div>
+          <form onSubmit={handleNewsletter} style={{ display:'flex', gap:8, flex:1, maxWidth:400 }}>
+            <input type="email" placeholder="Your email address" value={newsletterEmail} onChange={e => setNewsletterEmail(e.target.value)} required
+              style={{ flex:1, padding:'10px 14px', border:'1px solid rgba(255,255,255,0.15)', borderRadius:6, background:'rgba(255,255,255,0.08)', color:'#fff', fontSize:'0.88rem', outline:'none' }} />
+            <button type="submit" style={{ padding:'10px 22px', background:'var(--gold)', color:'#000', border:'none', borderRadius:6, fontWeight:600, cursor:'pointer', fontSize:'0.85rem' }}>Subscribe</button>
+          </form>
+        </div>
+      </div>
+
       <div className="footer-top">
         {/* Brand */}
         <div className="footer-col footer-brand">
           <div style={{ fontFamily:'var(--font-heading)', fontSize:'1.6rem', color:'var(--gold)', marginBottom:8 }}>Prerna Silks</div>
           <div style={{ fontSize:'0.72rem', letterSpacing:'3px', color:'rgba(255,255,255,0.4)', textTransform:'uppercase', marginBottom:10 }}>CBT Hubli, Karnataka</div>
-          <p>Premium sarees crafted with tradition and elegance. Bringing the finest silk and handloom collections to your doorstep.</p>
+          <p>Your trusted wholesale partner for premium quality sarees at unbeatable wholesale prices.</p>
           <div className="footer-social">
             <a href="https://instagram.com" target="_blank" rel="noreferrer" title="Instagram"><InstagramIcon /></a>
             <a href="https://facebook.com" target="_blank" rel="noreferrer" title="Facebook"><FacebookIcon /></a>
@@ -24,38 +49,50 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Shop */}
+        {/* Company */}
         <div className="footer-col">
-          <h4>Shop</h4>
+          <h4>Company</h4>
           <ul>
-            <li><a onClick={() => navigate('/')} style={{ cursor:'pointer' }}>All Sarees</a></li>
-            <li><a onClick={() => navigate('/?category=Silk')} style={{ cursor:'pointer' }}>Silk Sarees</a></li>
-            <li><a onClick={() => navigate('/?category=Cotton')} style={{ cursor:'pointer' }}>Cotton Sarees</a></li>
-            <li><a onClick={() => navigate('/?category=Georgette')} style={{ cursor:'pointer' }}>Georgette</a></li>
-            <li><a onClick={() => navigate('/?category=Chiffon')} style={{ cursor:'pointer' }}>Chiffon</a></li>
-            <li><a onClick={() => navigate('/?occasion=Wedding')} style={{ cursor:'pointer' }}>Bridal Collection</a></li>
+            <li><a onClick={() => navigate('/')} style={{ cursor:'pointer' }}>Home</a></li>
+            <li><a onClick={() => navigate('/partner-program')} style={{ cursor:'pointer' }}>Partner Program</a></li>
+            <li><a onClick={() => navigate('/bulk-inquiry')} style={{ cursor:'pointer' }}>Bulk Order</a></li>
+            <li><a onClick={() => navigate('/faq')} style={{ cursor:'pointer' }}>FAQ</a></li>
           </ul>
         </div>
 
-        {/* Help */}
+        {/* Quick Links */}
         <div className="footer-col">
-          <h4>Help & Info</h4>
+          <h4>Quick Links</h4>
           <ul>
-            <li><a onClick={() => navigate('/my-orders')} style={{ cursor:'pointer' }}>Track My Order</a></li>
-            <li><a onClick={() => navigate('/faq')} style={{ cursor:'pointer' }}>FAQ</a></li>
-            <li><a onClick={() => navigate('/register')} style={{ cursor:'pointer' }}>Create Account</a></li>
+            <li><a onClick={() => navigate('/')} style={{ cursor:'pointer' }}>Catalogue</a></li>
+            <li><a onClick={() => navigate('/bulk-inquiry')} style={{ cursor:'pointer' }}>Bulk Order</a></li>
+            <li><a onClick={() => navigate('/partner-program')} style={{ cursor:'pointer' }}>Partner Program</a></li>
+            <li><a onClick={() => navigate('/wishlist')} style={{ cursor:'pointer' }}>My Favorites</a></li>
+          </ul>
+        </div>
+
+        {/* Collections */}
+        <div className="footer-col">
+          <h4>Collections</h4>
+          <ul>
+            <li><a onClick={() => navigate('/?category=Silk')} style={{ cursor:'pointer' }}>Silk Sarees</a></li>
+            <li><a onClick={() => navigate('/?category=Cotton')} style={{ cursor:'pointer' }}>Cotton Sarees</a></li>
+            <li><a onClick={() => navigate('/?category=Organza')} style={{ cursor:'pointer' }}>Organza Sarees</a></li>
+            <li><a onClick={() => navigate('/?category=Georgette')} style={{ cursor:'pointer' }}>Georgette Sarees</a></li>
+            <li><a onClick={() => navigate('/?category=Chiffon')} style={{ cursor:'pointer' }}>Chiffon Sarees</a></li>
+            <li><a onClick={() => navigate('/?category=Linen')} style={{ cursor:'pointer' }}>Linen Sarees</a></li>
+            <li><a onClick={() => navigate('/?occasion=Wedding')} style={{ cursor:'pointer' }}>Bridal Collection</a></li>
           </ul>
         </div>
 
         {/* Contact */}
         <div className="footer-col">
-          <h4>Contact Us</h4>
+          <h4>Get In Touch</h4>
           <ul>
-            <li>📍 CBT Hubli, Karnataka 580029</li>
             <li><a href="tel:+917019461619">📞 +91 70194 61619</a></li>
-            <li><a href="mailto:admin@prernasilks.com">📧 Email Us</a></li>
-            <li>🕐 Mon–Sat: 10AM – 9PM</li>
-            <li>🕐 Sun: 11AM – 7PM</li>
+            <li><a href="mailto:admin@prernasilks.com">📧 admin@prernasilks.com</a></li>
+            <li>🕐 Mon–Sat: 10AM – 6PM</li>
+            <li>📍 CBT Hubli, Karnataka 580029</li>
           </ul>
           <div style={{ marginTop:14 }}>
             <div style={{ fontSize:'0.75rem', color:'rgba(255,255,255,0.4)', marginBottom:8, textTransform:'uppercase', letterSpacing:'1px' }}>We Accept</div>

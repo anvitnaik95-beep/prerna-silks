@@ -2,21 +2,24 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { OrderListProvider } from './components/OrderList'
+import OrderListPanel from './components/OrderList'
+import WhatsAppButton from './components/WhatsAppButton'
 import App from './App'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
 
-// Restore dark theme from localStorage before React renders to prevent flash
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme === 'dark') {
-  document.body.classList.add('dark-theme');
-}
-
+try { localStorage.removeItem('theme'); } catch (e) {}
+try { document.body.classList.remove('dark-theme'); } catch (e) {}
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <App />
+        <OrderListProvider>
+          <App />
+          <OrderListPanel />
+          <WhatsAppButton />
+        </OrderListProvider>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import API from '../../services/api';
 import AdminSidebar from '../../components/AdminSidebar';
 
-const empty = { name:'',category:'Silk',price:0,original_price:0,stock:0,rating:4,color:'',occasion:'Casual',pattern:'',description:'',image:'',featured:false,
+const empty = { name:'',category:'Silk',price:0,original_price:0,stock:0,rating:4,color:'',occasion:'Casual',pattern:'',description:'',image:'',featured:false,badge:'',colorCount:0,moq:5,
   sareeDetails:{pattern:'',purity:'',color:'',fabric:'',length:'5.5 meters',work:'',border:''},
   blouseDetails:{border:'',work:'',fabric:'',length:'0.8 meters',pattern:'',color:''} };
 
@@ -30,7 +30,7 @@ export default function Products() {
     try {
       const { data } = await API.get(`/products/${p.id}`);
       const prod = data.product;
-      setForm({ name:prod.name, category:prod.category, price:prod.price, original_price:prod.original_price, stock:prod.stock, rating:prod.rating, color:prod.color, occasion:prod.occasion, pattern:prod.pattern, description:prod.description||'', image:prod.image||'', featured:prod.featured,
+      setForm({ name:prod.name, category:prod.category, price:prod.price, original_price:prod.original_price, stock:prod.stock, rating:prod.rating, color:prod.color, occasion:prod.occasion, pattern:prod.pattern, description:prod.description||'', image:prod.image||'', featured:prod.featured, badge:prod.badge||'', colorCount:prod.colorCount||0, moq:prod.moq||5,
         sareeDetails: {...empty.sareeDetails, ...(prod.sareeDetails||{})}, blouseDetails: {...empty.blouseDetails, ...(prod.blouseDetails||{})} });
       setImages(prod.images || []);
     } catch (e) {
@@ -146,6 +146,19 @@ export default function Products() {
                     {['Wedding','Festival','Party','Casual'].map(o=><option key={o}>{o}</option>)}
                   </select></div>
                 <div className="col-4"><label className="form-label">Pattern</label><input className="form-control" value={form.pattern} onChange={e=>set('pattern',e.target.value)} /></div>
+                <div className="col-4"><label className="form-label">Badge</label>
+                  <select className="form-select" value={form.badge} onChange={e=>set('badge',e.target.value)}>
+                    <option value="">None</option>
+                    <option value="New Arrival">New Arrival</option>
+                    <option value="High Demand">High Demand</option>
+                    <option value="Low MOQ">Low MOQ</option>
+                    <option value="Pre-Order">Pre-Order</option>
+                    <option value="Ready Stock">Ready Stock</option>
+                    <option value="Today's Deal">Today's Deal</option>
+                    <option value="Out of Stock">Out of Stock</option>
+                  </select></div>
+                <div className="col-4"><label className="form-label">Color Count</label><input type="number" min="0" className="form-control" value={form.colorCount} onChange={e=>set('colorCount',e.target.value)} /></div>
+                <div className="col-4"><label className="form-label">MOQ (pcs/lot)</label><input type="number" min="1" className="form-control" value={form.moq} onChange={e=>set('moq',e.target.value)} /></div>
                 <div className="col-12"><label className="form-label">Image URL</label><input className="form-control" placeholder="https://example.com/image.jpg" value={form.image} onChange={e=>set('image',e.target.value)} /></div>
                 <div className="col-12"><label className="form-label">Description</label><textarea className="form-control" rows={2} value={form.description} onChange={e=>set('description',e.target.value)} /></div>
               </div>

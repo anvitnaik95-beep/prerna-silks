@@ -8,7 +8,9 @@ const orderItemSchema = new mongoose.Schema({
 }, { _id: false });
 
 const orderSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  customer_name: { type: String, default: '' },
+  customer_phone: { type: String, default: '' },
   total_amount: { type: Number, default: 0.00 },
   subtotal: { type: Number, default: 0.00 },
   delivery_fee: { type: Number, default: 0 },
@@ -17,6 +19,7 @@ const orderSchema = new mongoose.Schema({
   shipping_address: { type: String, default: '' },
   status: { type: String, enum: ['Pending', 'Confirmed', 'Dispatched', 'Shipped', 'Delivered', 'Cancelled'], default: 'Pending' },
   payment_ref: { type: String, default: '' },
+  payment_token: { type: String, default: '', index: true },
   estimated_delivery: { type: Date, default: () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
   tracking_id: { type: String, default: '' },
   delivery_service: { type: String, default: 'XpressBees' },

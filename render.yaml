@@ -1,15 +1,19 @@
+# Render.com Deployment Blueprint
+# This file configures automatic deployment on Render.com (free tier)
+
 services:
+  # Full-stack Web Service (Backend + Frontend served together)
   - type: web
     name: prerna-silks
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    buildCommand: cd client && npm install && npx vite build && cd ../server && npm install
+    startCommand: cd server && node server.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: MONGO_URI
-        sync: false
+        sync: false  # Set manually in Render dashboard
       - key: JWT_SECRET
         sync: false
       - key: RAZORPAY_KEY_ID
@@ -27,6 +31,6 @@ services:
       - key: SENDGRID_FROM
         value: "anvitnaik95@gmail.com"
       - key: WA_PHONE_NUMBER_ID
-        sync: false
+        sync: false  # Set in Render dashboard
       - key: WA_ACCESS_TOKEN
         sync: false

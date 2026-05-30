@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import API from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useOrderList } from '../components/OrderList';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import FeedbackPopup from '../components/FeedbackPopup';
@@ -10,12 +11,13 @@ const categories = ['Silk','Cotton','Chiffon','Georgette','Organza','Linen'];
 const colors = ['Red','Blue','Green','Maroon','Purple','Pink','White','Beige','Orange'];
 const occasions = ['Wedding','Festival','Party','Casual'];
 const patterns = ['Zari','Floral','Geometric','Plain','Ikat','Embroidered','Sequin','Striped','Painted'];
+const fabrics = ['Katan Silk','Soft Silk','Organza','Georgette','Cotton','Chiffon','Linen','Mashru Silk','Tissue','Art Silk','Tussar Silk','Viscose'];
 
 const stars = (r) => '★'.repeat(Math.round(r)) + '☆'.repeat(5 - Math.round(r));
 
 const WishIcon = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>;
 const ShareIcon = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z"/></svg>;
-const CartIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"/></svg>;
+const EnquiryIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M8.625 9.75a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 01.778-.332 48.294 48.294 0 005.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>;
 
 const HERO_SLIDES = [
   {
@@ -44,9 +46,11 @@ export default function Home() {
   const [slide, setSlide] = useState(0);
   const [bannerSlides, setBannerSlides] = useState(HERO_SLIDES);
   const [cartItemIds, setCartItemIds] = useState([]);
+  const [brokenHoverImages, setBrokenHoverImages] = useState({});
   const timerRef = useRef(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { addItem } = useOrderList();
   const { search: urlSearch } = useLocation();
 
   const nextSlide = useCallback(() => setSlide(s => (s + 1) % bannerSlides.length), [bannerSlides.length]);
@@ -195,7 +199,8 @@ export default function Home() {
             </div>
             <button onClick={fetchProducts} className="btn-buy" style={{ width:'100%', padding:'9px' }}>Apply</button>
           </div>
-          {[{title:'Categories',items:categories,key:'category'},{title:'Color',items:colors,key:'color'},
+          {[{title:'Categories',items:categories,key:'category'},{title:'Fabric',items:fabrics,key:'fabric'},
+            {title:'Color',items:colors,key:'color'},
             {title:'Occasion',items:occasions,key:'occasion'},{title:'Pattern',items:patterns,key:'pattern'}].map(s => (
             <div className="filter-section" key={s.key}>
               <h4>{s.title}</h4>
@@ -264,13 +269,17 @@ export default function Home() {
                 const imgs = p.images || [];
                 const img1 = imgs[0]?.image_url || p.image || '';
                 const img2 = imgs[1]?.image_url || '';
+                const moq = p.moq || 5;
+                const lotPrice = Number(p.price) * moq;
+                const badgeColors = { 'New Arrival':'var(--success)', 'High Demand':'var(--danger)', 'Low MOQ':'var(--gold)', 'Pre-Order':'var(--primary)', 'Ready Stock':'#2ecc71', "Today's Deal":"#e67e22", 'Out of Stock':'#888' };
+                const badge = p.badge || (p.stock === 0 ? 'Out of Stock' : '');
                 return (
                   <div className="product-card" key={p.id} onClick={() => navigate(`/product/${p.id}`)}>
-                    <div className="product-img">
+                    <div className={`product-img${img2 && !brokenHoverImages[p.id] ? ' has-hover' : ''}`}>
                       {img1 ? (
                         <>
                           <img className="img-main" src={img1} alt={p.name} />
-                          {img2 && <img className="img-hover" src={img2} alt={p.name} />}
+                          {img2 && <img className="img-hover" src={img2} alt={p.name} onError={() => setBrokenHoverImages(prev => ({...prev, [p.id]: true}))} />}
                         </>
                       ) : (
                         <div style={{ display:'flex', flexDirection: 'column', alignItems:'center', justifyContent:'center', height:'100%', background: '#fafafa', color: 'var(--text-light)' }}>
@@ -282,6 +291,7 @@ export default function Home() {
                           <span style={{ fontSize: '0.78rem', marginTop: 8 }}>No Image Available</span>
                         </div>
                       )}
+                      {badge && <div style={{ position:'absolute', top:8, left:8, background:badgeColors[badge]||'var(--primary)', color:'#fff', padding:'2px 8px', borderRadius:3, fontSize:'0.7rem', fontWeight:600, zIndex:2 }}>{badge}</div>}
                       <button className="wish-btn" onClick={e => toggleWishlist(e, p.id)}><WishIcon /></button>
                       <button className="share-btn" onClick={e => { e.stopPropagation(); navigator.clipboard.writeText(window.location.origin+'/product/'+p.id); alert('Link copied!'); }}><ShareIcon /></button>
                       <button className="quick-view-btn" onClick={e => { e.stopPropagation(); navigate(`/product/${p.id}`); }}>View Details</button>
@@ -290,15 +300,17 @@ export default function Home() {
                       <div className="product-name">{p.name}</div>
                       <div className="product-rating">{stars(p.rating)} <span style={{ color:'var(--text-muted)', fontSize:'0.78rem' }}>({p.rating})</span></div>
                       <div className="product-price">
-                        <span className="current">₹{Number(p.price).toLocaleString('en-IN')}</span>
-                        {p.original_price > p.price && <span className="original">₹{Number(p.original_price).toLocaleString('en-IN')}</span>}
+                        <span className="current">₹{lotPrice.toLocaleString('en-IN')}</span>
+                        <span style={{ fontSize:'0.74rem', color:'var(--text-muted)', marginLeft:4 }}>/ {moq} pcs</span>
+                        {p.original_price > p.price && <span className="original">₹{(Number(p.original_price)*moq).toLocaleString('en-IN')}</span>}
                         {disc > 0 && <span className="discount">{disc}% OFF</span>}
                       </div>
+                      <div style={{ fontSize:'0.76rem', color:'var(--text-muted)', marginBottom:4 }}>₹{Number(p.price).toLocaleString('en-IN')}/pc · MOQ {moq} pcs</div>
+                      {p.colorCount > 0 && <div style={{ fontSize:'0.78rem', color:'var(--text-muted)', marginBottom:6 }}>{p.colorCount} Colors</div>}
                       <div className="product-actions">
-                        <button className="btn-cart" onClick={e => addToCart(e, p.id)} style={{ display:'flex', alignItems:'center', gap:'5px', flex:1, justifyContent:'center' }}>
-                          {cartItemIds.includes(p.id) ? '➔ Go to Cart' : <><CartIcon /> Cart</>}
+                        <button className="btn-buy" onClick={e => { e.stopPropagation(); addItem({ id:p.id, name:p.name, price:p.price, image:img1, moq }); }} style={{ display:'flex', alignItems:'center', gap:'5px', flex:1, justifyContent:'center' }}>
+                          <EnquiryIcon /> Enquiry B2B Price
                         </button>
-                        <button className="btn-buy" onClick={e => { e.stopPropagation(); if(cartItemIds.includes(p.id)){navigate('/cart')}else{addToCart(e, p.id); navigate('/cart');} }} style={{ flex:1 }}>Buy Now</button>
                       </div>
                     </div>
                   </div>
