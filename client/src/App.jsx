@@ -13,20 +13,21 @@ import TrackOrder from './pages/TrackOrder';
 import FAQ from './pages/FAQ';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/Products';
-import AdminOrders from './pages/admin/Orders';
+
 import AdminCustomers from './pages/admin/Customers';
 import AdminSuppliers from './pages/admin/Suppliers';
-import AdminReports from './pages/admin/Reports';
 import AdminReviews from './pages/admin/Reviews';
 import AdminExpenses from './pages/admin/Expenses';
 import AdminBills from './pages/admin/Bills';
 import AdminSettings from './pages/admin/Settings';
 import AdminFeedback from './pages/admin/Feedback';
+import AdminOrders from './pages/admin/Orders';
+import AdminEnquiries from './pages/admin/Enquiries';
 import Checkout from './pages/Checkout';
 import MyOrders from './pages/MyOrders';
-import MyEnquiries from './pages/MyEnquiries';
-import PayEnquiry from './pages/PayEnquiry';
-import AdminEnquiries from './pages/admin/Enquiries';
+import BulkInquiry from './pages/BulkInquiry';
+import PartnerProgram from './pages/PartnerProgram';
+import PayOrder from './pages/PayOrder';
 
 // Protected route wrapper
 function ProtectedRoute({ children, adminRequired }) {
@@ -45,25 +46,25 @@ function App() {
       <Route path="/product/:id" element={<ProductDetail />} />
       <Route path="/track-order" element={<TrackOrder />} />
       <Route path="/faq" element={<FAQ />} />
-      <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-      <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+      <Route path="/cart" element={<Navigate to="/" replace />} />
+      <Route path="/checkout" element={<Navigate to="/" replace />} />
       <Route path="/wishlist" element={<ProtectedRoute><Wishlist /></ProtectedRoute>} />
-      <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
-      <Route path="/my-enquiries" element={<ProtectedRoute><MyEnquiries /></ProtectedRoute>} />
-      <Route path="/pay-enquiry/:token" element={<PayEnquiry />} />
+      <Route path="/my-orders" element={<Navigate to="/" replace />} />
+      <Route path="/bulk-inquiry" element={<BulkInquiry />} />
+      <Route path="/partner-program" element={<PartnerProgram />} />
+      <Route path="/pay-order/:token" element={<PayOrder />} />
 
       {/* Admin Routes */}
       <Route path="/admin/dashboard" element={<ProtectedRoute adminRequired><AdminDashboard /></ProtectedRoute>} />
       <Route path="/admin/products" element={<ProtectedRoute adminRequired><AdminProducts /></ProtectedRoute>} />
       <Route path="/admin/orders" element={<ProtectedRoute adminRequired><AdminOrders /></ProtectedRoute>} />
+      <Route path="/admin/enquiries" element={<ProtectedRoute adminRequired><AdminEnquiries /></ProtectedRoute>} />
       <Route path="/admin/customers" element={<ProtectedRoute adminRequired><AdminCustomers /></ProtectedRoute>} />
       <Route path="/admin/suppliers" element={<ProtectedRoute adminRequired><AdminSuppliers /></ProtectedRoute>} />
-      <Route path="/admin/reports" element={<ProtectedRoute adminRequired><AdminReports /></ProtectedRoute>} />
       <Route path="/admin/reviews" element={<ProtectedRoute adminRequired><AdminReviews /></ProtectedRoute>} />
       <Route path="/admin/expenses" element={<ProtectedRoute adminRequired><AdminExpenses /></ProtectedRoute>} />
       <Route path="/admin/feedback" element={<ProtectedRoute adminRequired><AdminFeedback /></ProtectedRoute>} />
       <Route path="/admin/bills" element={<ProtectedRoute adminRequired><AdminBills /></ProtectedRoute>} />
-      <Route path="/admin/enquiries" element={<ProtectedRoute adminRequired><AdminEnquiries /></ProtectedRoute>} />
       <Route path="/admin/settings" element={<ProtectedRoute adminRequired><AdminSettings /></ProtectedRoute>} />
     </Routes>
   );

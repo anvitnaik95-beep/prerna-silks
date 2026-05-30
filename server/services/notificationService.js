@@ -117,21 +117,26 @@ Message:
 Date: ${new Date(feedback.created_at || Date.now()).toLocaleString('en-IN')}`;
 
   console.log(`\n[Feedback Email] To: ${ADMIN_EMAIL} | Subject: ${mailSubject}`);
-  if (!initSendGrid()) {
-    console.log('SendGrid not configured. Email output logged above.');
-    return;
+  if (initSendGrid()) {
+    try {
+      await sgMail.send({
+        to: ADMIN_EMAIL,
+        from: FROM_EMAIL,
+        subject: mailSubject,
+        text: mailText
+      });
+      console.log('Feedback email sent to admin.');
+    } catch (err) {
+      console.error('Error sending feedback email:', err.message);
+    }
+  } else {
+    console.log('SendGrid not configured. Will notify via WhatsApp instead.');
   }
-  try {
-    await sgMail.send({
-      to: ADMIN_EMAIL,
-      from: FROM_EMAIL,
-      subject: mailSubject,
-      text: mailText
-    });
-    console.log('Feedback email sent to admin.');
-  } catch (err) {
-    console.error('Error sending feedback email:', err.message);
-  }
+
+  // Also send WhatsApp notification to admin (works if WA env vars are set)
+  const adminPhone = process.env.ADMIN_PHONE || '7019461619';
+  const waMsg = `New Feedback from ${feedback.name}\nRating: ${feedback.rating}/5\n${feedback.email ? `Email: ${feedback.email}\n` : ''}Message: ${feedback.message}`;
+  await sendWhatsAppMessage(adminPhone, waMsg);
 }
 
 async function sendOrderSMSAndWhatsApp(order, items, user) {
@@ -196,5 +201,6 @@ async function sendDeliveredNotification(order, user) {
 module.exports = {
   sendAdminFeedbackEmail,
   sendOrderSMSAndWhatsApp,
-  sendDeliveredNotification
+  sendDeliveredNotification,
+  sendWhatsAppMessage
 };

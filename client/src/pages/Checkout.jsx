@@ -133,7 +133,7 @@ export default function Checkout() {
     if (!validatePhone(phone)) { alert('Please enter a valid 10-digit phone number'); return; }
     setPaying(true);
     try {
-      const { data: orderData } = await API.post('/orders/razorpay/create', { amount: grandTotal, currency: 'INR' });
+      const { data: orderData } = await API.post('/orders/razorpay/create', { amount: grandTotal });
       const loaded = await loadRazorpayScript();
       if (!loaded) { alert('Razorpay failed to load.'); setPaying(false); return; }
 
@@ -144,7 +144,7 @@ export default function Checkout() {
         name: 'Prerna Silks',
         description: `Order of ${items.length} item(s)`,
         order_id: orderData.orderId,
-        theme: { color: '#521220' },
+        theme: { color: '#1B2A4A' },
         prefill: { contact: phone },
         handler: async (response) => {
           try {
@@ -153,24 +153,20 @@ export default function Checkout() {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature
             });
-            setOrderResult(result);
             setPaying(false);
-          } catch (err) { console.error('Order placement after Razorpay failed:', err); alert('Order failed after payment. Contact support.'); }
+            setOrderResult(result);
+          } catch (e) {
+            setPaying(false);
+            alert('Order failed after payment: ' + (e.response?.data?.message || e.message));
+          }
         },
         modal: { ondismiss: () => setPaying(false) }
       };
       const rzp = new window.Razorpay(options);
-      rzp.on('payment.failed', (response) => {
-        console.error('Razorpay payment failed:', response.error);
-        alert('Payment failed: ' + (response.error?.description || 'Please try again.'));
-        setPaying(false);
-      });
       rzp.open();
-    } catch (err) {
-      console.error('Razorpay payment initiation failed:', err?.response?.data || err);
-      const msg = err?.response?.data?.message || 'Payment initiation failed. Check console for details.';
-      alert(msg);
+    } catch (e) {
       setPaying(false);
+      alert('Payment initiation failed: ' + (e.response?.data?.message || e.message));
     }
   };
 
@@ -182,7 +178,7 @@ export default function Checkout() {
     try {
       const result = await placeOrder('COD');
       setOrderResult(result);
-    } catch (err) { console.error('COD order failed:', err); alert('Order failed. Please try again.'); }
+    } catch { alert('Order failed'); }
     setPaying(false);
   };
 
@@ -204,7 +200,9 @@ export default function Checkout() {
           try {
             const result = await placeOrder('Direct UPI');
             setOrderResult(result);
-          } catch (err) { console.error('UPI order failed:', err); alert('Failed to place your UPI order.'); } finally {
+          } catch {
+            alert('Failed to catalog your UPI order.');
+          } finally {
             setVerifyingUpi(false);
             setShowUpiQR(false);
           }
@@ -336,17 +334,17 @@ export default function Checkout() {
   <style>
     body { font-family: 'Outfit', 'Inter', -apple-system, sans-serif; color: #333; padding: 40px 20px; line-height: 1.6; background-color: #fcfcfc; }
     .receipt-container { max-width: 650px; margin: 0 auto; border: 1px solid #eaeaea; padding: 40px; border-radius: 16px; background-color: #ffffff; box-shadow: 0 8px 30px rgba(0,0,0,0.04); }
-    .header { text-align: center; border-bottom: 2px solid #521220; padding-bottom: 20px; margin-bottom: 24px; }
-    .brand-name { font-size: 28px; font-weight: 700; color: #521220; letter-spacing: 2px; }
-    .brand-sub { font-size: 11px; color: #D4AF37; letter-spacing: 4px; text-transform: uppercase; margin-top: 4px; }
+    .header { text-align: center; border-bottom: 2px solid #1B2A4A; padding-bottom: 20px; margin-bottom: 24px; }
+    .brand-name { font-size: 28px; font-weight: 700; color: #1B2A4A; letter-spacing: 2px; }
+    .brand-sub { font-size: 11px; color: #C8A95E; letter-spacing: 4px; text-transform: uppercase; margin-top: 4px; }
     .title { font-size: 20px; margin-top: 15px; font-weight: 600; color: #333; letter-spacing: 0.5px; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; font-size: 14px; background: #fafafa; padding: 18px; border-radius: 8px; border: 1px solid #f0f0f0; }
     .grid-label { color: #666; font-weight: 500; }
     .grid-value { font-weight: 600; text-align: right; color: #111; }
     .items-table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 25px; }
-    .items-table th { background: #521220; color: #fff; padding: 12px; font-size: 14px; text-align: left; font-weight: 500; }
+    .items-table th { background: #1B2A4A; color: #fff; padding: 12px; font-size: 14px; text-align: left; font-weight: 500; }
     .items-table td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #444; }
-    .total-section { font-size: 20px; font-weight: 700; color: #521220; border-top: 2px dashed #eaeaea; padding-top: 15px; text-align: right; }
+    .total-section { font-size: 20px; font-weight: 700; color: #1B2A4A; border-top: 2px dashed #eaeaea; padding-top: 15px; text-align: right; }
     .fee-row { display: flex; justify-content: space-between; font-size: 14px; padding: 4px 0; color: #666; }
     .footer { text-align: center; font-size: 12px; color: #999; margin-top: 40px; border-top: 1px solid #eaeaea; padding-top: 20px; }
   </style>

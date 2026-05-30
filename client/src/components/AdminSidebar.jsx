@@ -6,19 +6,18 @@ import { useState } from 'react';
 const navItems = [
   { path: '/admin/dashboard', icon: '📊', label: 'Dashboard' },
   { path: '/admin/products', icon: '👗', label: 'Products' },
+
   { path: '/admin/orders', icon: '🧾', label: 'Orders' },
-  { path: '/admin/enquiries', icon: '📋', label: 'Enquiries' },
+  { path: '/admin/enquiries', icon: '💬', label: 'Enquiries' },
   { path: '/admin/customers', icon: '👥', label: 'Customers' },
   { path: '/admin/suppliers', icon: '🚚', label: 'Suppliers' },
   'divider',
-  { path: '/admin/reports', icon: '📈', label: 'Reports' },
   { path: '/admin/reviews', icon: '⭐', label: 'Reviews' },
   { path: '/admin/feedback', icon: '📝', label: 'Feedback' },
   { path: '/admin/expenses', icon: '💸', label: 'Expenses' },
   { path: '/admin/bills', icon: '📄', label: 'Bills' },
   { path: '/admin/settings', icon: '⚙️', label: 'Settings' },
-  'divider',
-  { path: '/', icon: '🏠', label: 'View Store' },
+
 ];
 
 export default function AdminSidebar() {

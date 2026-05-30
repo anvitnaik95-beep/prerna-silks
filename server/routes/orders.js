@@ -8,8 +8,8 @@ const User = require('../models/User');
 const { auth, adminOnly } = require('../middleware/auth');
 const { sendOrderSMSAndWhatsApp, sendDeliveredNotification } = require('../services/notificationService');
 
-const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_yourkeyhere';
-const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '';
+const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_test_ShPCOm4skSBpB8';
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '6kAgTIo0BR6iKE576EJJUc9i';
 const ADMIN_PHONE = process.env.ADMIN_PHONE || '7019461619';
 
 // Geocode address using Nominatim and calculate distance from Hubli
@@ -104,23 +104,19 @@ router.post('/razorpay/create', auth, async (req, res) => {
     const { amount } = req.body;
     if (!amount || amount < 1) return res.status(400).json({ message: 'Invalid amount' });
 
-    if (RAZORPAY_KEY_SECRET && RAZORPAY_KEY_SECRET !== '') {
-      const Razorpay = require('razorpay');
-      const razorpay = new Razorpay({ key_id: RAZORPAY_KEY_ID, key_secret: RAZORPAY_KEY_SECRET });
-      const order = await razorpay.orders.create({
-        amount: Math.round(amount * 100), // paise
-        currency: 'INR',
-        receipt: `rcpt_${Date.now()}`,
-        notes: { merchant_upi: '7019461619@ptyes', merchant: 'Prerna Silks' }
-      });
-      return res.json({ key: RAZORPAY_KEY_ID, amount: order.amount, orderId: order.id });
+    if (!RAZORPAY_KEY_SECRET || RAZORPAY_KEY_SECRET === '') {
+      return res.status(500).json({ success: false, message: 'Razorpay is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET on the server.' });
     }
 
-    return res.json({
-      key: RAZORPAY_KEY_ID,
+    const Razorpay = require('razorpay');
+    const razorpay = new Razorpay({ key_id: RAZORPAY_KEY_ID, key_secret: RAZORPAY_KEY_SECRET });
+    const order = await razorpay.orders.create({
       amount: Math.round(amount * 100),
-      orderId: `order_demo_${Date.now()}`
+      currency: 'INR',
+      receipt: `rcpt_${Date.now()}`,
+      notes: { merchant_upi: '7019461619@ptyes', merchant: 'Prerna Silks' }
     });
+    return res.json({ key: RAZORPAY_KEY_ID, amount: order.amount, orderId: order.id });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -303,9 +299,9 @@ router.get('/', auth, async (req, res) => {
       // Map to include customer details expected by admin page
       const formattedOrders = orders.map(o => {
         const json = o.toJSON();
-        json.customer_name = o.userId ? o.userId.name : 'Unknown';
+        json.customer_name = o.userId ? o.userId.name : (o.customer_name || 'Unknown');
         json.customer_email = o.userId ? o.userId.email : '';
-        json.customer_phone = o.userId ? o.userId.phone : '';
+        json.customer_phone = o.userId ? o.userId.phone : (o.customer_phone || '');
         return json;
       });
       return res.json({ success: true, orders: formattedOrders });
@@ -344,6 +340,145 @@ router.put('/:id', auth, adminOnly, async (req, res) => {
     await order.save();
     
     res.json({ success: true, message: 'Order updated', trackingId: order.tracking_id });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ====== Payment Link Endpoints (public, token-based) ======
+
+// GET /api/orders/link/:token - Public: Get order details by payment token
+router.get('/link/:token', async (req, res) => {
+  try {
+    const order = await Order.findOne({ payment_token: req.params.token });
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    if (order.payment_status === 'Paid') return res.json({ success: true, paid: true, order: order.toJSON() });
+    res.json({ success: true, paid: false, order: order.toJSON() });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// POST /api/orders/link/:token/razorpay/create - Public: Create Razorpay order for payment link
+router.post('/link/:token/razorpay/create', async (req, res) => {
+  try {
+    const order = await Order.findOne({ payment_token: req.params.token });
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    if (order.payment_status === 'Paid') return res.status(400).json({ success: false, message: 'Order already paid' });
+
+    const amount = order.total_amount;
+    if (!amount || amount < 1) return res.status(400).json({ message: 'Invalid amount' });
+
+    if (!RAZORPAY_KEY_SECRET || RAZORPAY_KEY_SECRET === '') {
+      return res.status(500).json({ success: false, message: 'Razorpay is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET on the server.' });
+    }
+
+    const Razorpay = require('razorpay');
+    const razorpay = new Razorpay({ key_id: RAZORPAY_KEY_ID, key_secret: RAZORPAY_KEY_SECRET });
+    const rzpOrder = await razorpay.orders.create({
+      amount: Math.round(amount * 100),
+      currency: 'INR',
+      receipt: `link_${order.id}_${Date.now()}`,
+      notes: { order_id: order.id, payment_token: req.params.token }
+    });
+    return res.json({ key: RAZORPAY_KEY_ID, amount: rzpOrder.amount, orderId: rzpOrder.id });
+  } catch (error) {
+    console.error('[Razorpay] Order creation failed:', error.message);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// POST /api/orders/link/:token/verify - Public: Verify payment & mark order as paid
+router.post('/link/:token/verify', async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+    // UPI auto-verification (no real signature needed)
+    if (razorpay_signature === 'upi_auto' && razorpay_payment_id) {
+      await Order.findOneAndUpdate(
+        { payment_token: req.params.token },
+        { payment_status: 'Paid', payment_ref: razorpay_payment_id, status: 'Confirmed' }
+      );
+      return res.json({ success: true, verified: true, method: 'upi' });
+    }
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ success: false, verified: false, message: 'Missing payment details' });
+    }
+
+    let verified = false;
+    if (RAZORPAY_KEY_SECRET && RAZORPAY_KEY_SECRET !== '') {
+      const body = razorpay_order_id + '|' + razorpay_payment_id;
+      const expectedSignature = crypto
+        .createHmac('sha256', RAZORPAY_KEY_SECRET)
+        .update(body)
+        .digest('hex');
+      verified = expectedSignature === razorpay_signature;
+    } else {
+      verified = true;
+    }
+
+    if (verified) {
+      await Order.findOneAndUpdate(
+        { payment_token: req.params.token },
+        { payment_status: 'Paid', payment_ref: razorpay_payment_id || '', status: 'Confirmed' }
+      );
+    }
+
+    res.json({ success: true, verified });
+  } catch (error) {
+    res.status(500).json({ success: false, verified: false, message: error.message });
+  }
+});
+
+// POST /api/orders/link/:token/update-address - Public: Update shipping address for payment link
+router.post('/link/:token/update-address', async (req, res) => {
+  try {
+    const { shipping_address } = req.body;
+    if (!shipping_address || !shipping_address.trim()) {
+      return res.status(400).json({ success: false, message: 'Shipping address is required' });
+    }
+    const order = await Order.findOneAndUpdate(
+      { payment_token: req.params.token },
+      { shipping_address: shipping_address.trim() },
+      { new: true }
+    );
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    res.json({ success: true, message: 'Address updated' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// POST /api/orders/link/:token/confirm-cod - Public: Confirm order with COD
+router.post('/link/:token/confirm-cod', async (req, res) => {
+  try {
+    const { shipping_address } = req.body;
+    if (!shipping_address || !shipping_address.trim()) {
+      return res.status(400).json({ success: false, message: 'Shipping address is required for COD' });
+    }
+    const order = await Order.findOneAndUpdate(
+      { payment_token: req.params.token, payment_status: { $ne: 'Paid' } },
+      {
+        payment_method: 'COD',
+        payment_status: 'Unpaid',
+        status: 'Confirmed',
+        shipping_address: shipping_address.trim()
+      },
+      { new: true }
+    );
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found or already paid' });
+    res.json({ success: true, message: 'Order confirmed with COD', order: order.toJSON() });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// DELETE /api/orders/clear-all - Admin: Clear all order history
+router.delete('/clear-all', auth, adminOnly, async (req, res) => {
+  try {
+    const result = await Order.deleteMany({});
+    res.json({ success: true, message: `Cleared ${result.deletedCount} orders` });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

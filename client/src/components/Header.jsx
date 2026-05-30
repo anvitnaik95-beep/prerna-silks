@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const SearchIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>;
 const WishIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>;
@@ -17,22 +17,10 @@ export default function Header({ onSearch }) {
   const [searchVal, setSearchVal] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-
-  useEffect(() => {
-    const active = document.body.classList.contains('dark-theme');
-    setDarkMode(active);
-  }, []);
 
   const handleSearch = (e) => {
     setSearchVal(e.target.value);
     if (onSearch) onSearch(e.target.value);
-  };
-
-  const toggleTheme = () => {
-    const isDark = document.body.classList.toggle('dark-theme');
-    setDarkMode(isDark);
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
   };
 
   const handleSwitchAccount = () => {
@@ -76,10 +64,10 @@ export default function Header({ onSearch }) {
 
           {/* Desktop Nav */}
           <div className="header-actions header-desktop" style={{ position: 'relative' }}>
+            <Link to="/" className="header-btn" style={{fontSize:'0.82rem'}}><span>Catalogue</span></Link>
+            <Link to="/partner-program" className="header-btn" style={{fontSize:'0.82rem'}}><span>Partners</span></Link>
+            <Link to="/bulk-inquiry" className="header-btn" style={{fontSize:'0.82rem'}}><span>Bulk Order</span></Link>
             {user && <Link to="/wishlist" className="header-btn"><WishIcon /><span>Wishlist</span></Link>}
-            {user && <Link to="/cart" className="header-btn"><CartIcon /><span>Cart</span></Link>}
-            {user && <Link to="/my-orders" className="header-btn"><UserIcon /><span>My Orders</span></Link>}
-            {user && <Link to="/my-enquiries" className="header-btn"><span>📋</span><span>Enquiries</span></Link>}
             {user ? (
               <>
                 {isAdmin() && <Link to="/admin/dashboard" className="header-btn"><AdminIcon /><span>Admin</span></Link>}
@@ -104,25 +92,6 @@ export default function Header({ onSearch }) {
                       <span style={{ fontSize: '0.78rem', color: 'var(--text-light)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Logged in as</span>
                       <div style={{ fontWeight: 600, color: 'var(--primary)', fontSize: '0.95rem', marginTop: 2 }}>{user.name}</div>
                       <div style={{ fontSize: '0.8rem', color: 'var(--text-light)', wordBreak: 'break-all' }}>{user.email}</div>
-                    </div>
-
-                    {/* Dark/Light mode */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.9rem', color: 'var(--text)' }}>Dark Theme</span>
-                      <button 
-                        onClick={toggleTheme} 
-                        style={{
-                          background: darkMode ? 'var(--primary)' : '#e0e0e0',
-                          border: 'none', borderRadius: 20, width: 44, height: 22,
-                          position: 'relative', cursor: 'pointer', transition: 'all 0.3s'
-                        }}
-                      >
-                        <div style={{
-                          width: 16, height: 16, background: '#fff', borderRadius: '50%',
-                          position: 'absolute', top: 3, left: darkMode ? 25 : 3,
-                          transition: 'all 0.3s', boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                        }} />
-                      </button>
                     </div>
 
                     <button 
@@ -183,9 +152,6 @@ export default function Header({ onSearch }) {
               { label: '🏠 Home', path: '/' },
               ...(user ? [
                 { label: '♡ Wishlist', path: '/wishlist' },
-                { label: '🛒 Cart', path: '/cart' },
-                { label: '📦 My Orders', path: '/my-orders' },
-                { label: '📋 Enquiries', path: '/my-enquiries' },
                 ...(isAdmin() ? [{ label: '📊 Admin Dashboard', path: '/admin/dashboard' }] : []),
               ] : [
                 { label: '👤 Login', path: '/login' },
@@ -203,14 +169,6 @@ export default function Header({ onSearch }) {
               <div style={{ borderTop: '1px solid var(--border)', marginTop: 15, paddingTop: 15, display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <span style={{ fontSize: '0.8rem', color: 'var(--text-light)', paddingLeft: 16 }}>⚙️ SYSTEM SETTINGS</span>
                 
-                {/* Theme Toggle */}
-                <button 
-                  onClick={toggleTheme}
-                  style={{ padding: '12px 16px', background: 'transparent', border: 'none', borderRadius: '6px', cursor: 'pointer', textAlign: 'left', fontSize: '0.95rem', color: 'var(--text)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                >
-                  <span>🌓 {darkMode ? 'Light Theme' : 'Dark Theme'}</span>
-                </button>
-
                 <button 
                   onClick={handleSwitchAccount}
                   style={{ padding: '12px 16px', background: 'transparent', border: 'none', borderRadius: '6px', cursor: 'pointer', textAlign: 'left', fontSize: '0.95rem', color: 'var(--text)' }}
@@ -230,164 +188,7 @@ export default function Header({ onSearch }) {
         </div>
       )}
 
-      {/* Global CSS Inject for Dark Theme */}
-      <style>{`
-        body.dark-theme {
-          --primary: #ff8da6 !important; /* Premium high-contrast bright rose gold */
-          --primary-light: #ffa3ba !important;
-          --gold: #e8d090 !important;
-          --gold-light: #fff0c7 !important;
-          --bg: #121212 !important;
-          --bg-card: #1e1e1e !important;
-          --text: #f5f5f5 !important;
-          --text-light: #cccccc !important;
-          --text-muted: #888888 !important;
-          --border: #2d2d2d !important;
-          --shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
-          --success-bg: #14321a !important;
-          --danger-bg: #3c181a !important;
-          background-color: var(--bg) !important;
-          color: var(--text) !important;
-        }
-
-        /* Smooth transitions for theme changes */
-        body.dark-theme * {
-          transition: background-color 0.2s ease, border-color 0.2s ease;
-        }
-
-        body.dark-theme .admin-layout,
-        body.dark-theme .admin-main,
-        body.dark-theme .pd-container,
-        body.dark-theme .cart-container {
-          background-color: var(--bg) !important;
-          color: var(--text) !important;
-        }
-
-        body.dark-theme .admin-card, 
-        body.dark-theme .auth-card, 
-        body.dark-theme .site-header,
-        body.dark-theme .my-order-card,
-        body.dark-theme .cart-items-wrap,
-        body.dark-theme .cart-summary,
-        body.dark-theme .modal-box,
-        body.dark-theme .feedback-form,
-        body.dark-theme .product-card {
-          background-color: #1e1e1e !important;
-          color: #fff !important;
-          border-color: #2d2d2d !important;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
-        }
-
-        /* Direct overrides for components with hardcoded inline backgrounds */
-        body.dark-theme div[style*="background: #fff"],
-        body.dark-theme div[style*="background:#fff"],
-        body.dark-theme div[style*="background: #ffffff"],
-        body.dark-theme div[style*="background:#ffffff"],
-        body.dark-theme div[style*="background: rgb(255, 255, 255)"],
-        body.dark-theme div[style*="background:white"],
-        body.dark-theme div[style*="background: white"],
-        body.dark-theme div[style*="background-color: #fff"],
-        body.dark-theme div[style*="background-color:#fff"],
-        body.dark-theme div[style*="background-color: rgb(255, 255, 255)"],
-        body.dark-theme div[style*="background: #fafafa"],
-        body.dark-theme div[style*="background:#fafafa"],
-        body.dark-theme div[style*="background: #f5f5f5"],
-        body.dark-theme div[style*="background: #f9f9f9"],
-        body.dark-theme div[style*="background: #f8f9fa"],
-        body.dark-theme div[style*="background: #fcfcfc"],
-        body.dark-theme div[style*="background: #FAFBFC"],
-        body.dark-theme div[style*="background: #fff5f5"],
-        body.dark-theme div[style*="background: #faf8f5"] {
-          background-color: #1e1e1e !important;
-          color: #f5f5f5 !important;
-          border-color: #2d2d2d !important;
-        }
-
-        body.dark-theme div[style*="background: #f0f2f5"],
-        body.dark-theme div[style*="background:#f0f2f5"] {
-          background-color: #151515 !important;
-          color: #f5f5f5 !important;
-          border-color: #2d2d2d !important;
-        }
-
-        body.dark-theme tr[style*="background: #fafafa"],
-        body.dark-theme tr[style*="background:#fafafa"] {
-          background-color: #1a1a1a !important;
-          color: #f5f5f5 !important;
-        }
-
-        body.dark-theme div[style*="background: #fafafa"] div,
-        body.dark-theme div[style*="background:#fafafa"] div,
-        body.dark-theme div[style*="background: #f0f2f5"] div,
-        body.dark-theme div[style*="background:#f0f2f5"] div {
-          color: #f5f5f5 !important;
-        }
-
-        /* Ensure texts using var(--primary) are bright and highly readable in dark mode */
-        body.dark-theme span[style*="color: var(--primary)"],
-        body.dark-theme strong[style*="color: var(--primary)"],
-        body.dark-theme div[style*="color: var(--primary)"],
-        body.dark-theme h1[style*="color: var(--primary)"],
-        body.dark-theme h2[style*="color: var(--primary)"],
-        body.dark-theme h3[style*="color: var(--primary)"],
-        body.dark-theme h4[style*="color: var(--primary)"] {
-          color: var(--primary) !important;
-        }
-
-        body.dark-theme span[style*="color: var(--text)"],
-        body.dark-theme strong[style*="color: var(--text)"],
-        body.dark-theme div[style*="color: var(--text)"] {
-          color: #f5f5f5 !important;
-        }
-
-        body.dark-theme .product-name,
-        body.dark-theme .product-price .current,
-        body.dark-theme .pd-spec-table td {
-          color: #fff !important;
-        }
-
-        body.dark-theme input,
-        body.dark-theme select,
-        body.dark-theme textarea {
-          background-color: #1e1e1e !important;
-          color: #fff !important;
-          border-color: #2d2d2d !important;
-        }
-        body.dark-theme input::placeholder,
-        body.dark-theme textarea::placeholder {
-          color: #888888 !important;
-          opacity: 0.8 !important;
-        }
-        body.dark-theme select option {
-          background-color: #1e1e1e !important;
-          color: #fff !important;
-        }
-        body.dark-theme .share-btn,
-        body.dark-theme .wish-btn {
-          background-color: #1e1e1e !important;
-          color: #fff !important;
-          border: 1px solid #2d2d2d !important;
-        }
-        body.dark-theme .form-control {
-          background-color: #1e1e1e !important;
-          color: #fff !important;
-          border-color: #2d2d2d !important;
-        }
-        body.dark-theme table,
-        body.dark-theme tr,
-        body.dark-theme td,
-        body.dark-theme th {
-          background-color: #1e1e1e !important;
-          color: #fff !important;
-          border-color: #2d2d2d !important;
-        }
-        @media (max-width: 768px) {
-          .header-desktop { display: none !important; }
-          .mobile-menu-btn { display: flex !important; }
-          .search-bar { max-width: 100%; order: 3; flex-basis: 100%; margin-top: 8px; }
-          .header-inner { flex-wrap: wrap; padding: 12px 16px; }
-        }
-      `}</style>
+      
     </>
   );
 }

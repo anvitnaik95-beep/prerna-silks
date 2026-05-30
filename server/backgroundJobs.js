@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 const Order = require('./models/Order');
-const { sendDeliveredNotification } = require('./services/notificationService');
+const Wishlist = require('./models/Wishlist');
+const Product = require('./models/Product');
+const User = require('./models/User');
+const { sendDeliveredNotification, sendWhatsAppMessage } = require('./services/notificationService');
 
 async function processOrderLifecycles() {
   try {
@@ -39,7 +42,6 @@ async function processOrderLifecycles() {
         updated = true;
       }
 
-      // Only send notification on Delivered
       if (order.status === 'Delivered' && !order.notified_delivered) {
         order.notified_delivered = true;
         updated = true;
@@ -58,10 +60,46 @@ async function processOrderLifecycles() {
   }
 }
 
+async function processWishlistReminders() {
+  try {
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+
+    const wishlistItems = await Wishlist.find({}).populate('productId').populate('userId', 'name email phone');
+
+    const groupedByUser = {};
+    for (const item of wishlistItems) {
+      if (!item.productId || !item.userId) continue;
+      const age = now - new Date(item.created_at).getTime();
+      if (age < SEVEN_DAYS_MS) continue;
+      if (!groupedByUser[item.userId._id]) {
+        groupedByUser[item.userId._id] = { user: item.userId, items: [] };
+      }
+      groupedByUser[item.userId._id].items.push(item.productId);
+    }
+
+    for (const [, { user, items }] of Object.entries(groupedByUser)) {
+      if (!user.phone) continue;
+      const productNames = items.slice(0, 3).map(p => p.name).join(', ');
+      const remainder = items.length > 3 ? ` and ${items.length - 3} more` : '';
+      const msg = `Dear ${user.name},\n\nYou have items in your Prerna Silks wishlist that you haven't purchased yet: ${productNames}${remainder}.\n\nDon't miss out! Visit us now to complete your order.`;
+
+      await sendWhatsAppMessage(user.phone, msg);
+      console.log(`[Wishlist Reminder] WhatsApp sent to ${user.phone} for ${items.length} items`);
+    }
+  } catch (error) {
+    console.error('Error processing wishlist reminders:', error);
+  }
+}
+
 function startBackgroundJobs() {
   console.log('Started background job for order automated lifecycles (every 10 seconds)');
   setInterval(processOrderLifecycles, 10 * 1000);
   processOrderLifecycles();
+
+  console.log('Started background job for wishlist reminders (every 6 hours)');
+  setInterval(processWishlistReminders, 6 * 60 * 60 * 1000);
+  processWishlistReminders();
 }
 
 module.exports = { startBackgroundJobs };
