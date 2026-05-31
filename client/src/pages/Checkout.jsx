@@ -144,7 +144,7 @@ export default function Checkout() {
         name: 'Prerna Silks',
         description: `Order of ${items.length} item(s)`,
         order_id: orderData.orderId,
-        theme: { color: '#1B2A4A' },
+        theme: { color: '#521220' },
         prefill: { contact: phone },
         handler: async (response) => {
           try {
