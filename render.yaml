@@ -17,9 +17,9 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: RAZORPAY_KEY_ID
-        sync: false
+        value: "rzp_test_ShPCOm4skSBpB8"
       - key: RAZORPAY_KEY_SECRET
-        sync: false
+        value: "6kAgTIo0BR6iKE576EJJUc9i"
       - key: ADMIN_PHONE
         value: "7019461619"
       - key: ADMIN_EMAIL
