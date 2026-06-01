@@ -1,6 +1,6 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 const icons = {
   dashboard: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
@@ -34,10 +34,25 @@ const navItems = [
 
 export default function AdminSidebar() {
   const location = useLocation();
-  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
 
   const closeMobile = () => setMobileOpen(false);
+
+  const initial = user?.name?.charAt(0)?.toUpperCase() || 'A';
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   return (
     <>
@@ -83,6 +98,70 @@ export default function AdminSidebar() {
             </a></li>
           </ul>
         </nav>
+
+        {/* Profile Avatar at bottom */}
+        <div ref={profileRef} style={{
+          marginTop: 'auto', borderTop: '1px solid var(--border)', padding: '14px 18px',
+          position: 'relative'
+        }}>
+          <div
+            onClick={() => setProfileOpen(!profileOpen)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
+              padding: '4px 0'
+            }}
+          >
+            <div style={{
+              width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', fontWeight: 600, fontSize: '0.95rem', color: '#fff',
+              background: 'linear-gradient(135deg, var(--primary), var(--gold))', flexShrink: 0
+            }}>
+              {initial}
+            </div>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <div style={{ fontWeight: 500, fontSize: '0.88rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {user?.name || 'Admin'}
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--gold)', fontWeight: 500, letterSpacing: '0.5px' }}>
+                ADMIN
+              </div>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{
+              color: 'var(--text-muted)', transition: 'transform 0.2s', transform: profileOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+            }}>
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+
+          {profileOpen && (
+            <div style={{
+              position: 'absolute', bottom: '100%', left: 12, right: 12,
+              background: '#fff', borderRadius: 10, boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+              border: '1px solid var(--border)', padding: 12, zIndex: 50, marginBottom: 4
+            }}>
+              <div style={{ padding: '6px 8px', borderBottom: '1px solid var(--border)', marginBottom: 6 }}>
+                <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text)' }}>{user?.name}</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-light)' }}>{user?.email}</div>
+              </div>
+              <button onClick={() => { logout(); navigate('/login'); setProfileOpen(false); }}
+                style={{ width: '100%', padding: '8px 10px', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 8, borderRadius: 6, fontFamily: 'var(--font-body)' }}
+                onMouseEnter={e => e.target.style.background = 'var(--bg)'}
+                onMouseLeave={e => e.target.style.background = 'transparent'}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Switch Account
+              </button>
+              <button onClick={() => { logout(); navigate('/'); setProfileOpen(false); }}
+                style={{ width: '100%', padding: '8px 10px', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '0.85rem', color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: 8, borderRadius: 6, fontFamily: 'var(--font-body)' }}
+                onMouseEnter={e => e.target.style.background = 'var(--bg)'}
+                onMouseLeave={e => e.target.style.background = 'transparent'}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+                Sign Out
+              </button>
+            </div>
+          )}
+        </div>
       </aside>
     </>
   );
