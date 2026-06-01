@@ -113,7 +113,6 @@ router.post('/razorpay/create', auth, async (req, res) => {
     const order = await razorpay.orders.create({
       amount: Math.round(amount * 100),
       currency: 'INR',
-      receipt: `rcpt_${Date.now()}`,
       notes: { merchant_upi: '7019461619@ptyes', merchant: 'Prerna Silks' }
     });
     return res.json({ key: RAZORPAY_KEY_ID, amount: order.amount, orderId: order.id });
@@ -381,9 +380,8 @@ router.post('/link/:token/razorpay/create', async (req, res) => {
 
     const razorpay = new Razorpay({ key_id: RAZORPAY_KEY_ID, key_secret: RAZORPAY_KEY_SECRET });
     const rzpOrder = await razorpay.orders.create({
-      amount: Math.round(amount * 100),
+      amount: Math.round(order.total_amount * 100),
       currency: 'INR',
-      receipt: `link_${order.id}_${Date.now()}`,
       notes: { order_id: order.id, payment_token: req.params.token }
     });
     return res.json({ key: RAZORPAY_KEY_ID, amount: rzpOrder.amount, orderId: rzpOrder.id });
