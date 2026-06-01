@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const crypto = require('crypto');
 const { auth, adminOnly } = require('../middleware/auth');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 
 const getCollection = () => mongoose.connection.collection('enquiries');
 
@@ -128,8 +129,15 @@ router.post('/:id/approve', auth, adminOnly, async (req, res) => {
     }));
     const totalAmount = enrichedItems.reduce((sum, item) => sum + (Number(item.price) || 0) * (item.quantity || 1), 0);
 
+    // Try to link order to customer account by phone
+    let customerUserId = req.user.userId;
+    try {
+      const customerUser = await User.findOne({ phone: enquiry.phone.replace(/[^0-9]/g, '').slice(-10) });
+      if (customerUser) customerUserId = customerUser._id;
+    } catch {}
+
     const order = new Order({
-      userId: req.user.userId,
+      userId: customerUserId,
       customer_name: enquiry.name,
       customer_phone: enquiry.phone,
       total_amount: totalAmount,
@@ -158,6 +166,26 @@ router.post('/:id/approve', auth, adminOnly, async (req, res) => {
       { _id: enquiry._id },
       { $set: { status: 'approved', updated_at: new Date() } }
     );
+
+    // Create notification for customer if user exists with matching phone
+    const paymentUrl = `${process.env.SITE_URL || 'https://prerna-silks-copy.onrender.com'}/pay-order/${paymentToken}`;
+    try {
+      const customerUser = await User.findOne({ phone: enquiry.phone.replace(/[^0-9]/g, '').slice(-10) });
+      if (customerUser) {
+        await Notification.create({
+          userId: customerUser._id,
+          title: 'Enquiry Approved',
+          message: `Your enquiry for ${enquiry.items.map(i => i.name).join(', ')} has been approved! Click to complete payment.`,
+          type: 'approval',
+          link: `/my-payments`,
+          read: false
+        });
+      }
+    } catch {}
+
+    // Send WhatsApp to customer about approval
+    const whatsappBody = `Hi ${enquiry.name},\n\nYour enquiry with Prerna Silks has been approved!\n\nItems: ${enquiry.items.map(i => i.name).join(', ')}\nTotal: ₹${totalAmount.toLocaleString('en-IN')}\n\nPay here: ${paymentUrl}\n\nThank you for choosing Prerna Silks!`;
+    sendWhatsApp(enquiry.phone, whatsappBody).catch(() => {});
 
     res.json({
       success: true,
@@ -199,6 +227,16 @@ router.delete('/:id', auth, adminOnly, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Enquiry not found' });
     }
     res.json({ success: true, message: 'Enquiry deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// DELETE /api/enquiry/clear-all - Admin: Delete all enquiries
+router.delete('/clear-all', auth, adminOnly, async (req, res) => {
+  try {
+    const result = await getCollection().deleteMany({});
+    res.json({ success: true, message: `${result.deletedCount} enquiries cleared` });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

@@ -46,6 +46,17 @@ export default function Enquiries() {
     }
   };
 
+  const clearAllEnquiries = async () => {
+    if (!confirm('Are you sure you want to delete ALL enquiries? This cannot be undone.')) return;
+    try {
+      const { data } = await API.delete('/enquiry/clear-all');
+      alert(data.message);
+      load();
+    } catch (err) {
+      alert('Failed to clear enquiries');
+    }
+  };
+
   const approveEnquiry = async (id) => {
     setApproving(id);
     try {
@@ -84,6 +95,11 @@ export default function Enquiries() {
               <option value="">All Enquiries</option>
               {statusList.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
             </select>
+            {enquiries.length > 0 && (
+              <button onClick={clearAllEnquiries} style={{ padding: '8px 16px', background: '#fff', border: '1px solid var(--danger)', color: 'var(--danger)', borderRadius: 6, cursor: 'pointer', fontSize: '0.82rem', fontFamily: 'var(--font-body)', fontWeight: 500 }}>
+                <DeleteIcon /> Clear All
+              </button>
+            )}
           </div>
         </div>
 

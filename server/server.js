@@ -38,6 +38,7 @@ app.use('/api/expenses', require('./routes/expenses'));
 app.use('/api/bills', require('./routes/bills'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/enquiry', require('./routes/enquiry'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // Diagnostic endpoint - tests SendGrid + WhatsApp
 app.get('/api/test-email', async (req, res) => {

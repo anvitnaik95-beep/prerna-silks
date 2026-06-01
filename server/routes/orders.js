@@ -492,4 +492,20 @@ router.delete('/clear-all', auth, adminOnly, async (req, res) => {
   }
 });
 
+// GET /api/orders/my-payments - Customer: Get unpaid orders with payment links
+router.get('/my-payments', auth, async (req, res) => {
+  try {
+    const orders = await Order.find({
+      $or: [
+        { userId: req.user.userId },
+        { customer_phone: { $regex: req.user.phone?.replace(/[^0-9]/g, '').slice(-10) || 'none', $options: 'i' } }
+      ],
+      payment_token: { $exists: true, $ne: '' }
+    }).sort({ created_at: -1 });
+    res.json({ success: true, orders });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;

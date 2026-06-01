@@ -1,22 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
 :root {
-  --primary: #0F172A;
-  --primary-light: #1E2A45;
-  --gold: #C9A94E;
+  --primary: #1A1A1A;
+  --primary-light: #2D2D2D;
+  --gold: #C8A95E;
   --gold-light: #DCC47A;
-  --bg: #F5F3EF;
+  --bg: #F7F5F2;
   --bg-card: #FFFFFF;
-  --bg-dark: #0A0F1A;
-  --text: #1E1E1E;
-  --text-light: #5A5A5A;
-  --text-muted: #929292;
+  --bg-dark: #0D0D0D;
+  --text: #2D2D2D;
+  --text-light: #6B6B6B;
+  --text-muted: #9E9E9E;
   --border: #E0D9D0;
   --success: #2E7D32;
   --warning: #E67E22;
   --danger: #C62828;
   --shadow: 0 4px 12px rgba(0,0,0,0.06);
-  --shadow-lg: 0 10px 30px rgba(15,23,42,0.12);
+  --shadow-lg: 0 10px 30px rgba(26,26,26,0.12);
   --radius: 8px;
   --font-heading: 'Playfair Display', serif;
   --font-body: 'Jost', sans-serif;

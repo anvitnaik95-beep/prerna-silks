@@ -28,6 +28,7 @@ import MyOrders from './pages/MyOrders';
 import BulkInquiry from './pages/BulkInquiry';
 import PartnerProgram from './pages/PartnerProgram';
 import PayOrder from './pages/PayOrder';
+import MyPayments from './pages/MyPayments';
 
 // Protected route wrapper
 function ProtectedRoute({ children, adminRequired }) {
@@ -53,6 +54,7 @@ function App() {
       <Route path="/bulk-inquiry" element={<BulkInquiry />} />
       <Route path="/partner-program" element={<PartnerProgram />} />
       <Route path="/pay-order/:token" element={<PayOrder />} />
+      <Route path="/my-payments" element={<ProtectedRoute><MyPayments /></ProtectedRoute>} />
 
       {/* Admin Routes */}
       <Route path="/admin/dashboard" element={<ProtectedRoute adminRequired><AdminDashboard /></ProtectedRoute>} />
