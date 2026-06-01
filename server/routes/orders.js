@@ -118,11 +118,12 @@ router.post('/razorpay/create', auth, async (req, res) => {
     });
     return res.json({ key: RAZORPAY_KEY_ID, amount: order.amount, orderId: order.id });
   } catch (error) {
-    console.error('[Razorpay] Order creation failed:', error.message);
+    console.error('[Razorpay] Order creation failed:', JSON.stringify(error));
+    const detail = error?.error?.description || error.message || 'Unknown error';
     if (error.statusCode) {
-      res.status(500).json({ success: false, message: `Razorpay API error (${error.statusCode}): ${error.message}` });
+      res.status(500).json({ success: false, message: `Razorpay API error (${error.statusCode}): ${detail}` });
     } else {
-      res.status(500).json({ success: false, message: error.message });
+      res.status(500).json({ success: false, message: detail });
     }
   }
 });
@@ -387,11 +388,12 @@ router.post('/link/:token/razorpay/create', async (req, res) => {
     });
     return res.json({ key: RAZORPAY_KEY_ID, amount: rzpOrder.amount, orderId: rzpOrder.id });
   } catch (error) {
-    console.error('[Razorpay] Link order creation failed:', error.message);
+    console.error('[Razorpay] Link order creation failed:', JSON.stringify(error));
+    const detail = error?.error?.description || error.message || 'Unknown error';
     if (error.statusCode) {
-      res.status(500).json({ success: false, message: `Razorpay API error (${error.statusCode}): ${error.message}` });
+      res.status(500).json({ success: false, message: `Razorpay API error (${error.statusCode}): ${detail}` });
     } else {
-      res.status(500).json({ success: false, message: error.message });
+      res.status(500).json({ success: false, message: detail });
     }
   }
 });
