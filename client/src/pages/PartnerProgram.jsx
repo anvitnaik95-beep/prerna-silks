@@ -76,12 +76,11 @@ const styles = {
     alignItems: 'flex-start',
   },
   benefitIcon: {
-    fontSize: '1.6rem',
     flexShrink: 0,
     width: 48,
     height: 48,
     borderRadius: '50%',
-    background: 'rgba(211, 177, 96, 0.12)',
+    background: 'rgba(200, 169, 94, 0.12)',
     color: 'var(--gold)',
     display: 'flex',
     alignItems: 'center',
@@ -121,11 +120,11 @@ const styles = {
 };
 
 const benefits = [
-  { icon: '📦', title: 'Zero Inventory Risk', desc: 'No need to stock products. We ship directly to your customers.' },
-  { icon: '📊', title: 'Control Your Margins', desc: 'Add your own profit margin on every product. You decide the final price.' },
-  { icon: '📱', title: 'Seamless Sharing', desc: 'Share products in one tap via WhatsApp, Instagram, Facebook & Telegram.' },
-  { icon: '⚡', title: 'Start Immediately', desc: 'Get certified and start selling the same day with no upfront investment.' },
-  { icon: '🤝', title: 'Build Trust', desc: 'Partner with a brand that has 1,000+ verified 5-star reviews.' },
+  { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>, title: 'Zero Inventory Risk', desc: 'No need to stock products. We ship directly to your customers.' },
+  { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, title: 'Control Your Margins', desc: 'Add your own profit margin on every product. You decide the final price.' },
+  { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>, title: 'Seamless Sharing', desc: 'Share products in one tap via WhatsApp, Instagram, Facebook & Telegram.' },
+  { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>, title: 'Start Immediately', desc: 'Get certified and start selling the same day with no upfront investment.' },
+  { icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, title: 'Build Trust', desc: 'Partner with a brand that has 1,000+ verified 5-star reviews.' },
 ];
 
 const WHATSAPP_NUMBER = '917019461619';

@@ -4,10 +4,9 @@ import API from '../services/api';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
-export default function MyOrders() {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+const BoxIcon = () => <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>;
+const TruckIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>;
+const DocIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>;
 
   const fmt = v => `₹${Number(v).toLocaleString('en-IN')}`;
 
@@ -39,17 +38,17 @@ export default function MyOrders() {
   <style>
     body { font-family: 'Outfit', 'Inter', -apple-system, sans-serif; color: #333; padding: 40px 20px; line-height: 1.6; background-color: #fcfcfc; }
     .receipt-container { max-width: 650px; margin: 0 auto; border: 1px solid #eaeaea; padding: 40px; border-radius: 16px; background-color: #ffffff; box-shadow: 0 8px 30px rgba(0,0,0,0.04); }
-    .header { text-align: center; border-bottom: 2px solid #521220; padding-bottom: 20px; margin-bottom: 24px; }
-    .brand-name { font-size: 28px; font-weight: 700; color: #521220; letter-spacing: 2px; }
-    .brand-sub { font-size: 11px; color: #D4AF37; letter-spacing: 4px; text-transform: uppercase; margin-top: 4px; }
+    .header { text-align: center; border-bottom: 2px solid #1B2A4A; padding-bottom: 20px; margin-bottom: 24px; }
+    .brand-name { font-size: 28px; font-weight: 700; color: #1B2A4A; letter-spacing: 2px; }
+    .brand-sub { font-size: 11px; color: #C8A95E; letter-spacing: 4px; text-transform: uppercase; margin-top: 4px; }
     .title { font-size: 20px; margin-top: 15px; font-weight: 600; color: #333; letter-spacing: 0.5px; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; font-size: 14px; background: #fafafa; padding: 18px; border-radius: 8px; border: 1px solid #f0f0f0; }
     .grid-label { color: #666; font-weight: 500; }
     .grid-value { font-weight: 600; text-align: right; color: #111; }
     .items-table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 25px; }
-    .items-table th { background: #521220; color: #fff; padding: 12px; font-size: 14px; text-align: left; font-weight: 500; }
+    .items-table th { background: #1B2A4A; color: #fff; padding: 12px; font-size: 14px; text-align: left; font-weight: 500; }
     .items-table td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #444; }
-    .total-section { font-size: 20px; font-weight: 700; color: #521220; border-top: 2px dashed #eaeaea; padding-top: 15px; text-align: right; }
+    .total-section { font-size: 20px; font-weight: 700; color: #1B2A4A; border-top: 2px dashed #eaeaea; padding-top: 15px; text-align: right; }
     .footer { text-align: center; font-size: 12px; color: #999; margin-top: 40px; border-top: 1px solid #eaeaea; padding-top: 20px; }
   </style>
 </head>
@@ -131,8 +130,8 @@ export default function MyOrders() {
     <>
       <Header />
       <div style={{ maxWidth: 900, margin: '40px auto', padding: '0 20px', minHeight: '60vh' }}>
-        <h2 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', fontSize: '2rem', marginBottom: 30, fontWeight: 400 }}>
-          📦 My Order History
+        <h2 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', fontSize: '2rem', marginBottom: 30, fontWeight: 400, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <BoxIcon /> My Order History
         </h2>
 
         {loading ? (
@@ -141,8 +140,8 @@ export default function MyOrders() {
             <p style={{ marginTop: 10 }}>Loading your order history...</p>
           </div>
         ) : orders.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 0', background: '#fff', borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid var(--border)' }}>
-            <div style={{ fontSize: '4.5rem', marginBottom: 20, opacity: 0.8 }}>📦</div>
+            <div style={{ textAlign: 'center', padding: '80px 0', background: '#fff', borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '3.5rem', marginBottom: 20, opacity: 0.4, color: 'var(--primary)' }}><BoxIcon /></div>
             <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--text)', marginBottom: 8, fontWeight: 400 }}>No Orders Placed Yet</h3>
             <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>Explore our premium collections to place your first order!</p>
             <button className="btn-buy" style={{ padding: '12px 30px', fontSize: '1rem' }} onClick={() => navigate('/')}>
@@ -219,11 +218,10 @@ export default function MyOrders() {
                               className="btn-buy"
                               style={{ 
                                 padding: '10px 16px', fontSize: '0.88rem', width: '100%',
-                                background: 'var(--gold)', color: '#521220', display: 'flex', 
+                                background: 'var(--gold)', color: '#1B2A4A', display: 'flex', 
                                 alignItems: 'center', justifyContent: 'center', gap: 6, fontWeight: '600', border: 'none'
                               }}
-                            >
-                              🚚 Track Live Delivery
+                            ><TruckIcon /> Track Live Delivery
                             </button>
                           )}
                           <button 
@@ -235,7 +233,7 @@ export default function MyOrders() {
                               alignItems: 'center', justifyContent: 'center', gap: 6
                             }}
                           >
-                            📄 Download Receipt
+                            <DocIcon /> Download Receipt
                           </button>
                         </div>
                       </div>

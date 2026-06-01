@@ -82,7 +82,7 @@ const s = {
     transition: 'all 0.2s', userSelect: 'none'
   },
   checkboxLabelActive: {
-    background: 'rgba(82,18,32,0.07)', borderColor: 'var(--primary)', color: 'var(--primary)'
+    background: 'rgba(27,42,74,0.07)', borderColor: 'var(--primary)', color: 'var(--primary)'
   },
   radioGroup: { display: 'flex', flexWrap: 'wrap', gap: 10 },
   radioLabel: {
@@ -92,7 +92,7 @@ const s = {
     transition: 'all 0.2s', userSelect: 'none'
   },
   radioLabelActive: {
-    background: 'rgba(82,18,32,0.07)', borderColor: 'var(--primary)', color: 'var(--primary)'
+    background: 'rgba(27,42,74,0.07)', borderColor: 'var(--primary)', color: 'var(--primary)'
   },
   row: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
   btn: {

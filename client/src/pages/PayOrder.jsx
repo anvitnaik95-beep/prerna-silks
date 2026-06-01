@@ -16,6 +16,7 @@ export default function PayOrder() {
   const [upiStatus, setUpiStatus] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
   const [addressError, setAddressError] = useState('');
+  const [locating, setLocating] = useState(false);
   const receiptRef = useRef(null);
 
   useEffect(() => {
@@ -40,6 +41,40 @@ export default function PayOrder() {
     s.onerror = () => resolve(false);
     document.body.appendChild(s);
   });
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) { alert('Geolocation is not supported by your browser'); return; }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`
+          );
+          const data = await res.json();
+          const a = data.address || {};
+          const parts = [
+            a.road || a.pedestrian || '',
+            a.suburb || a.neighbourhood || '',
+            a.city || a.town || a.village || a.county || '',
+            a.state || '',
+            a.postcode || ''
+          ].filter(Boolean);
+          const full = data.display_name ? data.display_name.split(', ').slice(0, 4).join(', ') : parts.join(', ');
+          setShippingAddress(full);
+        } catch {
+          setShippingAddress(`${latitude.toFixed(4)}, ${longitude.toFixed(4)} (auto-detected)`);
+        }
+        setLocating(false);
+      },
+      (err) => {
+        alert('Could not detect location: ' + (err.message || 'Permission denied'));
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
 
   const validateAddress = () => {
     if (!shippingAddress.trim()) {
@@ -77,7 +112,7 @@ export default function PayOrder() {
           setPaying(false);
         },
         modal: { ondismiss: () => setPaying(false) },
-        theme: { color: '#521220' },
+        theme: { color: '#1B2A4A' },
         prefill: { contact: order?.customer_phone || '' }
       };
       const rzp = new window.Razorpay(options);
@@ -150,7 +185,7 @@ export default function PayOrder() {
     body { font-family: 'Segoe UI', 'Jost', sans-serif; background: #fff; color: #333; padding: 40px 20px; }
     .receipt { max-width: 520px; margin: 0 auto; }
     .header { text-align: center; margin-bottom: 24px; border-bottom: 2px dashed #EAE3DC; padding-bottom: 16px; }
-    .header h1 { font-family: 'Georgia', 'Playfair Display', serif; color: #521220; font-weight: 400; margin: 0 0 4px; font-size: 1.4rem; }
+    .header h1 { font-family: 'Georgia', 'Playfair Display', serif; color: #1B2A4A; font-weight: 400; margin: 0 0 4px; font-size: 1.4rem; }
     .header p { font-size: 0.78rem; color: #999; letter-spacing: 1px; }
     .row { display: flex; justify-content: space-between; margin-bottom: 16px; font-size: 0.85rem; }
     .label { color: #999; font-size: 0.75rem; }
@@ -166,10 +201,10 @@ export default function PayOrder() {
     td.qty, td.price, td.total { text-align: center; }
     td.price, td.total { text-align: right; }
     td.total { font-weight: 500; }
-    .total-row { border-top: 2px solid #521220; padding-top: 12px; display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: 700; color: #521220; }
+    .total-row { border-top: 2px solid #1B2A4A; padding-top: 12px; display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: 700; color: #1B2A4A; }
     .footer { text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px dashed #EAE3DC; font-size: 0.82rem; color: #999; }
-    .btn { display: inline-block; margin-top: 24px; padding: 14px 40px; background: #521220; color: #fff; text-decoration: none; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; }
-    .btn:hover { background: #7A2234; }
+    .btn { display: inline-block; margin-top: 24px; padding: 14px 40px; background: #1B2A4A; color: #fff; text-decoration: none; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; }
+    .btn:hover { background: #2C4066; }
   </style>
 </head>
 <body>
@@ -410,6 +445,27 @@ export default function PayOrder() {
               fontFamily: 'var(--font-body)', fontSize: '0.9rem', resize: 'vertical', boxSizing: 'border-box'
             }}
           />
+          <button
+            type="button"
+            onClick={getCurrentLocation}
+            disabled={locating}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '8px 14px', marginTop: 8,
+              background: 'var(--bg)', border: '1.5px solid var(--border)',
+              borderRadius: 6, cursor: 'pointer', fontSize: '0.82rem',
+              color: 'var(--text)', fontFamily: 'var(--font-body)',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.background = 'rgba(27,42,74,0.04)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg)'; }}
+          >
+            {locating ? (
+              <><span className="loading-spinner" style={{ width:14, height:14, border:'2px solid var(--border)', borderTopColor:'var(--primary)', borderRadius:'50%', display:'inline-block' }} /> Detecting...</>
+            ) : (
+              <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="10" r="3"/><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z"/></svg> Use Current Location</>
+            )}
+          </button>
           {addressError && <div style={{ color: 'var(--danger)', fontSize: '0.8rem', marginTop: 4 }}>{addressError}</div>}
         </div>
 

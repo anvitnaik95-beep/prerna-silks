@@ -2,6 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import API from '../../services/api';
 import AdminSidebar from '../../components/AdminSidebar';
 
+const CheckIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
+const ChatIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
+const DeleteIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
+
 export default function Enquiries() {
   const [enquiries, setEnquiries] = useState([]);
   const [stats, setStats] = useState({ total: 0, today: 0, pending: 0 });
@@ -145,7 +149,7 @@ export default function Enquiries() {
                       <td style={{ padding: '16px 20px', textAlign: 'right' }}>
                         {e.status === 'pending' && (
                           <button className="btn btn-sm btn-outline-primary me-1" style={{ padding: '4px 10px', fontSize: '0.78rem' }} onClick={() => approveEnquiry(e._id)} disabled={approving === e._id}>
-                            {approving === e._id ? '...' : '✅ Approve'}
+                            {approving === e._id ? '...' : <><CheckIcon /> Approve</>}
                           </button>
                         )}
                         <a
@@ -155,9 +159,9 @@ export default function Enquiries() {
                           className="btn btn-sm btn-outline-success me-1"
                           style={{ padding: '4px 10px', fontSize: '0.78rem', textDecoration: 'none' }}
                         >
-                          💬 WhatsApp
+                          <ChatIcon /> WhatsApp
                         </a>
-                        <button className="btn btn-sm btn-outline-danger" style={{ padding: '4px 10px', fontSize: '0.78rem' }} onClick={() => deleteEnquiry(e._id)}>🗑️</button>
+                        <button className="btn btn-sm btn-outline-danger" style={{ padding: '4px 10px', fontSize: '0.78rem' }} onClick={() => deleteEnquiry(e._id)}><DeleteIcon /></button>
                       </td>
                     </tr>
                   ))

@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
+const Razorpay = require('razorpay');
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const User = require('../models/User');
@@ -108,7 +109,6 @@ router.post('/razorpay/create', auth, async (req, res) => {
       return res.status(500).json({ success: false, message: 'Razorpay is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET on the server.' });
     }
 
-    const Razorpay = require('razorpay');
     const razorpay = new Razorpay({ key_id: RAZORPAY_KEY_ID, key_secret: RAZORPAY_KEY_SECRET });
     const order = await razorpay.orders.create({
       amount: Math.round(amount * 100),
@@ -118,7 +118,12 @@ router.post('/razorpay/create', auth, async (req, res) => {
     });
     return res.json({ key: RAZORPAY_KEY_ID, amount: order.amount, orderId: order.id });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    console.error('[Razorpay] Order creation failed:', error.message);
+    if (error.statusCode) {
+      res.status(500).json({ success: false, message: `Razorpay API error (${error.statusCode}): ${error.message}` });
+    } else {
+      res.status(500).json({ success: false, message: error.message });
+    }
   }
 });
 
@@ -373,7 +378,6 @@ router.post('/link/:token/razorpay/create', async (req, res) => {
       return res.status(500).json({ success: false, message: 'Razorpay is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET on the server.' });
     }
 
-    const Razorpay = require('razorpay');
     const razorpay = new Razorpay({ key_id: RAZORPAY_KEY_ID, key_secret: RAZORPAY_KEY_SECRET });
     const rzpOrder = await razorpay.orders.create({
       amount: Math.round(amount * 100),
@@ -383,8 +387,12 @@ router.post('/link/:token/razorpay/create', async (req, res) => {
     });
     return res.json({ key: RAZORPAY_KEY_ID, amount: rzpOrder.amount, orderId: rzpOrder.id });
   } catch (error) {
-    console.error('[Razorpay] Order creation failed:', error.message);
-    res.status(500).json({ success: false, message: error.message });
+    console.error('[Razorpay] Link order creation failed:', error.message);
+    if (error.statusCode) {
+      res.status(500).json({ success: false, message: `Razorpay API error (${error.statusCode}): ${error.message}` });
+    } else {
+      res.status(500).json({ success: false, message: error.message });
+    }
   }
 });
 

@@ -144,7 +144,7 @@ export default function Checkout() {
         name: 'Prerna Silks',
         description: `Order of ${items.length} item(s)`,
         order_id: orderData.orderId,
-        theme: { color: '#521220' },
+        theme: { color: '#1B2A4A' },
         prefill: { contact: phone },
         handler: async (response) => {
           try {
@@ -426,7 +426,7 @@ export default function Checkout() {
                 }}
                 style={{ width: '100%', padding: '14px', background: 'var(--primary)', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
               >
-                📄 Download Receipt
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Download Receipt
               </button>
             </div>
 
@@ -434,9 +434,9 @@ export default function Checkout() {
             <button
               onClick={() => navigate('/')}
               className="btn-buy"
-              style={{ width: '100%', padding: 14, fontSize: '1rem' }}
+              style={{ width: '100%', padding: 14, fontSize: '1rem', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}
             >
-              🏠 Continue Shopping
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Continue Shopping
             </button>
           </div>
         </div>
@@ -503,7 +503,7 @@ export default function Checkout() {
                   color: 'var(--text)', fontFamily: 'var(--font-body)',
                   transition: 'all 0.2s'
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.background = 'rgba(82,18,32,0.04)'; }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.background = 'rgba(27,42,74,0.04)'; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--bg)'; }}
               >
                 {locating ? (
@@ -532,17 +532,17 @@ export default function Checkout() {
                   onMouseEnter={e => e.target.style.transform = 'scale(1.02)'}
                   onMouseLeave={e => e.target.style.transform = 'scale(1)'}
                 >
-                  ⚡ Direct UPI QR Code (Auto-Verified)
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Direct UPI QR Code (Auto-Verified)
                 </button>
                 <button className="razorpay-btn" onClick={handleRazorpayPayment} disabled={paying}>
-                  💳 Online Payment Gateway (Razorpay)
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Online Payment Gateway (Razorpay)
                 </button>
                 <button 
                   onClick={handleCOD}
                   disabled={paying}
-                  style={{ width: '100%', padding: '12px', background: 'transparent', color: 'var(--text)', border: '1.5px solid var(--border)', borderRadius: 5, cursor: 'pointer' }}
+                  style={{ width: '100%', padding: '12px', background: 'transparent', color: 'var(--text)', border: '1.5px solid var(--border)', borderRadius: 5, cursor: 'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}
                 >
-                  📦 Cash on Delivery
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> Cash on Delivery
                 </button>
               </div>
             </div>
@@ -665,10 +665,18 @@ export default function Checkout() {
             position: 'relative', zIndex: 1
           }}>
             <div style={{
-              fontSize: '3rem', marginBottom: 12,
+              color: isFreeDelivery ? '#28a745' : 'var(--primary)', marginBottom: 12,
               animation: 'bounce 0.6s ease-in-out infinite alternate'
             }}>
-              {isFreeDelivery ? '🎊' : '🛒'}
+              {isFreeDelivery ? (
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/>
+                </svg>
+              ) : (
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                </svg>
+              )}
             </div>
             <h3 style={{ fontFamily: 'var(--font-heading)', margin: '0 0 8px', color: 'var(--primary)', fontWeight: 400 }}>
               {isFreeDelivery
@@ -678,8 +686,8 @@ export default function Checkout() {
             <p style={{ color: 'var(--text-light)', fontSize: '0.95rem', margin: 0 }}>
               {isFreeDelivery
                 ? (isFirstOrder
-                  ? 'Welcome! As a first-time customer, you get free delivery on this order! 🎊'
-                  : 'Your order qualifies for free delivery as the total is above ₹999! 🎊')
+                  ? 'Welcome! As a first-time customer, you get free delivery on this order!'
+                  : 'Your order qualifies for free delivery as the total is above ₹999!')
                 : `Add items worth ₹${(999 - total).toLocaleString('en-IN')} more to get free delivery! A delivery fee of ${fmt(deliveryFee)} has been applied based on your location.`}
             </p>
             <button onClick={() => setShowFeePopup(false)}

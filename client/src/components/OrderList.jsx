@@ -105,7 +105,7 @@ const panelBase = {
   maxWidth: '92vw',
   background: '#fff',
   zIndex: 9999,
-  boxShadow: '-8px 0 40px rgba(82,18,32,0.15)',
+  boxShadow: '-8px 0 40px rgba(27,42,74,0.15)',
   display: 'flex',
   flexDirection: 'column',
   transform: 'translateX(100%)',
@@ -131,7 +131,7 @@ const fabStyle = {
   borderRadius: 50,
   padding: '14px 24px',
   cursor: 'pointer',
-  boxShadow: '0 6px 24px rgba(82,18,32,0.28)',
+  boxShadow: '0 6px 24px rgba(27,42,74,0.28)',
   fontFamily: 'var(--font-body)',
   fontSize: '0.9rem',
   fontWeight: 500,
@@ -170,8 +170,8 @@ export default function OrderListPanel() {
         <button
           style={fabStyle}
           onClick={() => setOpen(true)}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(82,18,32,0.35)'; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(82,18,32,0.28)'; }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(27,42,74,0.35)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(27,42,74,0.28)'; }}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
@@ -181,7 +181,7 @@ export default function OrderListPanel() {
           Order List
           <span style={{
             background: 'var(--gold)',
-            color: '#2A1016',
+            color: '#0F1A2E',
             borderRadius: '50%',
             width: 22,
             height: 22,

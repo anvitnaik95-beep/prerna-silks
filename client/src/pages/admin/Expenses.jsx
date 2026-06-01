@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react';
 import API from '../../services/api';
 import AdminSidebar from '../../components/AdminSidebar';
 
+const RupeeIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
+const ChartIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>;
+
 export default function Expenses() {
   const [items, setItems] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -23,11 +26,11 @@ export default function Expenses() {
   return (
     <div className="admin-layout"><AdminSidebar />
       <main className="admin-main">
-        <div className="admin-header"><h1>💸 Expenses</h1><button className="btn-buy" onClick={()=>{setForm({title:'',category:'Other',amount:0,expense_date:new Date().toISOString().split('T')[0],payment_method:'Cash',notes:''});setShowModal(true);}}>+ Add Expense</button></div>
+                  <div className="admin-header"><h1><RupeeIcon /> Expenses</h1><button className="btn-buy" onClick={()=>{setForm({title:'',category:'Other',amount:0,expense_date:new Date().toISOString().split('T')[0],payment_method:'Cash',notes:''});setShowModal(true);}}>+ Add Expense</button></div>
 
         <div className="stats-grid" style={{gridTemplateColumns:'repeat(2,1fr)'}}>
-          <div className="stat-card"><div className="stat-icon" style={{background:'rgba(239,68,68,0.1)',color:'#EF4444'}}>💸</div><div><h3>{fmt(total)}</h3><p>Total Expenses</p></div></div>
-          <div className="stat-card"><div className="stat-icon" style={{background:'rgba(59,130,246,0.1)',color:'#3B82F6'}}>📊</div><div><h3>{items.length}</h3><p>Total Entries</p></div></div>
+          <div className="stat-card"><div className="stat-icon" style={{background:'rgba(239,68,68,0.1)',color:'#EF4444'}}><RupeeIcon /></div><div><h3>{fmt(total)}</h3><p>Total Expenses</p></div></div>
+          <div className="stat-card"><div className="stat-icon" style={{background:'rgba(59,130,246,0.1)',color:'#3B82F6'}}><ChartIcon /></div><div><h3>{items.length}</h3><p>Total Entries</p></div></div>
         </div>
 
         <div className="admin-card">
@@ -36,7 +39,7 @@ export default function Expenses() {
             <tbody>
               {items.length===0 ? <tr><td colSpan={6} style={{textAlign:'center',padding:40,color:'var(--text-muted)'}}>No expenses</td></tr> :
                 items.map(e=><tr key={e.id}><td><strong>{e.title}</strong></td><td>{e.category}</td><td style={{fontWeight:600,color:'var(--danger)'}}>{fmt(e.amount)}</td><td>{new Date(e.expense_date).toLocaleDateString()}</td><td>{e.payment_method}</td>
-                  <td><button className="btn btn-outline-danger btn-sm" onClick={()=>del(e.id)}>🗑️</button></td></tr>)
+                  <td><button className="btn btn-outline-danger btn-sm" onClick={()=>del(e.id)}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></td></tr>)
               }
             </tbody>
           </table>

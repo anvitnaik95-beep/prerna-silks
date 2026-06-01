@@ -47,7 +47,7 @@ export default function FeedbackPopup() {
                   onClick={() => setForm({...form, rating: star})}
                   style={{ 
                     fontSize: '1.6rem', cursor: 'pointer', 
-                    color: star <= form.rating ? 'var(--gold, #D4AF37)' : '#ddd',
+                    color: star <= form.rating ? 'var(--gold, #C8A95E)' : '#ddd',
                     transition: 'transform 0.15s'
                   }}
                   onMouseEnter={e => e.target.style.transform = 'scale(1.2)'}

@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react';
 import API from '../../services/api';
 import AdminSidebar from '../../components/AdminSidebar';
 
+const EditIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
+const DeleteIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
+
 const empty = { name:'',category:'Silk',price:0,original_price:0,stock:0,rating:4,color:'',occasion:'Casual',pattern:'',description:'',image:'',featured:false,badge:'',colorCount:0,moq:5,
   sareeDetails:{pattern:'',purity:'',color:'',fabric:'',length:'5.5 meters',work:'',border:''},
   blouseDetails:{border:'',work:'',fabric:'',length:'0.8 meters',pattern:'',color:''} };
@@ -97,7 +100,7 @@ export default function Products() {
     <div className="admin-layout">
       <AdminSidebar />
       <main className="admin-main">
-        <div className="admin-header"><h1>👗 Product Management</h1><button className="btn-buy" onClick={openAdd}>+ Add Product</button></div>
+        <div className="admin-header"><h1 style={{display:'flex',alignItems:'center',gap:10}}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg> Product Management</h1><button className="btn-buy" onClick={openAdd}>+ Add Product</button></div>
 
         <div className="admin-card">
           <div className="admin-card-header"><h3>All Products ({filtered.length})</h3>
@@ -115,8 +118,8 @@ export default function Products() {
                       <td style={{color:p.stock<=5?'var(--danger)':'var(--success)',fontWeight:600}}>{p.stock}</td>
                       <td style={{color:'var(--gold)'}}>{stars(p.rating)}</td>
                       <td>
-                        <button className="btn btn-outline-primary btn-sm me-1" onClick={()=>openEdit(p)}>✏️</button>
-                        <button className="btn btn-outline-danger btn-sm" onClick={()=>del(p.id,p.name)}>🗑️</button>
+                        <button className="btn btn-outline-primary btn-sm me-1" onClick={()=>openEdit(p)}><EditIcon /></button>
+                        <button className="btn btn-outline-danger btn-sm" onClick={()=>del(p.id,p.name)}><DeleteIcon /></button>
                       </td>
                     </tr>
                   ))

@@ -7,6 +7,15 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 const stars = (r) => '★'.repeat(Math.round(r)) + '☆'.repeat(5 - Math.round(r));
+const ShareLinkIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>;
+const HeartIconPD = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>;
+const ChatIconPD = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
+const PaletteIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r="0.5"/><circle cx="17.5" cy="10.5" r="0.5"/><circle cx="8.5" cy="7.5" r="0.5"/><circle cx="6.5" cy="12.5" r="0.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.42-4.5-8-10-8z"/></svg>;
+const BoxIconPD = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>;
+const TruckIconPD = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>;
+const CheckIconPD = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>;
+const CrossIconPD = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+const SparkleIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l1.45 4.93L18 8.5l-3.72 2.73L16 16.5l-4-2.7-4 2.7 1.72-5.27L6 8.5l4.55-.57z"/></svg>;
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -121,7 +130,9 @@ export default function ProductDetail() {
     <>
       <Header />
       <div style={{ textAlign:'center', padding:'100px 0', color:'var(--text-muted)' }}>
-        <div style={{ fontSize:'3rem', marginBottom:'12px' }}>👗</div>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'center', height:'100%', color:'var(--text-muted)', opacity:0.4 }}>
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
+        </div>
         <p>Loading product...</p>
       </div>
     </>
@@ -196,11 +207,11 @@ export default function ProductDetail() {
                 }
               }}
                 style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 16px', border:'1px solid var(--border)', borderRadius:4, background:'transparent', cursor:'pointer', fontSize:'0.82rem', color:'var(--text-light)', fontFamily:'var(--font-body)' }}>
-                🔗 Share
+                <ShareLinkIcon /> Share
               </button>
               <button onClick={() => { if(!user) return navigate('/login'); API.post('/wishlist/add', { productId: id }); alert('Added to wishlist!'); }}
                 style={{ display:'flex', alignItems:'center', gap:6, padding:'7px 16px', border:'1px solid var(--border)', borderRadius:4, background:'transparent', cursor:'pointer', fontSize:'0.82rem', color:'var(--text-light)', fontFamily:'var(--font-body)' }}>
-                ♡ Wishlist
+                <HeartIconPD /> Wishlist
               </button>
             </div>
           </div>
@@ -275,23 +286,23 @@ export default function ProductDetail() {
 
             {/* CTA Buttons */}
             <div className="pd-cta">
-              <button className="cta-buy" onClick={() => addItem({ id:product.id, name:product.name, price:product.price, image: activeImage, moq: product.moq })} style={{ width:'100%' }}>
-                💬 Enquire B2B Price
+              <button className="cta-buy" onClick={() => addItem({ id:product.id, name:product.name, price:product.price, image: activeImage, moq: product.moq })} style={{ width:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
+                <ChatIconPD /> Enquire B2B Price
               </button>
             </div>
 
             {/* Colors available */}
             {product.colorCount > 0 && (
               <div style={{ marginTop:12, fontSize:'0.88rem', color:'var(--text-muted)' }}>
-                <span style={{ fontWeight:600, color:'var(--text)' }}>🎨 {product.colorCount} Colors</span> available
+                <span style={{ fontWeight:600, color:'var(--text)' }}><PaletteIcon /> {product.colorCount} Colors</span> available
               </div>
             )}
 
             {/* Delivery info */}
             <div style={{ marginTop:18, padding:'14px 16px', background:'var(--bg)', borderRadius:8, border:'1px solid var(--border)', fontSize:'0.85rem' }}>
-              <div style={{ marginBottom:6 }}>📦 <b>Bulk Orders</b> — Flexible MOQ</div>
-              <div style={{ marginBottom:6 }}>🚚 <b>Pan India Shipping</b> — Reliable delivery</div>
-              <div>💬 <b>WhatsApp Enquiry</b> — Quick response</div>
+              <div style={{ marginBottom:6, display:'flex', alignItems:'center', gap:8 }}><BoxIconPD /> <b>Bulk Orders</b> — Flexible MOQ</div>
+              <div style={{ marginBottom:6, display:'flex', alignItems:'center', gap:8 }}><TruckIconPD /> <b>Pan India Shipping</b> — Reliable delivery</div>
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}><ChatIconPD /> <b>WhatsApp Enquiry</b> — Quick response</div>
             </div>
           </div>
         </div>
@@ -306,11 +317,11 @@ export default function ProductDetail() {
             
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))', gap:15 }}>
               <div style={{ padding:12, background:'var(--bg)', borderRadius:8 }}>
-                <h4 style={{ fontSize:'0.85rem', color:'var(--primary)', marginBottom:4, marginTop:0 }}>✨ Quality Assurance</h4>
+                <h4 style={{ fontSize:'0.85rem', color:'var(--primary)', marginBottom:4, marginTop:0, display:'flex', alignItems:'center', gap:6 }}><SparkleIcon /> Quality Assurance</h4>
                 <p style={{ fontSize:'0.78rem', color:'var(--text-muted)', margin:0 }}>Each saree is hand-inspected for quality and craftsmanship.</p>
               </div>
               <div style={{ padding:12, background:'var(--bg)', borderRadius:8 }}>
-                <h4 style={{ fontSize:'0.85rem', color:'var(--primary)', marginBottom:4, marginTop:0 }}>🎨 Authentic Designs</h4>
+                <h4 style={{ fontSize:'0.85rem', color:'var(--primary)', marginBottom:4, marginTop:0 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight:6}}><circle cx="13.5" cy="6.5" r="0.5"/><circle cx="17.5" cy="10.5" r="0.5"/><circle cx="8.5" cy="7.5" r="0.5"/><circle cx="6.5" cy="12.5" r="0.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-4.42-4.5-8-10-8z"/></svg> Authentic Designs</h4>
                 <p style={{ fontSize:'0.78rem', color:'var(--text-muted)', margin:0 }}>Traditional patterns sourced directly from master weavers.</p>
               </div>
             </div>

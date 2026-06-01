@@ -189,7 +189,7 @@ export default function TrackOrder() {
     }).addTo(map);
 
     const polyline = L.polyline(routeCoords, {
-      color: '#d4af37',
+      color: '#C8A95E',
       weight: 4,
       opacity: 0.8,
       lineCap: 'round',
@@ -223,7 +223,7 @@ export default function TrackOrder() {
             top: 0; left: 0;
             width: 44px; height: 44px;
             border-radius: 50%;
-            border: 2px solid var(--gold, #d4af37);
+            border: 2px solid var(--gold, #C8A95E);
             animation: radar-pulse 2s infinite ease-out;
             pointer-events: none;
             box-sizing: border-box;
@@ -233,7 +233,7 @@ export default function TrackOrder() {
             top: 0; left: 0;
             width: 44px; height: 44px;
             border-radius: 50%;
-            border: 2px solid var(--gold, #d4af37);
+            border: 2px solid var(--gold, #C8A95E);
             animation: radar-pulse 2s infinite ease-out;
             animation-delay: 0.6s;
             pointer-events: none;
@@ -244,7 +244,7 @@ export default function TrackOrder() {
             top: 0; left: 0;
             width: 44px; height: 44px;
             border-radius: 50%;
-            border: 2px solid var(--gold, #d4af37);
+            border: 2px solid var(--gold, #C8A95E);
             animation: radar-pulse 2s infinite ease-out;
             animation-delay: 1.2s;
             pointer-events: none;
@@ -256,7 +256,7 @@ export default function TrackOrder() {
             top: 0; left: 0;
             width: 44px;
             height: 44px;
-            background: var(--gold, #d4af37);
+            background: var(--gold, #C8A95E);
             border: 2px solid #fff;
             border-radius: 50%;
             display: flex;
@@ -269,7 +269,7 @@ export default function TrackOrder() {
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="6" cy="18" r="2" />
               <circle cx="18" cy="18" r="2" />
-              <path d="M3 17h18a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3.5L14 3H8L4.5 7H3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2z" fill="var(--primary, #521220)" stroke="var(--gold, #d4af37)" stroke-width="1" />
+              <path d="M3 17h18a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3.5L14 3H8L4.5 7H3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2z" fill="var(--primary, #1B2A4A)" stroke="var(--gold, #C8A95E)" stroke-width="1" />
               <path d="M8 3v4M14 3v4M12 7v4" />
             </svg>
           </div>
@@ -465,14 +465,14 @@ export default function TrackOrder() {
                 <div style={{
                   background: '#0b132b',
                   borderRadius: 12,
-                  border: '1.5px solid var(--gold, #d4af37)',
+                  border: '1.5px solid var(--gold, #C8A95E)',
                   padding: '20px',
                   boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
                   position: 'relative'
                 }}>
                   <h4 style={{
                     fontFamily: 'var(--font-heading)',
-                    color: 'var(--gold, #d4af37)',
+                    color: 'var(--gold, #C8A95E)',
                     fontSize: '0.98rem',
                     margin: '0 0 16px',
                     fontWeight: 400,
@@ -516,7 +516,7 @@ export default function TrackOrder() {
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>Estimated Distance Left</span>
-                      <div style={{ fontSize: '0.82rem', color: 'var(--gold, #d4af37)', fontWeight: 600, marginTop: 2 }}>
+                      <div style={{ fontSize: '0.82rem', color: 'var(--gold, #C8A95E)', fontWeight: 600, marginTop: 2 }}>
                         {getRemainingDistance()}
                       </div>
                     </div>
