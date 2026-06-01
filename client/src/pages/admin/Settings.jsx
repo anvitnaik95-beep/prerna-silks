@@ -19,8 +19,31 @@ export default function Settings() {
   const [feedback, setFeedback] = useState([]);
   const [bannerUrls, setBannerUrls] = useState(['']);
   const [notifStatus, setNotifStatus] = useState(null);
+  const [adminName, setAdminName] = useState('');
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminPhone, setAdminPhone] = useState('');
+  const [adminCreating, setAdminCreating] = useState(false);
+  const [adminMsg, setAdminMsg] = useState('');
 
   useEffect(() => { loadFeedback(); loadSettings(); loadNotifStatus(); }, []);
+  
+  const handleCreateAdmin = async () => {
+    setAdminMsg('');
+    setAdminCreating(true);
+    try {
+      const { data } = await API.post('/admin/create-admin', {
+        name: adminName, email: adminEmail, password: adminPassword, phone: adminPhone
+      });
+      if (data.success) {
+        setAdminMsg('Admin account created successfully!');
+        setAdminName(''); setAdminEmail(''); setAdminPassword(''); setAdminPhone('');
+      }
+    } catch (err) {
+      setAdminMsg(err.response?.data?.message || 'Failed to create admin');
+    }
+    setAdminCreating(false);
+  };
   
   const loadNotifStatus = async () => {
     try { const { data } = await API.get('/admin/notification-status'); setNotifStatus(data); } catch {}
@@ -117,6 +140,34 @@ export default function Settings() {
             ))
           }
         </div> */}
+
+        <div className="admin-card mt-3" style={{padding:28}}>
+          <h4 style={{fontFamily:'var(--font-heading)',marginBottom:18,display:'flex',alignItems:'center',gap:8}}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg> Add Admin
+          </h4>
+          <div className="row g-3">
+            <div className="col-md-4">
+              <label className="form-label">Name</label>
+              <input className="form-control" placeholder="Admin name" value={adminName} onChange={e => setAdminName(e.target.value)} />
+            </div>
+            <div className="col-md-4">
+              <label className="form-label">Email</label>
+              <input className="form-control" type="email" placeholder="admin@example.com" value={adminEmail} onChange={e => setAdminEmail(e.target.value)} />
+            </div>
+            <div className="col-md-2">
+              <label className="form-label">Password</label>
+              <input className="form-control" type="password" placeholder="Min 6 chars" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} />
+            </div>
+            <div className="col-md-2">
+              <label className="form-label">Phone</label>
+              <input className="form-control" placeholder="Optional" value={adminPhone} onChange={e => setAdminPhone(e.target.value)} />
+            </div>
+          </div>
+          <button className="btn-buy mt-3" onClick={handleCreateAdmin} disabled={adminCreating} style={{display:'flex',alignItems:'center',gap:8}}>
+            {adminCreating ? 'Creating...' : <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Create Admin</>}
+          </button>
+          {adminMsg && <p style={{marginTop:10,color:adminMsg.includes('success')?'var(--success)':'var(--danger)',fontSize:'0.9rem'}}>{adminMsg}</p>}
+        </div>
 
         <div className="admin-card mt-3" style={{padding:28}}>
           <h4 style={{fontFamily:'var(--font-heading)',marginBottom:18}}><BellIcon /> Notification Status</h4>

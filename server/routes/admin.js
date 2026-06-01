@@ -246,4 +246,47 @@ router.get('/notification-status', auth, adminOnly, async (req, res) => {
   res.json({ success: true, ...checks });
 });
 
+// POST /api/admin/create-admin - Create a new admin account
+router.post('/create-admin', auth, adminOnly, async (req, res) => {
+  try {
+    const { name, email, password, phone } = req.body;
+
+    if (!name || name.trim().length < 2) {
+      return res.status(400).json({ success: false, message: 'Name must be at least 2 characters' });
+    }
+    if (!email || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+      return res.status(400).json({ success: false, message: 'Valid email is required' });
+    }
+    if (!password || password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+    }
+
+    const existing = await User.findOne({ email: email.toLowerCase().trim() });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'Email already registered' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const adminUser = new User({
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      password: hashedPassword,
+      role: 'admin',
+      phone: phone ? phone.replace(/[^0-9]/g, '').slice(-10) : ''
+    });
+
+    await adminUser.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Admin account created successfully',
+      admin: { id: adminUser.id, name: adminUser.name, email: adminUser.email, role: adminUser.role }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;
