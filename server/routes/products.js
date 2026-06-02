@@ -209,6 +209,34 @@ router.post('/:id/images', auth, adminOnly, upload.single('image'), async (req, 
   }
 });
 
+// POST /api/products/:id/images/multi - Upload multiple images (first is cover)
+router.post('/:id/images/multi', auth, adminOnly, upload.array('images', 20), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) return res.status(400).json({ message: 'No images uploaded' });
+
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    const added = [];
+    req.files.forEach((file, index) => {
+      const isCover = index === 0;
+      const imageUrl = `/uploads/products/${file.filename}`;
+      product.images.push({ image_url: imageUrl, is_cover: isCover });
+      if (isCover) {
+        product.image = imageUrl;
+      } else if (!product.image || product.image.trim() === '') {
+        product.image = imageUrl;
+      }
+      added.push({ image_url: imageUrl, is_cover: isCover });
+    });
+
+    await product.save();
+    res.status(201).json({ success: true, count: added.length, images: added });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // DELETE /api/products/images/:imageId
 router.delete('/images/:imageId', auth, adminOnly, async (req, res) => {
   try {

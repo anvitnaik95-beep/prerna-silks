@@ -93,6 +93,26 @@ export default function Products() {
     }
   };
 
+  const handleMultiUpload = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !editId) return;
+    const formData = new FormData();
+    for (let f of files) formData.append('images', f);
+    setUploading(true);
+    try {
+      await API.post(`/products/${editId}/images/multi`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const { data } = await API.get(`/products/${editId}`);
+      setImages(data.product.images || []);
+      setForm(prev => ({...prev, image: data.product.image}));
+      load();
+    } catch (err) {
+      alert('Upload failed');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
   const filtered = products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
   const stars = (r) => '★'.repeat(Math.round(r)) + '☆'.repeat(5-Math.round(r));
 
@@ -162,7 +182,6 @@ export default function Products() {
                   </select></div>
                 <div className="col-4"><label className="form-label">Color Count</label><input type="number" min="0" className="form-control" value={form.colorCount} onChange={e=>set('colorCount',e.target.value)} /></div>
                 <div className="col-4"><label className="form-label">MOQ (pcs/lot)</label><input type="number" min="1" className="form-control" value={form.moq} onChange={e=>set('moq',e.target.value)} /></div>
-                <div className="col-12"><label className="form-label">Image URL</label><input className="form-control" placeholder="https://example.com/image.jpg" value={form.image} onChange={e=>set('image',e.target.value)} /></div>
                 <div className="col-12"><label className="form-label">Description</label><textarea className="form-control" rows={2} value={form.description} onChange={e=>set('description',e.target.value)} /></div>
               </div>
 
@@ -183,20 +202,35 @@ export default function Products() {
               {editId ? (
                 <div className="mt-4 pt-3 border-top">
                   <h5 style={{color:'var(--primary)'}}>Product Images</h5>
-                  <div className="d-flex gap-3 mb-3">
-                    <div>
-                      <label className="btn btn-sm btn-outline-primary" disabled={uploading}>
-                        {uploading ? 'Uploading...' : 'Upload Cover Image'}
-                        <input type="file" hidden accept="image/*" onChange={e => handleImageUpload(e, true)} />
-                      </label>
-                    </div>
-                    <div>
-                      <label className="btn btn-sm btn-outline-secondary" disabled={uploading}>
-                        {uploading ? 'Uploading...' : 'Upload Gallery Image'}
-                        <input type="file" hidden accept="image/*" onChange={e => handleImageUpload(e, false)} />
-                      </label>
+
+                  <div className="mb-3 p-3" style={{background:'var(--bg)', borderRadius:8, border:'1px solid var(--border)'}}>
+                    <strong style={{fontSize:'0.9rem'}}>Method 1: Upload Multiple Images</strong>
+                    <p style={{fontSize:'0.78rem', color:'var(--text-muted)', margin:'4px 0 8px'}}>Select multiple images at once. The first image will be the cover image, rest will be gallery images.</p>
+                    <label className="btn btn-sm btn-primary" disabled={uploading}>
+                      {uploading ? 'Uploading...' : 'Choose Images'}
+                      <input type="file" hidden multiple accept="image/*" onChange={handleMultiUpload} disabled={uploading} />
+                    </label>
+                  </div>
+
+                  <div className="mb-3 p-3" style={{background:'var(--bg)', borderRadius:8, border:'1px solid var(--border)'}}>
+                    <strong style={{fontSize:'0.9rem'}}>Method 2: Manual Upload</strong>
+                    <p style={{fontSize:'0.78rem', color:'var(--text-muted)', margin:'4px 0 8px'}}>Upload one image at a time and choose if it's the cover image.</p>
+                    <div className="d-flex gap-3">
+                      <div>
+                        <label className="btn btn-sm btn-outline-primary" disabled={uploading}>
+                          {uploading ? 'Uploading...' : 'Upload as Cover'}
+                          <input type="file" hidden accept="image/*" onChange={e => handleImageUpload(e, true)} />
+                        </label>
+                      </div>
+                      <div>
+                        <label className="btn btn-sm btn-outline-secondary" disabled={uploading}>
+                          {uploading ? 'Uploading...' : 'Upload as Gallery'}
+                          <input type="file" hidden accept="image/*" onChange={e => handleImageUpload(e, false)} />
+                        </label>
+                      </div>
                     </div>
                   </div>
+
                   <div className="d-flex flex-wrap gap-2">
                     {images.map(img => {
                       const imgId = img.id || img._id;
