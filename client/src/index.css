@@ -37,10 +37,12 @@ input,textarea,select{font-family:var(--font-body);}
 .logo small{color:var(--gold);font-weight:400;font-size:0.55em;letter-spacing:4px;font-family:var(--font-body);text-transform:uppercase;}
 .search-bar{flex:1;max-width:340px;position:relative;}
 .search-bar input{width:100%;padding:10px 16px 10px 44px;border:1.5px solid var(--border);border-radius:30px;background:var(--bg);color:var(--text);font-size:0.95rem;transition:all 0.3s;font-family:var(--font-body);}
-.header-btn{display:flex;align-items:center;gap:5px;padding:8px 14px;background:transparent;color:var(--text);border:none;font-size:0.9rem;cursor:pointer;transition:all 0.2s;text-decoration:none;font-weight:500;letter-spacing:0.3px;border-radius:6px;font-family:var(--font-body);}
+.search-bar input:focus{outline:none;border-color:var(--gold);background:#fff;box-shadow:0 0 0 3px rgba(211,177,96,0.12);}
+.search-bar .icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text-muted);display:flex;}
+.header-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;background:transparent;color:var(--text);border:none;font-size:0.92rem;cursor:pointer;transition:all 0.2s;text-decoration:none;font-weight:500;letter-spacing:0.3px;border-radius:6px;font-family:var(--font-body);}
 .header-btn:hover{color:var(--primary);background:rgba(107,15,26,0.05);}
 .header-btn.active{color:var(--primary);background:rgba(107,15,26,0.06);}
-.header-actions{display:flex;gap:8px;align-items:center;}
+.header-actions{display:flex;gap:10px;align-items:center;}
 
 /* HERO BANNER */
 .hero-slider{position:relative;width:100%;overflow:hidden;background:#1a0a0e;}

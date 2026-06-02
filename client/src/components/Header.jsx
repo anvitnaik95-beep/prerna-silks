@@ -146,9 +146,9 @@ export default function Header({ onSearch }) {
 
           {/* Desktop Nav */}
           <div className="header-actions header-desktop" style={{ position: 'relative' }}>
-            <Link to="/" className="header-btn" style={{fontSize:'0.82rem'}}>Catalogue</Link>
-            <Link to="/partner-program" className="header-btn" style={{fontSize:'0.82rem'}}>Partners</Link>
-            <Link to="/bulk-inquiry" className="header-btn" style={{fontSize:'0.82rem'}}>Bulk Order</Link>
+            <Link to="/" className="header-btn">Catalogue</Link>
+            <Link to="/partner-program" className="header-btn">Partners</Link>
+            <Link to="/bulk-inquiry" className="header-btn">Bulk Order</Link>
             {user && <Link to="/wishlist" className="header-btn"><WishIcon />Wishlist</Link>}
             {user ? (
               <>
