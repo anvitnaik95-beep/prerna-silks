@@ -91,6 +91,15 @@ export default function Header({ onSearch }) {
     } catch {}
   };
 
+  const clearNotifications = async () => {
+    if (!window.confirm('Clear all notifications?')) return;
+    try {
+      await API.delete('/notifications/clear');
+      setNotifications([]);
+      setNotifCount(0);
+    } catch {}
+  };
+
   const handleSearch = (e) => {
     setSearchVal(e.target.value);
     if (onSearch) onSearch(e.target.value);
@@ -162,59 +171,61 @@ export default function Header({ onSearch }) {
                   </button>
                 </div>
 
-                {/* Centered Notification Modal */}
+                {/* Notification Dropdown */}
                 {notifOpen && (
-                  <div onClick={() => setNotifOpen(false)} style={{
-                    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5000
+                  <div ref={notifModalRef} style={{
+                    position: 'absolute', top: '100%', right: 0, marginTop: 10,
+                    background: 'var(--bg-card)', borderRadius: 12, width: 380,
+                    maxHeight: '70vh', boxShadow: '0 12px 50px rgba(0,0,0,0.18)',
+                    border: '1px solid var(--border)', overflow: 'hidden',
+                    display: 'flex', flexDirection: 'column', zIndex: 5000
                   }}>
-                    <div ref={notifModalRef} onClick={e => e.stopPropagation()} style={{
-                      background: 'var(--bg-card)', borderRadius: 16, width: '90%', maxWidth: 420,
-                      maxHeight: '80vh', boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-                      overflow: 'hidden', display: 'flex', flexDirection: 'column'
-                    }}>
-                      <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--text)' }}>Notifications</span>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          {notifCount > 0 && (
-                            <button onClick={markAllRead} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 500, fontFamily: 'var(--font-body)' }}>
-                              Mark all read
-                            </button>
-                          )}
-                          <button onClick={() => setNotifOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4 }}>
-                            <CloseIcon />
+                    <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text)' }}>Notifications</span>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {notifCount > 0 && (
+                          <button onClick={markAllRead} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 500, fontFamily: 'var(--font-body)' }}>
+                            Mark all read
                           </button>
-                        </div>
-                      </div>
-                      <div style={{ overflowY: 'auto', flex: 1 }}>
-                        {notifications.length === 0 ? (
-                          <div style={{ padding: '50px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                            No notifications yet
-                          </div>
-                        ) : (
-                          notifications.map(n => (
-                            <div key={n.id} onClick={() => { navigate(n.link || '#'); setNotifOpen(false); }}
-                              style={{
-                                padding: '16px 22px', borderBottom: '1px solid var(--border)',
-                                cursor: 'pointer', transition: 'background 0.15s',
-                                background: n.read ? 'var(--bg-card)' : 'rgba(200,169,94,0.08)',
-                                display: 'flex', alignItems: 'flex-start', gap: 12
-                              }}
-                              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg)'}
-                              onMouseLeave={e => e.currentTarget.style.background = n.read ? 'var(--bg-card)' : 'rgba(200,169,94,0.08)'}
-                            >
-                              <div style={{
-                                width: 10, height: 10, borderRadius: '50%', marginTop: 4, flexShrink: 0,
-                                background: n.read ? 'var(--text-muted)' : 'var(--gold)'
-                              }} />
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text)', marginBottom: 3 }}>{n.title}</div>
-                                {n.message && <div style={{ fontSize: '0.85rem', color: 'var(--text-light)' }}>{n.message}</div>}
-                              </div>
-                            </div>
-                          ))
                         )}
+                        {notifications.length > 0 && (
+                          <button onClick={clearNotifications} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--danger)', fontWeight: 500, fontFamily: 'var(--font-body)' }}>
+                            Clear all
+                          </button>
+                        )}
+                        <button onClick={() => setNotifOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 2 }}>
+                          <CloseIcon />
+                        </button>
                       </div>
+                    </div>
+                    <div style={{ overflowY: 'auto', flex: 1 }}>
+                      {notifications.length === 0 ? (
+                        <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                          No notifications yet
+                        </div>
+                      ) : (
+                        notifications.map(n => (
+                          <div key={n.id} onClick={() => { navigate(n.link || '#'); setNotifOpen(false); }}
+                            style={{
+                              padding: '14px 18px', borderBottom: '1px solid var(--border)',
+                              cursor: 'pointer', transition: 'background 0.15s',
+                              background: n.read ? 'var(--bg-card)' : 'rgba(200,169,94,0.08)',
+                              display: 'flex', alignItems: 'flex-start', gap: 10
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg)'}
+                            onMouseLeave={e => e.currentTarget.style.background = n.read ? 'var(--bg-card)' : 'rgba(200,169,94,0.08)'}
+                          >
+                            <div style={{
+                              width: 8, height: 8, borderRadius: '50%', marginTop: 5, flexShrink: 0,
+                              background: n.read ? 'var(--text-muted)' : 'var(--gold)'
+                            }} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text)', marginBottom: 2 }}>{n.title}</div>
+                              {n.message && <div style={{ fontSize: '0.8rem', color: 'var(--text-light)' }}>{n.message}</div>}
+                            </div>
+                          </div>
+                        ))
+                      )}
                     </div>
                   </div>
                 )}

@@ -17,6 +17,14 @@ export default function MyPayments() {
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
+  const deletePayment = async (id) => {
+    if (!window.confirm('Delete this payment record?')) return;
+    try {
+      await API.delete(`/orders/my-payments/${id}`);
+      setOrders(prev => prev.filter(o => o.id !== id));
+    } catch {}
+  };
+
   return (
     <>
       <Header />
@@ -56,11 +64,16 @@ export default function MyPayments() {
                     </span>
                   </div>
                 </div>
-                {order.payment_status !== 'Paid' && (
-                  <button className="btn-buy" style={{ padding: '10px 24px', fontSize: '0.9rem' }} onClick={() => navigate(`/pay-order/${order.payment_token}`)}>
-                    Pay Now
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {order.payment_status !== 'Paid' && (
+                    <button className="btn-buy" style={{ padding: '10px 24px', fontSize: '0.9rem' }} onClick={() => navigate(`/pay-order/${order.payment_token}`)}>
+                      Pay Now
+                    </button>
+                  )}
+                  <button onClick={() => deletePayment(order.id)} style={{ padding: '10px 18px', background: 'transparent', border: '1px solid var(--danger)', borderRadius: 6, color: 'var(--danger)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 500, fontFamily: 'var(--font-body)' }}>
+                    Delete
                   </button>
-                )}
+                </div>
               </div>
             ))}
           </div>

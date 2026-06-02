@@ -492,6 +492,18 @@ router.delete('/clear-all', auth, adminOnly, async (req, res) => {
   }
 });
 
+// DELETE /api/orders/my-payments/:id - Customer: Delete their own payment record
+router.delete('/my-payments/:id', auth, async (req, res) => {
+  try {
+    const order = await Order.findOne({ _id: req.params.id, userId: req.user.userId });
+    if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+    await Order.deleteOne({ _id: req.params.id });
+    res.json({ success: true, message: 'Payment record deleted' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 // GET /api/orders/my-payments - Customer: Get unpaid orders with payment links
 router.get('/my-payments', auth, async (req, res) => {
   try {

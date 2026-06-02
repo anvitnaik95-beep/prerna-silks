@@ -46,4 +46,13 @@ router.get('/unread-count', auth, async (req, res) => {
   }
 });
 
+router.delete('/clear', auth, async (req, res) => {
+  try {
+    await Notification.deleteMany({ userId: req.user.userId });
+    res.json({ success: true, message: 'All notifications cleared' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;
