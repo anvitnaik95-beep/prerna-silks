@@ -150,7 +150,7 @@ router.post('/:id/approve', auth, adminOnly, async (req, res) => {
       total_amount: totalAmount,
       subtotal: totalAmount,
       delivery_fee: 0,
-      payment_method: 'Razorpay',
+      payment_method: 'Online Payment',
       payment_status: 'Unpaid',
       status: 'Pending',
       shipping_address: '',

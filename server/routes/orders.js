@@ -405,7 +405,7 @@ router.post('/link/:token/verify', async (req, res) => {
     if (razorpay_signature === 'upi_auto' && razorpay_payment_id) {
       await Order.findOneAndUpdate(
         { payment_token: req.params.token },
-        { payment_status: 'Paid', payment_ref: razorpay_payment_id, status: 'Confirmed' }
+        { payment_status: 'Paid', payment_ref: razorpay_payment_id, status: 'Confirmed', payment_method: 'UPI' }
       );
       return res.json({ success: true, verified: true, method: 'upi' });
     }
@@ -429,7 +429,7 @@ router.post('/link/:token/verify', async (req, res) => {
     if (verified) {
       await Order.findOneAndUpdate(
         { payment_token: req.params.token },
-        { payment_status: 'Paid', payment_ref: razorpay_payment_id || '', status: 'Confirmed' }
+        { payment_status: 'Paid', payment_ref: razorpay_payment_id || '', status: 'Confirmed', payment_method: verified ? 'Razorpay' : 'UPI' }
       );
     }
 
