@@ -1,8 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import API from '../services/api';
-import Header from '../components/Header';
 import Footer from '../components/Footer';
+
+function PayHeader() {
+  return (
+    <header style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 1000 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '12px 20px', maxWidth: 1400, margin: '0 auto' }}>
+        <Link to="/" style={{ textDecoration: 'none', fontFamily: 'var(--font-heading)', fontSize: '1.5rem', fontWeight: 600, color: 'var(--primary)', letterSpacing: '1px' }}>
+          PRERNA <small style={{ fontSize: '0.45em', letterSpacing: '3px', fontWeight: 400, color: 'var(--gold)', fontFamily: 'var(--font-body)', textTransform: 'uppercase' }}>SILKS</small>
+        </Link>
+      </div>
+    </header>
+  );
+}
 
 export default function PayOrder() {
   const { token } = useParams();
@@ -287,7 +298,7 @@ export default function PayOrder() {
 
   if (loading) {
     return (
-      <><Header />
+      <><PayHeader />
         <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--text-muted)' }}>Loading order details...</div>
         <Footer /></>
     );
@@ -295,7 +306,7 @@ export default function PayOrder() {
 
   if (error) {
     return (
-      <><Header />
+      <><PayHeader />
         <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--danger)' }}>
           {error}<br />
           <Link to="/" style={{ color: 'var(--primary)' }}>Go to Home</Link>
@@ -308,7 +319,7 @@ export default function PayOrder() {
     const isCod = order?.payment_method === 'COD';
     const paymentLabel = isCod ? 'Cash on Delivery' : (order?.payment_method || 'Online');
     return (
-      <><Header />
+      <><PayHeader />
         <div ref={receiptRef} style={{ maxWidth: 520, margin: '40px auto', padding: '0 24px' }}>
           <div style={{
             background: 'var(--bg-card)', borderRadius: 12, border: '2px solid var(--primary)',
@@ -394,7 +405,7 @@ export default function PayOrder() {
   }
 
   return (
-    <><Header />
+    <><PayHeader />
       {showUpiQr && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           onClick={() => setShowUpiQr(false)}>
