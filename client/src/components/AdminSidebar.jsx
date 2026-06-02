@@ -13,8 +13,7 @@ const icons = {
   feedback: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>,
   expenses: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
   bills: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg>,
-  settings: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
-  logout: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+  settings: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
 };
 
 const navItems = [
@@ -82,51 +81,29 @@ export default function AdminSidebar() {
           </div>
           <small style={{display: 'block', textAlign: 'center', letterSpacing: '1.5px'}}>ADMIN PORTAL</small>
         </div>
-        <nav>
-          <ul className="admin-nav">
-            {navItems.map((item, i) =>
-              item === 'divider' ? <li key={i} style={{ height: 1, background: 'var(--border)', margin: '8px 16px' }} /> : (
-                <li key={item.path}>
-                  <Link to={item.path} className={location.pathname === item.path ? 'active' : ''} onClick={closeMobile}>
-                    <span style={{ opacity: 0.8 }}>{icons[item.icon]}</span> {item.label}
-                  </Link>
-                </li>
-              )
-            )}
-            <li><a href="#" onClick={(e) => { e.preventDefault(); logout(); window.location.href = '/'; }}>
-              <span style={{ opacity: 0.8 }}>{icons.logout}</span> Logout
-            </a></li>
-          </ul>
-        </nav>
 
-        {/* Profile Avatar at bottom */}
+        {/* Profile Avatar at top right */}
         <div ref={profileRef} style={{
-          marginTop: 'auto', borderTop: '1px solid var(--border)', padding: '14px 18px',
+          display: 'flex', justifyContent: 'flex-end', padding: '8px 18px',
           position: 'relative'
         }}>
           <div
             onClick={() => setProfileOpen(!profileOpen)}
             style={{
-              display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
-              padding: '4px 0'
+              display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+              padding: '4px 8px', borderRadius: 30,
+              border: `1.5px solid ${profileOpen ? 'var(--gold)' : 'var(--border)'}`,
+              transition: 'all 0.2s'
             }}
           >
             <div style={{
-              width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', fontWeight: 600, fontSize: '0.95rem', color: '#fff',
+              width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', fontWeight: 600, fontSize: '0.85rem', color: '#fff',
               background: 'linear-gradient(135deg, var(--primary), var(--gold))', flexShrink: 0
             }}>
               {initial}
             </div>
-            <div style={{ flex: 1, overflow: 'hidden' }}>
-              <div style={{ fontWeight: 500, fontSize: '0.88rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {user?.name || 'Admin'}
-              </div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--gold)', fontWeight: 500, letterSpacing: '0.5px' }}>
-                ADMIN
-              </div>
-            </div>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{
               color: 'var(--text-muted)', transition: 'transform 0.2s', transform: profileOpen ? 'rotate(180deg)' : 'rotate(0deg)'
             }}>
               <polyline points="6 9 12 15 18 9" />
@@ -135,9 +112,9 @@ export default function AdminSidebar() {
 
           {profileOpen && (
             <div style={{
-              position: 'absolute', bottom: '100%', left: 12, right: 12,
-              background: '#fff', borderRadius: 10, boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
-              border: '1px solid var(--border)', padding: 12, zIndex: 50, marginBottom: 4
+              position: 'absolute', top: '100%', right: 18,
+              background: 'var(--bg-card)', borderRadius: 10, boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+              border: '1px solid var(--border)', padding: 12, zIndex: 50, marginTop: 4, minWidth: 200
             }}>
               <div style={{ padding: '6px 8px', borderBottom: '1px solid var(--border)', marginBottom: 6 }}>
                 <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text)' }}>{user?.name}</div>
@@ -162,6 +139,19 @@ export default function AdminSidebar() {
             </div>
           )}
         </div>
+        <nav>
+          <ul className="admin-nav">
+            {navItems.map((item, i) =>
+              item === 'divider' ? <li key={i} style={{ height: 1, background: 'var(--border)', margin: '8px 16px' }} /> : (
+                <li key={item.path}>
+                  <Link to={item.path} className={location.pathname === item.path ? 'active' : ''} onClick={closeMobile}>
+                    <span style={{ opacity: 0.8 }}>{icons[item.icon]}</span> {item.label}
+                  </Link>
+                </li>
+              )
+            )}
+          </ul>
+        </nav>
       </aside>
     </>
   );

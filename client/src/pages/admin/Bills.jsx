@@ -139,7 +139,7 @@ export default function Bills() {
         {/* Stats Summary Cards */}
         <div className="row g-3 mb-4">
           <div className="col-md-6">
-            <div className="admin-card" style={{ background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 24, borderLeft: '4px solid var(--primary)', borderRadius: 10 }}>
+            <div className="admin-card" style={{ background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 24, borderLeft: '4px solid var(--primary)', borderRadius: 10 }}>
               <div>
                 <span style={{ textTransform: 'uppercase', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Total Bills</span>
                 <h3 style={{ fontSize: '1.8rem', color: 'var(--primary)', margin: '4px 0 0 0', fontWeight: 500 }}>{bills.length}</h3>
@@ -147,7 +147,7 @@ export default function Bills() {
             </div>
           </div>
           <div className="col-md-6">
-            <div className="admin-card" style={{ background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 24, borderLeft: '4px solid var(--gold)', borderRadius: 10 }}>
+            <div className="admin-card" style={{ background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 24, borderLeft: '4px solid var(--gold)', borderRadius: 10 }}>
               <div>
                 <span style={{ textTransform: 'uppercase', fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600 }}>Total Expense</span>
                 <h3 style={{ fontSize: '1.8rem', color: 'var(--gold)', margin: '4px 0 0 0', fontWeight: 600 }}>{fmt(grandTotal)}</h3>
@@ -158,7 +158,7 @@ export default function Bills() {
 
         <div className="row">
           <div className="col-md-4">
-            <div className="admin-card mb-4" style={{ background: '#fff', padding: 24, borderRadius: 10, border: '1px solid var(--border)' }}>
+            <div className="admin-card mb-4" style={{ background: 'var(--bg-card)', padding: 24, borderRadius: 10, border: '1px solid var(--border)' }}>
               <h4 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', marginBottom: 18, fontSize: '1.15rem', fontWeight: 500 }}>Upload Receipt</h4>
               
               {error && <div className="alert alert-danger p-2" style={{ fontSize: '0.85rem' }}>{error}</div>}
@@ -234,7 +234,7 @@ export default function Bills() {
           </div>
           
           <div className="col-md-8">
-            <div className="admin-card" style={{ background: '#fff', padding: 24, borderRadius: 10, border: '1px solid var(--border)' }}>
+            <div className="admin-card" style={{ background: 'var(--bg-card)', padding: 24, borderRadius: 10, border: '1px solid var(--border)' }}>
               <h4 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', marginBottom: 20, fontSize: '1.15rem', fontWeight: 500 }}>Expenses Ledger</h4>
               
               {groupedData.length === 0 ? (

@@ -311,7 +311,7 @@ export default function PayOrder() {
       <><Header />
         <div ref={receiptRef} style={{ maxWidth: 520, margin: '40px auto', padding: '0 24px' }}>
           <div style={{
-            background: '#fff', borderRadius: 12, border: '2px solid var(--primary)',
+            background: 'var(--bg-card)', borderRadius: 12, border: '2px solid var(--primary)',
             padding: 32, marginBottom: 24
           }}>
             <div style={{ textAlign: 'center', marginBottom: 24, borderBottom: '2px dashed var(--border)', paddingBottom: 16 }}>
@@ -398,7 +398,7 @@ export default function PayOrder() {
       {showUpiQr && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           onClick={() => setShowUpiQr(false)}>
-          <div style={{ background: '#fff', borderRadius: 16, padding: 32, textAlign: 'center', maxWidth: 380, width: '90%' }}
+          <div style={{ background: 'var(--bg-card)', borderRadius: 16, padding: 32, textAlign: 'center', maxWidth: 380, width: '90%' }}
             onClick={e => e.stopPropagation()}>
             <h3 style={{ margin: '0 0 8px', color: 'var(--primary)', fontFamily: 'var(--font-heading)', fontWeight: 400 }}>Scan to Pay</h3>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '0 0 16px' }}>Pay Rs.{total.toLocaleString('en-IN')} via any UPI app</p>
@@ -418,7 +418,7 @@ export default function PayOrder() {
           Order for {order?.customer_name || 'Prerna Silks'}
         </p>
 
-        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid var(--border)', padding: 20, marginBottom: 20 }}>
+        <div style={{ background: 'var(--bg-card)', borderRadius: 12, border: '1px solid var(--border)', padding: 20, marginBottom: 20 }}>
           <h4 style={{ fontSize: '0.95rem', color: 'var(--text)', fontWeight: 600, margin: '0 0 12px' }}>Order Summary</h4>
           {(order?.items || []).map((item, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)', fontSize: '0.88rem' }}>
@@ -432,7 +432,7 @@ export default function PayOrder() {
           </div>
         </div>
 
-        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid var(--border)', padding: 20, marginBottom: 20 }}>
+        <div style={{ background: 'var(--bg-card)', borderRadius: 12, border: '1px solid var(--border)', padding: 20, marginBottom: 20 }}>
           <h4 style={{ fontSize: '0.95rem', color: 'var(--text)', fontWeight: 600, margin: '0 0 12px' }}>Shipping Address</h4>
           <textarea
             value={shippingAddress}
@@ -469,7 +469,7 @@ export default function PayOrder() {
           {addressError && <div style={{ color: 'var(--danger)', fontSize: '0.8rem', marginTop: 4 }}>{addressError}</div>}
         </div>
 
-        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid var(--border)', padding: 20, marginBottom: 20 }}>
+        <div style={{ background: 'var(--bg-card)', borderRadius: 12, border: '1px solid var(--border)', padding: 20, marginBottom: 20 }}>
           <h4 style={{ fontSize: '0.95rem', color: 'var(--text)', fontWeight: 600, margin: '0 0 12px' }}>Payment Method</h4>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {[
@@ -484,7 +484,7 @@ export default function PayOrder() {
                   flex: 1, minWidth: 140, padding: '14px 12px', borderRadius: 8, cursor: 'pointer',
                   fontFamily: 'var(--font-body)', fontSize: '0.85rem', lineHeight: 1.3,
                   border: payMethod === m.key ? '2px solid var(--primary)' : '1.5px solid var(--border)',
-                  background: payMethod === m.key ? 'var(--bg)' : '#fff',
+                  background: payMethod === m.key ? 'var(--bg)' : 'var(--bg-card)',
                   fontWeight: payMethod === m.key ? 600 : 400,
                   color: 'var(--text)'
                 }}

@@ -41,19 +41,20 @@ export default function Header({ onSearch }) {
   const [notifCount, setNotifCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
   const notifRef = useRef(null);
+  const notifModalRef = useRef(null);
 
   useEffect(() => {
     const handleClick = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
         setProfileOpen(false);
       }
-      if (notifRef.current && !notifRef.current.contains(e.target)) {
+      if (notifOpen && notifModalRef.current && !notifModalRef.current.contains(e.target) && notifRef.current && !notifRef.current.contains(e.target)) {
         setNotifOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
+  }, [notifOpen]);
 
   useEffect(() => {
     if (!user) return;
@@ -68,11 +69,16 @@ export default function Header({ onSearch }) {
   }, [user]);
 
   const openNotifications = async () => {
-    setNotifOpen(!notifOpen);
-    if (!notifOpen) {
+    const opening = !notifOpen;
+    setNotifOpen(opening);
+    if (opening) {
       try {
-        const { data } = await API.get('/notifications');
-        if (data.success) setNotifications(data.notifications);
+        const [notifData, countData] = await Promise.all([
+          API.get('/notifications'),
+          API.get('/notifications/unread-count')
+        ]);
+        if (notifData.data.success) setNotifications(notifData.data.notifications);
+        if (countData.data.success) setNotifCount(countData.data.count);
       } catch {}
     }
   };
@@ -138,71 +144,81 @@ export default function Header({ onSearch }) {
             {user ? (
               <>
                 {isAdmin() && <Link to="/admin/dashboard" className="header-btn"><AdminIcon />Admin</Link>}
-                {/* Notification Bell */}
-                {!isAdmin() && (
-                  <div ref={notifRef} style={{ position: 'relative' }}>
-                    <button onClick={openNotifications} className="header-btn" style={{ position: 'relative', padding: '8px 10px' }}>
-                      <BellIcon />
-                      {notifCount > 0 && (
-                        <span style={{
-                          position: 'absolute', top: 2, right: 2, minWidth: 16, height: 16,
-                          borderRadius: 8, background: 'var(--danger)', color: '#fff',
-                          fontSize: '0.65rem', fontWeight: 700, display: 'flex', alignItems: 'center',
-                          justifyContent: 'center', padding: '0 4px', lineHeight: 1
-                        }}>
-                          {notifCount > 9 ? '9+' : notifCount}
-                        </span>
-                      )}
-                    </button>
-
-                    {notifOpen && (
-                      <div style={{
-                        position: 'absolute', top: '100%', right: 0, marginTop: 8,
-                        background: '#fff', border: '1px solid var(--border)',
-                        boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-                        borderRadius: 12, width: 340, zIndex: 1100, overflow: 'hidden'
+                {!isAdmin() && <Link to="/my-payments" className="header-btn">Checkout</Link>}
+                {/* Notification Bell for all logged-in users */}
+                <div ref={notifRef} style={{ position: 'relative' }}>
+                  <button onClick={openNotifications} className="header-btn" style={{ position: 'relative', padding: '8px 10px' }}>
+                    <BellIcon />
+                    {notifCount > 0 && (
+                      <span style={{
+                        position: 'absolute', top: 2, right: 2, minWidth: 16, height: 16,
+                        borderRadius: 8, background: 'var(--danger)', color: '#fff',
+                        fontSize: '0.65rem', fontWeight: 700, display: 'flex', alignItems: 'center',
+                        justifyContent: 'center', padding: '0 4px', lineHeight: 1
                       }}>
-                        <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text)' }}>Notifications</span>
+                        {notifCount > 9 ? '9+' : notifCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
+
+                {/* Centered Notification Modal */}
+                {notifOpen && (
+                  <div onClick={() => setNotifOpen(false)} style={{
+                    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5000
+                  }}>
+                    <div ref={notifModalRef} onClick={e => e.stopPropagation()} style={{
+                      background: 'var(--bg-card)', borderRadius: 16, width: '90%', maxWidth: 420,
+                      maxHeight: '80vh', boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+                      overflow: 'hidden', display: 'flex', flexDirection: 'column'
+                    }}>
+                      <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--text)' }}>Notifications</span>
+                        <div style={{ display: 'flex', gap: 8 }}>
                           {notifCount > 0 && (
-                            <button onClick={markAllRead} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--primary)', fontWeight: 500, fontFamily: 'var(--font-body)' }}>
+                            <button onClick={markAllRead} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 500, fontFamily: 'var(--font-body)' }}>
                               Mark all read
                             </button>
                           )}
-                        </div>
-                        <div style={{ maxHeight: 320, overflowY: 'auto' }}>
-                          {notifications.length === 0 ? (
-                            <div style={{ padding: '30px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                              No notifications yet
-                            </div>
-                          ) : (
-                            notifications.map(n => (
-                              <div key={n.id} onClick={() => { navigate(n.link || '#'); setNotifOpen(false); }}
-                                style={{
-                                  padding: '14px 18px', borderBottom: '1px solid var(--border)',
-                                  cursor: 'pointer', transition: 'background 0.15s',
-                                  background: n.read ? '#fff' : 'rgba(200,169,94,0.06)',
-                                  display: 'flex', alignItems: 'flex-start', gap: 10
-                                }}
-                                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg)'}
-                                onMouseLeave={e => e.currentTarget.style.background = n.read ? '#fff' : 'rgba(200,169,94,0.06)'}
-                              >
-                                <div style={{
-                                  width: 8, height: 8, borderRadius: '50%', marginTop: 5, flexShrink: 0,
-                                  background: n.read ? 'var(--text-muted)' : 'var(--gold)'
-                                }} />
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text)', marginBottom: 2 }}>{n.title}</div>
-                                  {n.message && <div style={{ fontSize: '0.8rem', color: 'var(--text-light)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{n.message}</div>}
-                                </div>
-                              </div>
-                            ))
-                          )}
+                          <button onClick={() => setNotifOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4 }}>
+                            <CloseIcon />
+                          </button>
                         </div>
                       </div>
-                    )}
+                      <div style={{ overflowY: 'auto', flex: 1 }}>
+                        {notifications.length === 0 ? (
+                          <div style={{ padding: '50px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                            No notifications yet
+                          </div>
+                        ) : (
+                          notifications.map(n => (
+                            <div key={n.id} onClick={() => { navigate(n.link || '#'); setNotifOpen(false); }}
+                              style={{
+                                padding: '16px 22px', borderBottom: '1px solid var(--border)',
+                                cursor: 'pointer', transition: 'background 0.15s',
+                                background: n.read ? 'var(--bg-card)' : 'rgba(200,169,94,0.08)',
+                                display: 'flex', alignItems: 'flex-start', gap: 12
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg)'}
+                              onMouseLeave={e => e.currentTarget.style.background = n.read ? 'var(--bg-card)' : 'rgba(200,169,94,0.08)'}
+                            >
+                              <div style={{
+                                width: 10, height: 10, borderRadius: '50%', marginTop: 4, flexShrink: 0,
+                                background: n.read ? 'var(--text-muted)' : 'var(--gold)'
+                              }} />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text)', marginBottom: 3 }}>{n.title}</div>
+                                {n.message && <div style={{ fontSize: '0.85rem', color: 'var(--text-light)' }}>{n.message}</div>}
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
+
                 {/* Profile Avatar */}
                 <div ref={profileRef} style={{ position: 'relative' }}>
                   <button
@@ -225,9 +241,9 @@ export default function Header({ onSearch }) {
 
                   {/* Profile Dropdown */}
                   {profileOpen && (
-                    <div style={{
+                      <div style={{
                       position: 'absolute', top: '100%', right: 0, marginTop: 10,
-                      background: '#fff', border: '1px solid var(--border)',
+                      background: 'var(--bg-card)', border: '1px solid var(--border)',
                       boxShadow: '0 12px 40px rgba(27,42,74,0.15)',
                       borderRadius: 12, width: 280, padding: 0, zIndex: 1100,
                       overflow: 'hidden'
@@ -327,6 +343,7 @@ export default function Header({ onSearch }) {
               { label: 'Home', path: '/' },
               ...(user ? [
                 { label: 'Wishlist', path: '/wishlist' },
+                ...(!isAdmin() ? [{ label: 'My Payments', path: '/my-payments' }] : []),
                 ...(isAdmin() ? [{ label: 'Admin Dashboard', path: '/admin/dashboard' }] : []),
               ] : [
                 { label: 'Login', path: '/login' },

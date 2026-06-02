@@ -222,7 +222,7 @@ export default function Checkout() {
         <Header />
         <div style={{ maxWidth: 700, margin: '40px auto', padding: '0 20px' }}>
           <div style={{
-            background: '#fff', borderRadius: 16, padding: 40, boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+            background: 'var(--bg-card)', borderRadius: 16, padding: 40, boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
             textAlign: 'center', border: `2px solid ${isPaid ? '#28a745' : 'var(--gold)'}`
           }}>
             {/* Status Icon */}
@@ -481,7 +481,7 @@ export default function Checkout() {
         <div className="checkout-grid">
           {/* Left Side: Address & Payment */}
           <div>
-            <div style={{ background: '#fff', padding: 24, borderRadius: 10, boxShadow: 'var(--shadow)', marginBottom: 20 }}>
+            <div style={{ background: 'var(--bg-card)', padding: 24, borderRadius: 10, boxShadow: 'var(--shadow)', marginBottom: 20 }}>
               <h4 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', marginBottom: 16 }}>1. Shipping Details</h4>
               <textarea 
                 className="form-control" 
@@ -521,7 +521,7 @@ export default function Checkout() {
               />
             </div>
 
-            <div style={{ background: '#fff', padding: 24, borderRadius: 10, boxShadow: 'var(--shadow)' }}>
+            <div style={{ background: 'var(--bg-card)', padding: 24, borderRadius: 10, boxShadow: 'var(--shadow)' }}>
               <h4 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', marginBottom: 16 }}>2. Payment Method</h4>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -557,7 +557,7 @@ export default function Checkout() {
               animation: 'fadeIn 0.3s ease-out'
             }}>
               <div style={{
-                background: '#fff', padding: '32px', borderRadius: 16, maxWidth: 440, width: '90%',
+                background: 'var(--bg-card)', padding: '32px', borderRadius: 16, maxWidth: 440, width: '90%',
                 boxShadow: '0 20px 40px rgba(0,0,0,0.3)', textAlign: 'center', border: '1px solid rgba(212, 175, 55, 0.3)'
               }}>
                 <h4 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', margin: 0, fontSize: '1.25rem' }}>Direct UPI QR Collection</h4>
@@ -603,7 +603,7 @@ export default function Checkout() {
 
           {/* Right Side: Summary */}
           <div>
-            <div style={{ background: '#fff', padding: 24, borderRadius: 10, boxShadow: 'var(--shadow)', position: 'sticky', top: 100 }}>
+            <div style={{ background: 'var(--bg-card)', padding: 24, borderRadius: 10, boxShadow: 'var(--shadow)', position: 'sticky', top: 100 }}>
               <h4 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', marginBottom: 16 }}>Order Summary</h4>
               <div style={{ maxHeight: 200, overflowY: 'auto', marginBottom: 16 }}>
                 {items.map(item => (
@@ -658,7 +658,7 @@ export default function Checkout() {
           ))}
           {/* Popup card */}
           <div style={{
-            background: '#fff', borderRadius: 20, padding: '40px 48px',
+            background: 'var(--bg-card)', borderRadius: 20, padding: '40px 48px',
             boxShadow: '0 20px 60px rgba(0,0,0,0.2)', textAlign: 'center',
             maxWidth: 420, width: '90%', border: `2px solid ${isFreeDelivery ? '#28a745' : 'var(--gold)'}`,
             animation: 'popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',

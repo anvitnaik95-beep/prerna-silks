@@ -384,7 +384,7 @@ export default function TrackOrder() {
 
         {error && (
           <div style={{
-            textAlign: 'center', padding: '40px 20px', background: '#fff', borderRadius: 12,
+            textAlign: 'center', padding: '40px 20px', background: 'var(--bg-card)', borderRadius: 12,
             boxShadow: 'var(--shadow)', border: '1px solid var(--border)'
           }}>
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" style={{ marginBottom: 12 }}>
@@ -397,7 +397,7 @@ export default function TrackOrder() {
 
         {/* Order Tracking Result */}
         {order && (
-          <div style={{ background: '#fff', borderRadius: 14, boxShadow: 'var(--shadow)', border: '1px solid var(--border)', overflow: 'hidden' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: 14, boxShadow: 'var(--shadow)', border: '1px solid var(--border)', overflow: 'hidden' }}>
             {/* Header */}
             <div style={{ background: isCancelled ? '#f8d7da' : '#f0fdf4', padding: '20px 28px', borderBottom: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
@@ -438,7 +438,7 @@ export default function TrackOrder() {
                     <div key={step} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 1, flex: 1 }}>
                       <div style={{
                         width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: i <= currentStep ? 'var(--primary)' : '#fff',
+                        background: i <= currentStep ? 'var(--primary)' : 'var(--bg-card)',
                         border: `2px solid ${i <= currentStep ? 'var(--primary)' : 'var(--border)'}`,
                         color: i <= currentStep ? '#fff' : 'var(--text-muted)',
                         fontSize: '0.75rem', fontWeight: 600, transition: 'all 0.3s'

@@ -96,14 +96,14 @@ export default function Enquiries() {
               {statusList.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
             </select>
             {enquiries.length > 0 && (
-              <button onClick={clearAllEnquiries} style={{ padding: '8px 16px', background: '#fff', border: '1px solid var(--danger)', color: 'var(--danger)', borderRadius: 6, cursor: 'pointer', fontSize: '0.82rem', fontFamily: 'var(--font-body)', fontWeight: 500 }}>
+              <button onClick={clearAllEnquiries} style={{ padding: '8px 16px', background: 'var(--bg-card)', border: '1px solid var(--danger)', color: 'var(--danger)', borderRadius: 6, cursor: 'pointer', fontSize: '0.82rem', fontFamily: 'var(--font-body)', fontWeight: 500 }}>
                 <DeleteIcon /> Clear All
               </button>
             )}
           </div>
         </div>
 
-        <div className="admin-card" style={{ background: '#fff', borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden' }}>
+        <div className="admin-card" style={{ background: 'var(--bg-card)', borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden' }}>
           <div className="table-responsive">
             <table className="table table-hover mb-0" style={{ fontSize: '0.9rem' }}>
               <thead>

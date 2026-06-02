@@ -50,6 +50,7 @@ export function AuthProvider({ children }) {
   const login = (userData, jwt, rememberMe) => {
     setUser(userData);
     setToken(jwt);
+    localStorage.removeItem('prerna_orderlist');
     if (rememberMe) {
       localStorage.setItem('token', jwt);
       localStorage.setItem('user', JSON.stringify(userData));

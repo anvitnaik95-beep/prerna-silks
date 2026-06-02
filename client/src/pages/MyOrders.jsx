@@ -145,7 +145,8 @@ export default function MyOrders() {
             <p style={{ marginTop: 10 }}>Loading your order history...</p>
           </div>
         ) : orders.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '80px 0', background: '#fff', borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid var(--border)' }}>
+            <div style={{ textAlign: 'center', padding: '80px 0', background: 'var(--bg-card)', borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid var(--border)'
+            }}>
               <div style={{ fontSize: '3.5rem', marginBottom: 20, opacity: 0.4, color: 'var(--primary)' }}><BoxIcon /></div>
             <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--text)', marginBottom: 8, fontWeight: 400 }}>No Orders Placed Yet</h3>
             <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>Explore our premium collections to place your first order!</p>
@@ -160,7 +161,7 @@ export default function MyOrders() {
               const dateStr = new Date(order.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
               
               return (
-                <div key={order.id} style={{ background: '#fff', borderRadius: 14, boxShadow: 'var(--shadow)', border: '1px solid var(--border)', overflow: 'hidden' }}>
+                <div key={order.id} style={{ background: 'var(--bg-card)', borderRadius: 14, boxShadow: 'var(--shadow)', border: '1px solid var(--border)', overflow: 'hidden' }}>
                   {/* Top Bar of Order */}
                   <div style={{ background: '#fafafa', padding: '16px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
                     <div>

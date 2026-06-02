@@ -129,12 +129,19 @@ router.post('/:id/approve', auth, adminOnly, async (req, res) => {
     }));
     const totalAmount = enrichedItems.reduce((sum, item) => sum + (Number(item.price) || 0) * (item.quantity || 1), 0);
 
-    // Try to link order to customer account by phone
+    // Try to link order to customer account by phone (match last 10 digits)
     let customerUserId = req.user.userId;
     try {
-      const customerUser = await User.findOne({ phone: enquiry.phone.replace(/[^0-9]/g, '').slice(-10) });
-      if (customerUser) customerUserId = customerUser._id;
-    } catch {}
+      const phoneDigits = enquiry.phone.replace(/[^0-9]/g, '').slice(-10);
+      console.log(`[Enquiry] Looking up user by phone ending in: ${phoneDigits}`);
+      const customerUser = await User.findOne({ phone: { $regex: phoneDigits + '$' } });
+      if (customerUser) {
+        customerUserId = customerUser._id;
+        console.log(`[Enquiry] Matched to user: ${customerUser.name} (${customerUser._id})`);
+      } else {
+        console.log(`[Enquiry] No user found with phone ending in: ${phoneDigits}`);
+      }
+    } catch (e) { console.error('[Enquiry] Phone lookup error:', e.message); }
 
     const order = new Order({
       userId: customerUserId,
@@ -167,21 +174,39 @@ router.post('/:id/approve', auth, adminOnly, async (req, res) => {
       { $set: { status: 'approved', updated_at: new Date() } }
     );
 
+    // Create notification for admin who approved (always visible)
+    try {
+      const adminNotif = await Notification.create({
+        userId: req.user.userId,
+        title: 'Enquiry Approved',
+        message: `Approved enquiry from ${enquiry.name} for ${enquiry.items.map(i => i.name || i.product_name || 'items').join(', ')}. Payment link sent.`,
+        type: 'approval',
+        link: `/admin/enquiries`,
+        read: false
+      });
+      console.log(`[Enquiry] Admin notification created: ${adminNotif._id}`);
+    } catch (e) { console.error('[Enquiry] Admin notification error:', e.message); }
+
     // Create notification for customer if user exists with matching phone
     const paymentUrl = `${process.env.SITE_URL || 'https://prerna-silks-copy.onrender.com'}/pay-order/${paymentToken}`;
     try {
-      const customerUser = await User.findOne({ phone: enquiry.phone.replace(/[^0-9]/g, '').slice(-10) });
+      const phoneDigits = enquiry.phone.replace(/[^0-9]/g, '').slice(-10);
+      console.log(`[Enquiry] Creating notification - looking up user by phone ending in: ${phoneDigits}`);
+      const customerUser = await User.findOne({ phone: { $regex: phoneDigits + '$' } });
       if (customerUser) {
-        await Notification.create({
+        const notif = await Notification.create({
           userId: customerUser._id,
           title: 'Enquiry Approved',
-          message: `Your enquiry for ${enquiry.items.map(i => i.name).join(', ')} has been approved! Click to complete payment.`,
+          message: `Your enquiry for ${enquiry.items.map(i => i.name || i.product_name || 'items').join(', ')} has been approved! Click to complete payment.`,
           type: 'approval',
           link: `/my-payments`,
           read: false
         });
+        console.log(`[Enquiry] Customer notification created: ${notif._id} for user ${customerUser._id}`);
+      } else {
+        console.log(`[Enquiry] No user found with phone ending in: ${phoneDigits} - customer notification not created`);
       }
-    } catch {}
+    } catch (e) { console.error('[Enquiry] Notification creation error:', e.message); }
 
     // Send WhatsApp to customer about approval
     const whatsappBody = `Hi ${enquiry.name},\n\nYour enquiry with Prerna Silks has been approved!\n\nItems: ${enquiry.items.map(i => i.name).join(', ')}\nTotal: ₹${totalAmount.toLocaleString('en-IN')}\n\nPay here: ${paymentUrl}\n\nThank you for choosing Prerna Silks!`;

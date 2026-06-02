@@ -309,7 +309,7 @@ export default function ProductDetail() {
 
         {/* Product Description */}
         <div style={{ marginTop:50, borderTop:'1px solid var(--border)', paddingTop:40 }}>
-          <div style={{ background:'#fff', padding:30, borderRadius:12, boxShadow:'var(--shadow)', border:'1px solid var(--border)', maxWidth:800, margin:'0 auto' }}>
+          <div style={{ background:'var(--bg-card)', padding:30, borderRadius:12, boxShadow:'var(--shadow)', border:'1px solid var(--border)', maxWidth:800, margin:'0 auto' }}>
             <h2 style={{ fontFamily:'var(--font-heading)', color:'var(--primary)', marginBottom:20, fontSize:'1.4rem', fontWeight:400, marginTop:0 }}>Product Description</h2>
             <p style={{ color:'var(--text-light)', fontSize:'0.95rem', lineHeight:1.8, whiteSpace:'pre-line', marginBottom:25 }}>
               {product.description || 'No description available for this product.'}
@@ -342,7 +342,7 @@ export default function ProductDetail() {
                 You have already submitted a review for this product. Thank you for your feedback!
               </div>
             ) : (
-              <form onSubmit={submitComment} style={{ background:'#fff', padding:22, borderRadius:10, marginBottom:22, boxShadow:'var(--shadow)', border:'1px solid var(--border)' }}>
+              <form onSubmit={submitComment} style={{ background:'var(--bg-card)', padding:22, borderRadius:10, marginBottom:22, boxShadow:'var(--shadow)', border:'1px solid var(--border)' }}>
                 <h4 style={{ fontFamily:'var(--font-heading)', color:'var(--primary)', marginBottom:14, fontSize:'1rem', fontWeight:400 }}>Write a Review</h4>
                 <textarea className="form-control" placeholder="Share your experience with this product..." value={comment} onChange={e => setComment(e.target.value)} rows={3} style={{ marginBottom:12 }} />
                 
@@ -374,7 +374,7 @@ export default function ProductDetail() {
 
           {!user && (
             <div style={{
-              background: '#fff', border: '1px solid var(--border)', borderRadius: 10,
+              background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10,
               padding: '20px 24px', marginBottom: 22, textAlign: 'center', color: 'var(--text-muted)'
             }}>
               Please <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 600, textDecoration: 'none' }}>Login</Link> to write a review.
@@ -383,7 +383,7 @@ export default function ProductDetail() {
           {comments.length === 0 ? (
             <p style={{ color:'var(--text-muted)', fontStyle:'italic' }}>No reviews yet. Be the first to review!</p>
           ) : comments.map(c => (
-            <div key={c.id} style={{ background:'#fff', padding:18, borderRadius:8, marginBottom:12, border:'1px solid var(--border)', boxShadow:'var(--shadow)' }}>
+            <div key={c.id} style={{ background:'var(--bg-card)', padding:18, borderRadius:8, marginBottom:12, border:'1px solid var(--border)', boxShadow:'var(--shadow)' }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
                 <span style={{ fontWeight:600, color:'var(--primary)', fontSize:'0.9rem' }}>{c.user_name}</span>
                 <span style={{ color:'var(--text-muted)', fontSize:'0.8rem' }}>{new Date(c.created_at).toLocaleDateString('en-IN')}</span>
@@ -392,10 +392,10 @@ export default function ProductDetail() {
               <p style={{ color:'var(--text-light)', fontSize:'0.9rem', margin:0 }}>{c.comment}</p>
               {c.image && (
                 <div style={{ marginTop: 12 }}>
-                  <img 
-                    src={c.image} 
-                    alt="Customer uploaded review" 
-                    style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, border: '1px solid var(--border)', objectFit: 'cover' }} 
+                  <img
+                    src={c.image}
+                    alt="Customer uploaded review"
+                    style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, border: '1px solid var(--border)', objectFit: 'cover' }}
                   />
                 </div>
               )}

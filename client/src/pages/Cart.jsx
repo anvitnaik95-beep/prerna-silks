@@ -145,7 +145,7 @@ export default function Cart() {
           ) : (
             <div className="cart-container">
               {/* Items */}
-              <div style={{ background: '#fff', borderRadius: 10, boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
+              <div style={{ background: 'var(--bg-card)', borderRadius: 10, boxShadow: 'var(--shadow)', overflow: 'hidden' }}>
                 <div style={{ padding: '16px 22px', borderBottom: '1px solid var(--border)', fontFamily: 'var(--font-heading)', color: 'var(--primary)', fontSize: '1rem' }}>
                   Items in Cart
                 </div>
@@ -177,7 +177,7 @@ export default function Cart() {
               </div>
 
               {/* Order Summary */}
-              <div style={{ background: '#fff', borderRadius: 10, boxShadow: 'var(--shadow)', padding: 24, position: 'sticky', top: 80 }}>
+              <div style={{ background: 'var(--bg-card)', borderRadius: 10, boxShadow: 'var(--shadow)', padding: 24, position: 'sticky', top: 80 }}>
                 <h3 style={{ fontFamily: 'var(--font-heading)', color: 'var(--primary)', marginBottom: 18, fontSize: '1.2rem', fontWeight: 400 }}>Order Summary</h3>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: '0.9rem' }}>
                   <span>Subtotal ({items.length} items)</span><span style={{ fontWeight: 500 }}>{fmt(total)}</span>

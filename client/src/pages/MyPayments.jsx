@@ -34,7 +34,7 @@ export default function MyPayments() {
             <p style={{ marginTop: 10 }}>Loading...</p>
           </div>
         ) : orders.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 0', background: '#fff', borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid var(--border)' }}>
+          <div style={{ textAlign: 'center', padding: '80px 0', background: 'var(--bg-card)', borderRadius: 16, boxShadow: 'var(--shadow)', border: '1px solid var(--border)' }}>
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" style={{ marginBottom: 16 }}>
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
             </svg>
@@ -44,7 +44,7 @@ export default function MyPayments() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {orders.map(order => (
-              <div key={order.id} style={{ background: '#fff', borderRadius: 12, boxShadow: 'var(--shadow)', border: '1px solid var(--border)', padding: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+              <div key={order.id} style={{ background: 'var(--bg-card)', borderRadius: 12, boxShadow: 'var(--shadow)', border: '1px solid var(--border)', padding: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
                 <div>
                   <div style={{ fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>
                     {(order.items || []).map(i => i.product_name).join(', ')}

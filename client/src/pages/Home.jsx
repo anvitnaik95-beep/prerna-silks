@@ -250,7 +250,7 @@ export default function Home() {
           ) : products.length === 0 ? (
             <div style={{
               textAlign:'center', padding:'80px 20px', color:'var(--text-muted)',
-              background: '#fff', borderRadius: 16, border: '1px solid var(--border)', boxShadow: 'var(--shadow)'
+              background: 'var(--bg-card)', borderRadius: 16, border: '1px solid var(--border)', boxShadow: 'var(--shadow)'
             }}>
               <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--primary)', marginBottom: 16, opacity: 0.8 }}>
                 <circle cx="11" cy="11" r="8" />

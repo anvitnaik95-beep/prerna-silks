@@ -53,7 +53,7 @@ export default function Orders() {
           </div>
         </div>
 
-        <div className="admin-card" style={{ background: '#fff', borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden' }}>
+        <div className="admin-card" style={{ background: 'var(--bg-card)', borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden' }}>
           <div className="table-responsive">
             <table className="table table-hover mb-0" style={{ fontSize: '0.9rem' }}>
               <thead>
