@@ -130,7 +130,7 @@ router.post('/:id/approve', auth, adminOnly, async (req, res) => {
     const totalAmount = enrichedItems.reduce((sum, item) => sum + (Number(item.price) || 0) * (item.quantity || 1), 0);
 
     // Try to link order to customer account by phone (match last 10 digits)
-    let customerUserId = req.user.userId;
+    let customerUserId = null;
     try {
       const phoneDigits = enquiry.phone.replace(/[^0-9]/g, '').slice(-10);
       console.log(`[Enquiry] Looking up user by phone ending in: ${phoneDigits}`);
