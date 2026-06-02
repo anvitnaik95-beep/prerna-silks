@@ -36,8 +36,36 @@ export default function AdminSidebar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   const closeMobile = () => setMobileOpen(false);
+
+  const Avatar = ({ name }) => {
+    const initial = (name || 'U').charAt(0).toUpperCase();
+    return (
+      <div style={{
+        width: 34, height: 34, borderRadius: '50%',
+        background: 'linear-gradient(135deg, var(--primary), var(--primary-light))',
+        color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontWeight: 600, fontSize: '0.95rem', letterSpacing: 0,
+        flexShrink: 0, boxShadow: '0 2px 6px rgba(27,42,74,0.2)'
+      }}>
+        {initial}
+      </div>
+    );
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+    setProfileOpen(false);
+  };
+
+  const handleSwitchAccount = () => {
+    logout();
+    navigate('/login');
+    setProfileOpen(false);
+  };
 
   return (
     <>
@@ -57,6 +85,83 @@ export default function AdminSidebar() {
       {mobileOpen && (
         <div className="admin-mobile-overlay" onClick={closeMobile} />
       )}
+      {/* Profile Avatar - Top Right */}
+      <div style={{ position: 'fixed', top: 14, right: 24, zIndex: 200 }}>
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => setProfileOpen(!profileOpen)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '6px 12px 6px 6px', borderRadius: 30,
+              background: profileOpen ? 'rgba(27,42,74,0.06)' : 'transparent',
+              border: `1.5px solid ${profileOpen ? 'var(--primary)' : 'var(--border)'}`,
+              cursor: 'pointer', transition: 'all 0.2s',
+              fontFamily: 'var(--font-body)', color: 'var(--text)'
+            }}
+            onMouseEnter={e => { if (!profileOpen) { e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.background = 'rgba(27,42,74,0.03)'; } }}
+            onMouseLeave={e => { if (!profileOpen) { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'transparent'; } }}
+          >
+            <Avatar name={user?.name} />
+            <span style={{ fontSize: '0.85rem', fontWeight: 500, maxWidth: 90, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.name}</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          {profileOpen && (
+            <div style={{
+              position: 'absolute', top: '100%', right: 0, marginTop: 10,
+              background: 'var(--bg-card)', border: '1px solid var(--border)',
+              boxShadow: '0 12px 40px rgba(27,42,74,0.15)',
+              borderRadius: 12, width: 280, padding: 0, zIndex: 1100,
+              overflow: 'hidden'
+            }}>
+              <div style={{ padding: '20px 20px 16px', background: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <Avatar name={user?.name} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.95rem' }}>{user?.name}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-light)', wordBreak: 'break-all' }}>{user?.email}</div>
+                  </div>
+                </div>
+                <div style={{
+                  display: 'inline-block', marginTop: 10, padding: '3px 10px',
+                  background: 'rgba(200,169,94,0.12)', color: 'var(--gold)',
+                  borderRadius: 20, fontSize: '0.72rem', fontWeight: 600,
+                  letterSpacing: '0.5px', textTransform: 'uppercase'
+                }}>
+                  Administrator
+                </div>
+              </div>
+              <div style={{ padding: '12px' }}>
+                <button onClick={handleSwitchAccount} style={{
+                  width: '100%', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12,
+                  background: 'transparent', border: 'none', borderRadius: 8,
+                  cursor: 'pointer', fontSize: '0.88rem', color: 'var(--text)',
+                  fontFamily: 'var(--font-body)', transition: 'background 0.15s'
+                }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <span style={{ color: 'var(--gold)' }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                  </span>
+                  Switch Account
+                </button>
+                <button onClick={handleLogout} style={{
+                  width: '100%', padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12,
+                  background: 'transparent', border: 'none', borderRadius: 8,
+                  cursor: 'pointer', fontSize: '0.88rem', color: 'var(--danger)',
+                  fontFamily: 'var(--font-body)', transition: 'background 0.15s'
+                }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(198,40,40,0.05)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
       <aside className={`admin-sidebar ${mobileOpen ? 'admin-sidebar-visible' : ''}`}>
         <div className="sidebar-brand">
           <div style={{
