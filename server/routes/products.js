@@ -58,8 +58,7 @@ router.get('/', async (req, res) => {
     else if (sort === 'rating') sortOption = { rating: -1 };
     else if (sort === 'name') sortOption = { name: 1 };
 
-    let fields = { name:1, price:1, original_price:1, rating:1, category:1, color:1, occasion:1, pattern:1, stock:1, featured:1, sareeDetails:1, blouseDetails:1, created_at:1, image:1, badge:1, colorCount:1, moq:1 };
-    if (!basic) { fields.images = 1; }
+    let fields = { name:1, price:1, original_price:1, rating:1, category:1, color:1, occasion:1, pattern:1, stock:1, featured:1, sareeDetails:1, blouseDetails:1, created_at:1, image:1, badge:1, colorCount:1, moq:1, images:1 };
     let products = await Product.find(query, fields).lean();
 
     if (sortOption.price) {
@@ -86,6 +85,33 @@ router.get('/', async (req, res) => {
     });
 
     res.json({ success: true, count: formattedProducts.length, products: formattedProducts });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// TEMP FIX: reassign broken image URLs to existing files
+router.get('/fix-images', async (req, res) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const dir = path.join(__dirname, '../public/uploads/products');
+    const files = fs.readdirSync(dir).sort();
+    const products = await Product.find({}).sort({ created_at: -1 }).lean();
+    let updated = 0;
+    let idx = 0;
+    for (const p of products) {
+      const needsUpdate = p.image && p.image.includes('/uploads/');
+      const noImage = !p.image || p.image === '';
+      if (needsUpdate || (noImage && idx < files.length)) {
+        const fileName = files[idx % files.length];
+        const imageUrl = '/uploads/products/' + fileName;
+        await Product.findByIdAndUpdate(p._id, { $set: { image: imageUrl, images: [{ image_url: imageUrl, is_cover: true }] } });
+        updated++;
+        idx++;
+      }
+    }
+    res.json({ success: true, message: 'Fixed ' + updated + ' products' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

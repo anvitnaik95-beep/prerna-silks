@@ -46,6 +46,7 @@ export default function Home() {
   const [slide, setSlide] = useState(0);
   const [bannerSlides, setBannerSlides] = useState(HERO_SLIDES);
   const [cartItemIds, setCartItemIds] = useState([]);
+  const [brokenImages, setBrokenImages] = useState({});
   const [brokenHoverImages, setBrokenHoverImages] = useState({});
   const timerRef = useRef(null);
   const { user } = useAuth();
@@ -273,12 +274,13 @@ export default function Home() {
                 const lotPrice = Number(p.price) * moq;
                 const badgeColors = { 'New Arrival':'var(--success)', 'High Demand':'var(--danger)', 'Low MOQ':'var(--gold)', 'Pre-Order':'var(--primary)', 'Ready Stock':'#2ecc71', "Today's Deal":"#e67e22", 'Out of Stock':'#888' };
                 const badge = p.badge || (p.stock === 0 ? 'Out of Stock' : '');
+                const imgBroken = brokenImages[p.id];
                 return (
                   <div className="product-card" key={p.id} onClick={() => navigate(`/product/${p.id}`)}>
                     <div className={`product-img${img2 && !brokenHoverImages[p.id] ? ' has-hover' : ''}`}>
-                      {img1 ? (
+                      {img1 && !imgBroken ? (
                         <>
-                          <img className="img-main" src={img1} alt={p.name} />
+                          <img className="img-main" src={img1} alt={p.name} onError={() => setBrokenImages(prev => ({...prev, [p.id]: true}))} />
                           {img2 && <img className="img-hover" src={img2} alt={p.name} onError={() => setBrokenHoverImages(prev => ({...prev, [p.id]: true}))} />}
                         </>
                       ) : (
