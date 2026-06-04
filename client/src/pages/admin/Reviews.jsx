@@ -83,7 +83,7 @@ export default function Reviews() {
                     <tr key={r.id}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <img src={r.product_image} alt="" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4 }} />
+                          <img src={r.product_image} alt="" style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4 }} onError={e => { e.target.style.display='none'; }} />
                           <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>{r.product_name}</span>
                         </div>
                       </td>

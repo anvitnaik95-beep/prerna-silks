@@ -413,7 +413,7 @@ export default function PayOrder() {
             onClick={e => e.stopPropagation()}>
             <h3 style={{ margin: '0 0 8px', color: 'var(--primary)', fontFamily: 'var(--font-heading)', fontWeight: 400 }}>Scan to Pay</h3>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '0 0 16px' }}>Pay Rs.{total.toLocaleString('en-IN')} via any UPI app</p>
-            <img src={qrUrl} alt="UPI QR" style={{ width: 220, height: 220, borderRadius: 8, border: '2px solid var(--border)' }} />
+            <img src={qrUrl} alt="UPI QR" style={{ width: 220, height: 220, borderRadius: 8, border: '2px solid var(--border)' }} onError={e => { e.target.style.display='none'; }} />
             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: 12, minHeight: 40 }}>{upiStatus}</div>
             <button className="btn-buy" style={{ marginTop: 12, width: '100%' }}
               onClick={() => window.open(`https://wa.me/917019461619?text=${encodeURIComponent(`I have paid Rs.${total.toLocaleString('en-IN')} via UPI for my order. Please confirm.`)}`, '_blank')}>

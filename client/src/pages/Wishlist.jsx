@@ -63,7 +63,7 @@ export default function Wishlist() {
                 <div className="product-card" key={p.wishlist_id} onClick={() => navigate(`/product/${p.id}`)}>
                   <div className="product-img">
                     {p.image
-                      ? <img className="img-main" src={p.image} alt={p.name} />
+                      ? <img className="img-main" src={p.image} alt={p.name} onError={e => { e.target.src='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" fill="%23ddd"><rect width="200" height="200"/><text x="100" y="110" text-anchor="middle" fill="%23999" font-size="14">No image</text></svg>'; }} />
                       : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)', opacity: 0.4 }}><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg></div>}
                     <button className="wish-btn active" title="Remove from wishlist"
                       style={{ opacity: 1, color: 'var(--danger)' }}

@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext'
 import { OrderListProvider } from './components/OrderList'
 import OrderListPanel from './components/OrderList'
 import WhatsAppButton from './components/WhatsAppButton'
+import ErrorBoundary from './components/ErrorBoundary'
 import App from './App'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
@@ -16,7 +17,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <AuthProvider>
         <OrderListProvider>
-          <App />
+          <ErrorBoundary>
+            <App />
+          </ErrorBoundary>
           <OrderListPanel />
           <WhatsAppButton />
         </OrderListProvider>

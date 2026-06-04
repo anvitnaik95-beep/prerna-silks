@@ -156,12 +156,12 @@ export default function ProductDetail() {
         <div className="pd-grid">
           {/* Left: Gallery */}
           <div className="pd-gallery">
-            <div style={{ position:'relative', borderRadius:'8px', overflow:'hidden', background:'#f5f0eb' }}>
+            <div style={{ position:'relative', borderRadius:'8px', overflow:'hidden', background:'#f5f0eb', minHeight:300, display:'flex', alignItems:'center', justifyContent:'center' }}>
               <img
                 className="pd-main-img"
                 src={activeImage || ''}
                 alt={product.name}
-                onError={e => { e.target.style.display='none'; }}
+                onError={e => { e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 24 24" fill="%23ccc"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/><text x="12" y="16" text-anchor="middle" fill="%23999" font-size="3">Image unavailable</text></svg>'; }}
                 onMouseEnter={() => setZoom(true)}
                 onMouseMove={e => { const r=e.target.getBoundingClientRect(); setZoomPos({ x:((e.clientX-r.left)/r.width)*100, y:((e.clientY-r.top)/r.height)*100 }); }}
                 onMouseLeave={() => setZoom(false)}
@@ -187,7 +187,7 @@ export default function ProductDetail() {
               <div className="pd-thumbs">
                 {allImages.map((url, i) => (
                   <div key={i} className={`pd-thumb${activeIdx === i ? ' active' : ''}`} onClick={() => selectImage(url, i)}>
-                    <img src={url} alt={`View ${i+1}`} />
+                    <img src={url} alt={`View ${i+1}`} onError={e => { e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="%23ccc"><path d="M20.38 3.46L16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>'; }} />
                   </div>
                 ))}
               </div>
@@ -219,7 +219,7 @@ export default function ProductDetail() {
           {/* Lightbox */}
           {lightbox && (
             <div onClick={() => { setLightbox(false); setLbZoom(false); }} style={{ position:'fixed', inset:0, zIndex:9999, background:'rgba(0,0,0,0.85)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'zoom-out', overflow:'auto' }}>
-              <img src={activeImage} alt={product.name} onClick={e => { e.stopPropagation(); setLbZoom(!lbZoom); }} style={{ maxWidth:lbZoom?'none':'90%', maxHeight:lbZoom?'none':'90%', width:lbZoom?'auto':'auto', height:lbZoom?'auto':'auto', cursor:lbZoom?'zoom-out':'zoom-in', borderRadius:4, transition:'all 0.2s' }} />
+              <img src={activeImage || ''} alt={product.name} onClick={e => { e.stopPropagation(); setLbZoom(!lbZoom); }} style={{ maxWidth:lbZoom?'none':'90%', maxHeight:lbZoom?'none':'90%', width:lbZoom?'auto':'auto', height:lbZoom?'auto':'auto', cursor:lbZoom?'zoom-out':'zoom-in', borderRadius:4, transition:'all 0.2s' }} onError={e => { e.target.style.display='none'; }} />
             </div>
           )}
 
@@ -396,6 +396,7 @@ export default function ProductDetail() {
                     src={c.image}
                     alt="Customer uploaded review"
                     style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, border: '1px solid var(--border)', objectFit: 'cover' }}
+                    onError={e => { e.target.style.display='none'; }}
                   />
                 </div>
               )}

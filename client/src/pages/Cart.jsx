@@ -153,7 +153,7 @@ export default function Cart() {
                   <div key={item.cart_item_id} style={{ display: 'flex', gap: 16, padding: '18px 22px', borderBottom: '1px solid var(--border)', alignItems: 'center' }}>
                     <div style={{ width: 88, height: 88, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: '#f5f0eb' }}>
                       {item.image
-                        ? <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ? <img src={item.image} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display='none'; e.target.parentNode.querySelector('svg') && (e.target.parentNode.querySelector('svg').style.display=''); }} />
                         : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}><DressIcon /></div>}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>

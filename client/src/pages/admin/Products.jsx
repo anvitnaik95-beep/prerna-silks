@@ -236,7 +236,7 @@ export default function Products() {
                       const imgId = img.id || img._id;
                       return (
                       <div key={imgId} style={{position:'relative', width:100, height:100, border:'1px solid #ccc', borderRadius:4, overflow:'hidden'}}>
-                        <img src={img.image_url} alt="" style={{width:'100%', height:'100%', objectFit:'cover'}} />
+                        <img src={img.image_url} alt="" style={{width:'100%', height:'100%', objectFit:'cover'}} onError={e => { e.target.style.display='none'; }} />
                         {img.is_cover ? <span className="badge bg-primary position-absolute top-0 start-0" style={{fontSize:'0.6rem'}}>Cover</span> : null}
                         <button className="btn btn-danger btn-sm position-absolute top-0 end-0 p-0" style={{width:20,height:20,lineHeight:'10px'}} onClick={() => deleteImage(imgId)}>&times;</button>
                       </div>

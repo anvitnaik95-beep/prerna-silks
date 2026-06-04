@@ -151,7 +151,11 @@ export default function Home() {
                   src={s.url} 
                   alt={s.title} 
                   onError={(e) => {
-                    e.target.src = 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1400&h=520&fit=crop';
+                    if (e.target.src.includes('unsplash')) {
+                      e.target.src = 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=1400&h=520&fit=crop';
+                    } else {
+                      e.target.style.display = 'none';
+                    }
                   }}
                 />
                 <div className="hero-blur-bottom" />

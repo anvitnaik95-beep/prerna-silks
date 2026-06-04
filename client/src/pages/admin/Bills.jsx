@@ -215,7 +215,7 @@ export default function Bills() {
                 {/* Image Preview */}
                 {imagePreview && (
                   <div style={{ marginBottom: 16, borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)' }}>
-                    <img src={imagePreview} alt="Bill preview" style={{ width: '100%', maxHeight: 200, objectFit: 'contain', background: '#f9f9f9' }} />
+                    <img src={imagePreview} alt="Bill preview" style={{ width: '100%', maxHeight: 200, objectFit: 'contain', background: '#f9f9f9' }} onError={e => { e.target.style.display='none'; }} />
                   </div>
                 )}
                 

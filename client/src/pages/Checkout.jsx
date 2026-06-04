@@ -571,10 +571,11 @@ export default function Checkout() {
                   border: '1px solid var(--border)', marginBottom: 20
                 }}>
                    <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=${encodeURIComponent(`upi://pay?pa=7019461619@ptyes&pn=Prerna%20Silks&am=${grandTotal}&cu=INR`)}`}
-                    alt="UPI Payment QR" 
-                    style={{ width: 200, height: 200, display: 'block' }}
-                  />
+                     src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&margin=10&data=${encodeURIComponent(`upi://pay?pa=7019461619@ptyes&pn=Prerna%20Silks&am=${grandTotal}&cu=INR`)}`}
+                     alt="UPI Payment QR" 
+                     style={{ width: 200, height: 200, display: 'block' }}
+                     onError={e => { e.target.style.display='none'; }}
+                   />
                 </div>
 
                 <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--primary)', marginBottom: 20 }}>

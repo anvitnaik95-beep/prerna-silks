@@ -104,7 +104,7 @@ export default function Settings() {
               </div>
               {url && (
                 <div className="col-12 mt-2">
-                  <img src={url} alt={`Preview ${i+1}`} style={{ width: '100%', maxHeight: '120px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border)' }} />
+                  <img src={url} alt={`Preview ${i+1}`} style={{ width: '100%', maxHeight: '120px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border)' }} onError={e => { e.target.style.display='none'; }} />
                 </div>
               )}
             </div>
