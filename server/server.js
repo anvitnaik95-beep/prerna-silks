@@ -118,37 +118,8 @@ function checkNotificationConfig() {
   }
 }
 
-const Product = require('./models/Product');
-const fs = require('fs');
-
-async function fixProductImages() {
-  try {
-    const dir = path.join(__dirname, 'public/uploads/products');
-    if (!fs.existsSync(dir)) return;
-    const files = fs.readdirSync(dir).sort();
-    if (!files.length) return;
-    const products = await Product.find({}).sort({ created_at: -1 }).lean();
-    let updated = 0;
-    for (let idx = 0; idx < products.length; idx++) {
-      const p = products[idx];
-      const hasLocalRef = p.image && p.image.startsWith('/uploads/') && files.some(f => p.image.includes(f));
-      const noImage = !p.image || p.image === '' || p.image.startsWith('data:');
-      if (!hasLocalRef || noImage) {
-        const fileName = files[idx % files.length];
-        const imageUrl = '/uploads/products/' + fileName;
-        await Product.findByIdAndUpdate(p._id, { $set: { image: imageUrl, images: [{ image_url: imageUrl, is_cover: true }] } });
-        updated++;
-      }
-    }
-    if (updated) console.log(`🖼️  Fixed ${updated} product image references`);
-  } catch (err) {
-    console.error('Image fix error:', err.message);
-  }
-}
-
 testConnection().then(async () => {
   checkNotificationConfig();
-  await fixProductImages();
   app.listen(PORT, () => {
     console.log(`\n🚀 Server running on http://localhost:${PORT}`);
     console.log(`📡 API at http://localhost:${PORT}/api\n`);

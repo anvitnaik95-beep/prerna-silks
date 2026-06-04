@@ -216,6 +216,11 @@ router.post('/:id/images', auth, adminOnly, upload.single('image'), async (req, 
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
 
+    // Unset previous covers if this one is to be cover
+    if (isCover) {
+      product.images.forEach(img => { img.is_cover = false; });
+    }
+
     // Append gallery image
     product.images.push({ image_url: imageUrl, is_cover: isCover });
 
@@ -235,13 +240,24 @@ router.post('/:id/images', auth, adminOnly, upload.single('image'), async (req, 
   }
 });
 
-// POST /api/products/:id/images/multi - Upload multiple images (first is cover)
+// POST /api/products/:id/images/multi - Upload multiple images (first is cover, replaces all old images)
 router.post('/:id/images/multi', auth, adminOnly, upload.array('images', 20), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) return res.status(400).json({ message: 'No images uploaded' });
 
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    // Delete old image files from disk
+    for (const img of product.images) {
+      if (img.image_url) {
+        const oldPath = path.join(__dirname, '../public', img.image_url.replace(/^\//, ''));
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
+    }
+
+    // Clear old images array
+    product.images = [];
 
     const added = [];
     req.files.forEach((file, index) => {
@@ -271,15 +287,21 @@ router.delete('/images/:imageId', auth, adminOnly, async (req, res) => {
 
     const img = product.images.id(req.params.imageId);
     if (img) {
-      const filePath = path.join(__dirname, '../public', img.image_url);
+      const imageUrl = img.image_url.replace(/^\//, '');
+      const filePath = path.join(__dirname, '../public', imageUrl);
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+
+      const wasCover = img.is_cover;
+      const wasMainImage = product.image === img.image_url;
       
       product.images.pull(req.params.imageId);
 
-      if (img.is_cover) {
+      if (wasCover || wasMainImage) {
         if (product.images.length > 0) {
-          product.images[0].is_cover = true;
-          product.image = product.images[0].image_url;
+          const newCover = product.images.find(i => i.is_cover) || product.images[0];
+          product.images.forEach(i => { i.is_cover = false; });
+          newCover.is_cover = true;
+          product.image = newCover.image_url;
         } else {
           product.image = '';
         }
@@ -297,8 +319,25 @@ router.delete('/images/:imageId', auth, adminOnly, async (req, res) => {
 // DELETE /api/products/:id
 router.delete('/:id', auth, adminOnly, async (req, res) => {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id);
+    const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
+
+    // Delete associated image files from disk
+    if (product.images) {
+      for (const img of product.images) {
+        if (img.image_url) {
+          const filePath = path.join(__dirname, '../public', img.image_url.replace(/^\//, ''));
+          if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        }
+      }
+    }
+    // Also delete main image if it's a file reference
+    if (product.image && product.image.startsWith('/uploads/')) {
+      const mainPath = path.join(__dirname, '../public', product.image.replace(/^\//, ''));
+      if (fs.existsSync(mainPath)) fs.unlinkSync(mainPath);
+    }
+
+    await Product.findByIdAndDelete(req.params.id);
     res.json({ success: true, message: 'Product deleted' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
